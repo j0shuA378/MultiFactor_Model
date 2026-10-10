@@ -542,7 +542,50 @@ function renderWatchlistRibbon() {
     setActiveGroupId(activeId);
   }
 
-  // Populate group select dropdown
+  // Populate Brokerage Group Picker & Dropdown Menu
+  const bgtName = document.getElementById('bgt-current-name');
+  if (bgtName) {
+    bgtName.textContent = `${activeGroup.name} (${activeGroup.tickers.length})`;
+  }
+
+  const bgmContainer = document.getElementById('bgm-group-items');
+  if (bgmContainer) {
+    bgmContainer.innerHTML = '';
+    groups.forEach(g => {
+      const item = document.createElement('div');
+      item.className = `bgm-item ${g.id === activeId ? 'active' : ''}`;
+      item.dataset.groupId = g.id;
+      item.innerHTML = `
+        <div class="bgm-item-top">
+          <span class="bgm-item-title">${g.name}</span>
+          <span class="bgm-item-count">${g.tickers.length} 标的</span>
+        </div>
+        <div class="bgm-item-preview">${g.tickers.join(' · ') || '暂无标的'}</div>
+      `;
+      item.addEventListener('click', () => {
+        setActiveGroupId(g.id);
+        // 选择组合后立刻自动隐藏组合选项菜单 (Hide group options)
+        const menu = document.getElementById('brokerage-group-dropdown-menu');
+        const trigger = document.getElementById('btn-group-dropdown-trigger');
+        if (menu) menu.classList.add('hidden');
+        if (trigger) trigger.classList.remove('active');
+
+        // 重新渲染标的栏
+        renderWatchlistRibbon();
+        showStatus(`已切换至投资组合：${g.name}`);
+
+        // 之后选择自选标的：如果当前标的不在新组合内，自动选中新组合的首个标的
+        if (!g.tickers.includes(state.ticker) && g.tickers.length > 0) {
+          state.ticker = g.tickers[0];
+          updateTickerDisplay();
+          runAnalysis();
+        }
+      });
+      bgmContainer.appendChild(item);
+    });
+  }
+
+  // Populate native group select dropdown for backwards compatibility
   const select = document.getElementById('watchlist-group-select');
   if (select) {
     select.innerHTML = '';
@@ -606,23 +649,42 @@ function updateFavoriteStarButton() {
   const btn = document.getElementById('btn-toggle-favorite');
   const icon = document.getElementById('fav-star-icon');
   const text = document.getElementById('fav-star-text');
-  if (!btn) return;
 
   const groups = getWatchlistGroups();
   const activeId = getActiveGroupId();
   const activeGroup = groups.find(g => g.id === activeId) || groups[0];
 
   const isFavorited = activeGroup && activeGroup.tickers.includes(state.ticker);
-  if (isFavorited) {
-    btn.classList.add('active');
-    if (icon) icon.textContent = '★';
-    if (text) text.textContent = '已自选';
-    btn.title = `从当前分组 (${activeGroup ? activeGroup.name : ''}) 移除 ${state.ticker}`;
-  } else {
-    btn.classList.remove('active');
-    if (icon) icon.textContent = '☆';
-    if (text) text.textContent = '加自选';
-    btn.title = `添加 ${state.ticker} 到当前分组 (${activeGroup ? activeGroup.name : ''})`;
+  if (btn) {
+    if (isFavorited) {
+      btn.classList.add('active');
+      if (icon) icon.textContent = '★';
+      if (text) text.textContent = '已自选';
+      btn.title = `从当前分组 (${activeGroup ? activeGroup.name : ''}) 移除 ${state.ticker}`;
+    } else {
+      btn.classList.remove('active');
+      if (icon) icon.textContent = '☆';
+      if (text) text.textContent = '加自选';
+      btn.title = `添加 ${state.ticker} 到当前分组 (${activeGroup ? activeGroup.name : ''})`;
+    }
+  }
+
+  // Also sync quote banner favorite button if present
+  const bquFavBtn = document.getElementById('btn-quote-fav-toggle');
+  const bquFavIcon = document.getElementById('bqu-fav-icon');
+  const bquFavLabel = document.getElementById('bqu-fav-label');
+  if (bquFavBtn) {
+    if (isFavorited) {
+      bquFavBtn.classList.add('active');
+      if (bquFavIcon) bquFavIcon.textContent = '★';
+      if (bquFavLabel) bquFavLabel.textContent = '已自选';
+      bquFavBtn.title = `从当前组合 (${activeGroup ? activeGroup.name : ''}) 移出`;
+    } else {
+      bquFavBtn.classList.remove('active');
+      if (bquFavIcon) bquFavIcon.textContent = '☆';
+      if (bquFavLabel) bquFavLabel.textContent = '加自选';
+      bquFavBtn.title = `添加至当前组合 (${activeGroup ? activeGroup.name : ''})`;
+    }
   }
 }
 
@@ -823,6 +885,175 @@ function initWatchlistEventHandlers() {
       }
     });
   }
+
+  // Brokerage Group dropdown trigger & outside click (选择组合后隐藏组合选项)
+  const bgtBtn = document.getElementById('btn-group-dropdown-trigger');
+  const bgmMenu = document.getElementById('brokerage-group-dropdown-menu');
+  if (bgtBtn && bgmMenu) {
+    bgtBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      bgmMenu.classList.toggle('hidden');
+      bgtBtn.classList.toggle('active');
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!bgmMenu.contains(e.target) && !bgtBtn.contains(e.target)) {
+        bgmMenu.classList.add('hidden');
+        bgtBtn.classList.remove('active');
+      }
+    });
+  }
+
+  // Collapsible Ribbon Bar Toggle Button
+  const ribbonToggleBtn = document.getElementById('btn-toggle-ribbon-bar');
+  const ribbonBar = document.getElementById('market-ribbon-bar');
+  if (ribbonToggleBtn && ribbonBar) {
+    ribbonToggleBtn.addEventListener('click', () => {
+      ribbonBar.classList.toggle('collapsed');
+      const isCollapsed = ribbonBar.classList.contains('collapsed');
+      const icon = document.getElementById('ribbon-toggle-icon');
+      const txt = document.getElementById('ribbon-toggle-text');
+      if (icon) icon.textContent = isCollapsed ? '⌄' : '⌃';
+      if (txt) txt.textContent = isCollapsed ? '展开标的栏' : '收起标的栏';
+    });
+  }
+
+  // Brokerage Quote Banner: Prev & Next Ticker in Group
+  const prevQuoteBtn = document.getElementById('btn-quote-prev-ticker');
+  if (prevQuoteBtn) {
+    prevQuoteBtn.addEventListener('click', () => navigateWatchlistTicker(-1));
+  }
+  const nextQuoteBtn = document.getElementById('btn-quote-next-ticker');
+  if (nextQuoteBtn) {
+    nextQuoteBtn.addEventListener('click', () => navigateWatchlistTicker(1));
+  }
+
+  // Brokerage Quote Banner: Favorite Toggle
+  const quoteFavBtn = document.getElementById('btn-quote-fav-toggle');
+  if (quoteFavBtn) {
+    quoteFavBtn.addEventListener('click', toggleCurrentTickerFavorite);
+  }
+}
+
+function navigateWatchlistTicker(direction) {
+  const groups = getWatchlistGroups();
+  const activeId = getActiveGroupId();
+  const activeGroup = groups.find(g => g.id === activeId) || groups[0];
+  if (!activeGroup || activeGroup.tickers.length === 0) return;
+
+  const currIdx = activeGroup.tickers.indexOf(state.ticker);
+  let newIdx = 0;
+  if (currIdx === -1) {
+    newIdx = 0;
+  } else {
+    newIdx = (currIdx + direction + activeGroup.tickers.length) % activeGroup.tickers.length;
+  }
+  state.ticker = activeGroup.tickers[newIdx];
+  updateTickerDisplay();
+  renderWatchlistRibbon();
+  runAnalysis();
+}
+
+const COMPANY_NAME_MAP = {
+  "AAPL": "Apple Inc. (苹果公司)",
+  "MSFT": "Microsoft Corporation (微软)",
+  "NVDA": "NVIDIA Corporation (英伟达)",
+  "GOOGL": "Alphabet Inc. (谷歌A)",
+  "GOOG": "Alphabet Inc. (谷歌C)",
+  "AMZN": "Amazon.com Inc. (亚马逊)",
+  "META": "Meta Platforms Inc. (元宇宙)",
+  "TSLA": "Tesla Inc. (特斯拉)",
+  "SPY": "SPDR S&P 500 ETF (标普500指数ETF)",
+  "QQQ": "Invesco QQQ Trust (纳斯达克100ETF)",
+  "IWM": "iShares Russell 2000 ETF (罗素2000小盘ETF)",
+  "TLT": "iShares 20+ Year Treasury Bond ETF (美国国债ETF)",
+  "GLD": "SPDR Gold Shares (黄金ETF)",
+  "AMD": "Advanced Micro Devices (超威半导体)",
+  "TSM": "Taiwan Semiconductor (台积电)",
+  "PLTR": "Palantir Technologies (大数据量化龙头)",
+  "BABA": "Alibaba Group (阿里巴巴)",
+  "PDD": "PDD Holdings Inc. (拼多多)",
+  "BIDU": "Baidu Inc. (百度)",
+  "JD": "JD.com Inc. (京东)",
+  "NIO": "NIO Inc. (蔚来汽车)",
+  "ASX": "ASE Technology Holding (日月光半导体)",
+  "XOM": "Exxon Mobil Corp. (埃克森美孚)",
+  "JPM": "JPMorgan Chase & Co. (摩根大通)",
+  "BAC": "Bank of America (美国银行)",
+  "BRK-B": "Berkshire Hathaway (伯克希尔哈撒韦)"
+};
+
+function renderBrokerageQuoteBanner(stockData) {
+  if (!stockData || !stockData.candles || stockData.candles.length === 0) return;
+  const candles = stockData.candles;
+  const lastBar = candles[candles.length - 1];
+  const prevBar = candles.length > 1 ? candles[candles.length - 2] : lastBar;
+
+  const symbol = stockData.ticker || state.ticker;
+  const companyName = COMPANY_NAME_MAP[symbol] || `${symbol} Common Stock`;
+  const latestPrice = (typeof stockData.latest_price === 'number' && stockData.latest_price > 0) ? stockData.latest_price : lastBar.close;
+  const prevClose = prevBar.close;
+  const changeVal = latestPrice - prevClose;
+  const changePct = prevClose > 0 ? (changeVal / prevClose) * 100 : (stockData.change_pct || 0);
+
+  const isPos = changeVal >= 0;
+
+  // Symbol & Name
+  const symEl = document.getElementById('bqu-symbol');
+  if (symEl) symEl.textContent = symbol;
+  const nameEl = document.getElementById('bqu-name');
+  if (nameEl) nameEl.textContent = companyName;
+
+  // Price & Change
+  const priceEl = document.getElementById('bqu-price');
+  if (priceEl) priceEl.textContent = `$${latestPrice.toFixed(2)}`;
+
+  const badgeEl = document.getElementById('bqu-change-badge');
+  if (badgeEl) {
+    badgeEl.className = `bqu-change-badge ${isPos ? 'positive' : 'negative'}`;
+  }
+  const chgValEl = document.getElementById('bqu-change-val');
+  if (chgValEl) chgValEl.textContent = `${isPos ? '+' : ''}${changeVal.toFixed(2)}`;
+  const chgPctEl = document.getElementById('bqu-change-pct');
+  if (chgPctEl) chgPctEl.textContent = `(${isPos ? '+' : ''}${changePct.toFixed(2)}%)`;
+
+  // Stats
+  const openEl = document.getElementById('bqu-open');
+  if (openEl) openEl.textContent = `$${lastBar.open.toFixed(2)}`;
+
+  const highEl = document.getElementById('bqu-high');
+  if (highEl) highEl.textContent = `$${lastBar.high.toFixed(2)}`;
+
+  const lowEl = document.getElementById('bqu-low');
+  if (lowEl) lowEl.textContent = `$${lastBar.low.toFixed(2)}`;
+
+  const prevCloseEl = document.getElementById('bqu-prev-close');
+  if (prevCloseEl) prevCloseEl.textContent = `$${prevClose.toFixed(2)}`;
+
+  const volEl = document.getElementById('bqu-volume');
+  if (volEl) {
+    const v = lastBar.volume;
+    volEl.textContent = v > 1e6 ? `${(v / 1e6).toFixed(2)}M` : (v > 1e3 ? `${(v / 1e3).toFixed(1)}K` : v);
+  }
+
+  const ampEl = document.getElementById('bqu-amplitude');
+  if (ampEl) {
+    const amp = prevClose > 0 ? ((lastBar.high - lastBar.low) / prevClose * 100) : 0;
+    ampEl.textContent = `${amp.toFixed(2)}%`;
+  }
+
+  const range52wEl = document.getElementById('bqu-52w');
+  if (range52wEl) {
+    let min52 = Infinity, max52 = -Infinity;
+    candles.forEach(c => {
+      if (c.low < min52) min52 = c.low;
+      if (c.high > max52) max52 = c.high;
+    });
+    range52wEl.textContent = `$${min52.toFixed(2)} - $${max52.toFixed(2)}`;
+  }
+
+  // Update Favorite Button in quote banner
+  updateFavoriteStarButton();
 }
 
 function renderManageGroupsList() {
@@ -1222,6 +1453,7 @@ async function runSingleBacktest() {
 
   // 3. Render charts and stats
   renderKPIs(btJson.metrics);
+  renderBrokerageQuoteBanner(histJson);
   klineChart.setData(histJson.candles, btJson.signals);
   equityChart.setData(btJson.equity_curve);
   renderTradesTable(btJson.trades);

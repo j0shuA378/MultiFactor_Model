@@ -79,19 +79,33 @@
     </header>
 
     <!-- Tier 2: Watchlist & Custom Groups Ribbon Bar (自选股与自建分组) -->
-    <div class="market-ribbon-bar">
-      <!-- Group Switcher Section -->
+    <div class="market-ribbon-bar" id="market-ribbon-bar">
+      <!-- Group Switcher Dropdown (选择组合后隐藏组合选项) -->
       <div class="ribbon-group-section">
-        <div class="ribbon-group-label">
-          <svg class="ribbon-icon" viewBox="0 0 24 24" fill="currentColor">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-          </svg>
-          <span class="ribbon-group-text">自选分组</span>
+        <div class="brokerage-group-picker-wrapper" id="brokerage-group-picker-wrapper">
+          <button id="btn-group-dropdown-trigger" class="btn-brokerage-group-trigger" type="button" title="点击选择或切换投资组合/自选分组">
+            <span class="bgt-label">组合/分组:</span>
+            <span id="bgt-current-name" class="bgt-name">🏛️ 宽基与ETF (5)</span>
+            <svg class="bgt-arrow" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+            </svg>
+          </button>
+
+          <!-- Dropdown Menu: 选择组合后点击自动隐藏 -->
+          <div id="brokerage-group-dropdown-menu" class="brokerage-group-menu hidden">
+            <div class="bgm-header">
+              <span class="bgm-title">选择投资组合 / 自选分组</span>
+              <button id="btn-create-group-quick" class="bgm-btn-new" type="button">+ 新建分组</button>
+            </div>
+            <div class="bgm-list" id="bgm-group-items"></div>
+            <div class="bgm-footer">
+              <button id="btn-manage-groups" class="bgm-footer-manage" type="button">⚙️ 管理所有分组与标的池</button>
+            </div>
+          </div>
         </div>
-        <div class="group-select-wrapper">
-          <select id="watchlist-group-select" class="group-select-dropdown" title="切换自选股分组"></select>
-        </div>
-        <button id="btn-create-group-quick" class="btn-ribbon-action" title="新建自选分组">+ 分组</button>
+
+        <!-- Hidden native select for backwards compatibility -->
+        <select id="watchlist-group-select" class="group-select-dropdown hidden" title="切换自选股分组"></select>
       </div>
 
       <!-- Ticker Chips Container -->
@@ -214,6 +228,66 @@
 
       <!-- Center Workspace -->
       <section class="content-workspace">
+        <!-- Brokerage Real-time Quote & Market Stats Banner -->
+        <div class="brokerage-quote-banner" id="brokerage-quote-banner">
+          <div class="bqu-main-info">
+            <div class="bqu-ticker-row">
+              <span class="bqu-ticker-sym" id="bqu-symbol">AAPL</span>
+              <span class="bqu-ticker-name" id="bqu-name">Apple Inc. (苹果公司)</span>
+              <span class="bqu-badge-market" id="bqu-market">NASDAQ · USD</span>
+            </div>
+            <div class="bqu-price-row">
+              <span class="bqu-current-price" id="bqu-price">$234.15</span>
+              <div class="bqu-change-badge positive" id="bqu-change-badge">
+                <span id="bqu-change-val">+3.12</span>
+                <span id="bqu-change-pct">(+1.35%)</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bqu-stats-grid">
+            <div class="bqu-stat-item">
+              <span class="bqu-stat-lbl">今开 Open</span>
+              <span class="bqu-stat-val" id="bqu-open">--</span>
+            </div>
+            <div class="bqu-stat-item">
+              <span class="bqu-stat-lbl">最高 High</span>
+              <span class="bqu-stat-val val-high" id="bqu-high">--</span>
+            </div>
+            <div class="bqu-stat-item">
+              <span class="bqu-stat-lbl">最低 Low</span>
+              <span class="bqu-stat-val val-low" id="bqu-low">--</span>
+            </div>
+            <div class="bqu-stat-item">
+              <span class="bqu-stat-lbl">昨收 Prev</span>
+              <span class="bqu-stat-val" id="bqu-prev-close">--</span>
+            </div>
+            <div class="bqu-stat-item">
+              <span class="bqu-stat-lbl">成交量 Vol</span>
+              <span class="bqu-stat-val" id="bqu-volume">--</span>
+            </div>
+            <div class="bqu-stat-item">
+              <span class="bqu-stat-lbl">振幅 Amp</span>
+              <span class="bqu-stat-val" id="bqu-amplitude">--</span>
+            </div>
+            <div class="bqu-stat-item">
+              <span class="bqu-stat-lbl">52周范围 52W</span>
+              <span class="bqu-stat-val" id="bqu-52w">--</span>
+            </div>
+          </div>
+
+          <div class="bqu-actions-col">
+            <div class="bqu-nav-btns">
+              <button id="btn-quote-prev-ticker" class="btn-quote-nav" type="button" title="切换到组合上一只标的">‹ 上一标的</button>
+              <button id="btn-quote-next-ticker" class="btn-quote-nav" type="button" title="切换到组合下一只标的">下一标的 ›</button>
+            </div>
+            <button id="btn-quote-fav-toggle" class="btn-quote-fav" type="button" title="加入或移出自选">
+              <span id="bqu-fav-icon">★</span>
+              <span id="bqu-fav-label">自选</span>
+            </button>
+          </div>
+        </div>
+
         <!-- Institutional KPI Grid -->
         <div class="kpi-grid">
           <div class="kpi-card">

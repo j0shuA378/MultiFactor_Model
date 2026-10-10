@@ -2260,3 +2260,484 @@ canvas {
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================================
+   Brokerage-Grade Trading Interface & Watchlist Picker Styles
+   (券商级交易看板、组合分组下拉面板与自选标的交互)
+   ========================================================================== */
+
+/* Brokerage Group Trigger & Dropdown */
+.brokerage-group-picker-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn-brokerage-group-trigger {
+  background: #ffffff;
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.btn-brokerage-group-trigger:hover {
+  border-color: var(--accent-blue);
+  background: #f8fafc;
+  box-shadow: 0 2px 4px rgba(0, 82, 204, 0.08);
+}
+
+.btn-brokerage-group-trigger.active {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 2px rgba(0, 82, 204, 0.15);
+}
+
+.bgt-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.bgt-name {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.bgt-arrow {
+  width: 14px;
+  height: 14px;
+  color: var(--text-muted);
+  transition: transform 0.2s ease;
+}
+
+.btn-brokerage-group-trigger.active .bgt-arrow {
+  transform: rotate(180deg);
+}
+
+/* Brokerage Group Dropdown Menu */
+.brokerage-group-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 310px;
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: 0 12px 32px -4px rgba(15, 23, 42, 0.16), 0 4px 12px rgba(0, 0, 0, 0.06);
+  z-index: 1000;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  animation: dropdownFadeIn 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.brokerage-group-menu.hidden {
+  display: none !important;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.bgm-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px 8px 8px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.bgm-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.bgm-btn-new {
+  background: #eff6ff;
+  border: 1px dashed #bfdbfe;
+  color: var(--accent-blue);
+  border-radius: var(--radius-xs);
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.bgm-btn-new:hover {
+  background: #dbeafe;
+  border-color: var(--accent-blue);
+}
+
+.bgm-list {
+  max-height: 270px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 0;
+}
+
+.bgm-item {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.12s ease;
+  border: 1px solid transparent;
+}
+
+.bgm-item:hover {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.bgm-item.active {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.bgm-item-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bgm-item-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.bgm-item.active .bgm-item-title {
+  color: var(--accent-blue);
+}
+
+.bgm-item-count {
+  font-size: 10.5px;
+  font-weight: 700;
+  background: #f1f5f9;
+  color: #64748b;
+  padding: 2px 6px;
+  border-radius: 10px;
+}
+
+.bgm-item.active .bgm-item-count {
+  background: #dbeafe;
+  color: var(--accent-blue);
+}
+
+.bgm-item-preview {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  margin-top: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bgm-footer {
+  border-top: 1px solid #f1f5f9;
+  padding: 6px 4px 2px 4px;
+}
+
+.bgm-footer-manage {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 6px 8px;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.12s ease;
+}
+
+.bgm-footer-manage:hover {
+  background: #f8fafc;
+  color: var(--accent-blue);
+}
+
+/* Collapsible Watchlist Ribbon Bar */
+.btn-ribbon-toggle {
+  background: #f8fafc;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xs);
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-ribbon-toggle:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: var(--text-primary);
+}
+
+.market-ribbon-bar.collapsed .ticker-presets-container {
+  display: none !important;
+}
+
+.market-ribbon-bar.collapsed {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+/* Brokerage Real-time Quote & Market Stats Banner */
+.brokerage-quote-banner {
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 14px 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.bqu-main-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 200px;
+}
+
+.bqu-ticker-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bqu-ticker-sym {
+  font-size: 22px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+}
+
+.bqu-ticker-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.bqu-badge-market {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #f1f5f9;
+  color: #475569;
+  letter-spacing: 0.3px;
+}
+
+.bqu-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.bqu-current-price {
+  font-size: 28px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  color: #0f172a;
+  letter-spacing: -0.5px;
+}
+
+.bqu-change-badge {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
+.bqu-change-badge.positive {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+
+.bqu-change-badge.negative {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.bqu-stats-grid {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 6px 16px;
+  background: #f8fafc;
+  border-radius: var(--radius-sm);
+  border: 1px solid #edf2f7;
+}
+
+.bqu-stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 60px;
+}
+
+.bqu-stat-lbl {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.bqu-stat-val {
+  font-size: 12.5px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+}
+
+.bqu-stat-val.val-high {
+  color: #059669;
+}
+
+.bqu-stat-val.val-low {
+  color: #dc2626;
+}
+
+.bqu-actions-col {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bqu-nav-btns {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-quote-nav {
+  background: #ffffff;
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-xs);
+  padding: 5px 9px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-quote-nav:hover {
+  background: #eff6ff;
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+}
+
+.btn-quote-fav {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #b45309;
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-quote-fav:hover {
+  background: #fef3c7;
+  border-color: #f59e0b;
+}
+
+.btn-quote-fav.active {
+  background: #f59e0b;
+  border-color: #d97706;
+  color: #ffffff;
+}
+
+/* Chip Price & Change Tag */
+.chip-change-tag {
+  font-size: 9.5px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  margin-left: 2px;
+}
+
+.chip-change-tag.pos {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.chip-change-tag.neg {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.ticker-chip.active .chip-change-tag {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+@media (max-width: 900px) {
+  .bqu-stats-grid {
+    width: 100%;
+    overflow-x: auto;
+    padding: 8px 12px;
+  }
+  .brokerage-quote-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

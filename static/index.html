@@ -80,19 +80,33 @@
     </header>
 
     <!-- Tier 2: Watchlist & Custom Groups Ribbon Bar (自选股与自建分组) -->
-    <div class="market-ribbon-bar">
-      <!-- Group Switcher Section -->
+    <div class="market-ribbon-bar" id="market-ribbon-bar">
+      <!-- Group Switcher Dropdown (选择组合后隐藏组合选项) -->
       <div class="ribbon-group-section">
-        <div class="ribbon-group-label">
-          <svg class="ribbon-icon" viewBox="0 0 24 24" fill="currentColor">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-          </svg>
-          <span class="ribbon-group-text">自选分组</span>
+        <div class="brokerage-group-picker-wrapper" id="brokerage-group-picker-wrapper">
+          <button id="btn-group-dropdown-trigger" class="btn-brokerage-group-trigger" type="button" title="点击选择或切换投资组合/自选分组">
+            <span class="bgt-label">组合/分组:</span>
+            <span id="bgt-current-name" class="bgt-name">🏛️ 宽基与ETF (5)</span>
+            <svg class="bgt-arrow" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+            </svg>
+          </button>
+
+          <!-- Dropdown Menu: 选择组合后点击自动隐藏 -->
+          <div id="brokerage-group-dropdown-menu" class="brokerage-group-menu hidden">
+            <div class="bgm-header">
+              <span class="bgm-title">选择投资组合 / 自选分组</span>
+              <button id="btn-create-group-quick" class="bgm-btn-new" type="button">+ 新建分组</button>
+            </div>
+            <div class="bgm-list" id="bgm-group-items"></div>
+            <div class="bgm-footer">
+              <button id="btn-manage-groups" class="bgm-footer-manage" type="button">⚙️ 管理所有分组与标的池</button>
+            </div>
+          </div>
         </div>
-        <div class="group-select-wrapper">
-          <select id="watchlist-group-select" class="group-select-dropdown" title="切换自选股分组"></select>
-        </div>
-        <button id="btn-create-group-quick" class="btn-ribbon-action" title="新建自选分组">+ 分组</button>
+
+        <!-- Hidden native select for backwards compatibility -->
+        <select id="watchlist-group-select" class="group-select-dropdown hidden" title="切换自选股分组"></select>
       </div>
 
       <!-- Ticker Chips Container -->
@@ -101,14 +115,11 @@
         <button id="btn-add-ticker-chip" class="btn-add-chip" title="添加标的到当前分组">+ 添加标的</button>
       </div>
 
-      <!-- Right Actions & Indicator -->
+      <!-- Right Actions -->
       <div class="ribbon-actions-right">
-        <button id="btn-manage-groups" class="btn-manage-groups" title="管理所有自选分组与标的">
-          <svg class="icon-gear" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="3"></circle>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-          </svg>
-          <span>管理分组</span>
+        <button id="btn-toggle-ribbon-bar" class="btn-ribbon-toggle" title="收起/展开标的栏以最大化图表空间">
+          <span id="ribbon-toggle-icon">⌃</span>
+          <span id="ribbon-toggle-text">收起标的栏</span>
         </button>
         <div class="ribbon-asset-indicator">
           <span class="rai-label">当前:</span>
@@ -186,212 +197,136 @@
         </div>
 
         <div class="sidebar-scroll">
-          <!-- Dedicated Settings Hub Quick Entry -->
-          <div style="margin-bottom: 12px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: var(--radius-sm); padding: 10px 12px; display: flex; flex-direction: column; gap: 6px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="font-size: 11.5px; font-weight: 700; color: #0052cc;">⚙️ 策略与风控配置中心</span>
-              <span class="badge-blue" style="font-size: 10px; padding: 2px 6px;">已连接后端</span>
+          <!-- Active Strategy Profile & Compact Parameters Hub -->
+          <div class="active-profile-card">
+            <div class="apc-header">
+              <span class="apc-badge">当前生效配置</span>
+              <span class="apc-preset-tag" id="sidebar-active-preset-tag">AQR 动量优化型</span>
             </div>
-            <p style="font-size: 11px; color: var(--text-secondary); margin: 0; line-height: 1.4;">
-              所有动量因子权重、波动率风控与机构预设已迁移至独立配置中心，支持后端持久化保存。
-            </p>
-            <a href="settings.html" class="btn-open-settings-hub" style="padding: 6px 10px; font-size: 11.5px; margin-top: 2px;">
-              <span>进入完整参数配置中心 &rarr;</span>
+            
+            <div class="apc-desc" id="sidebar-active-preset-desc">
+              重仓特质波动率缩放与残差动量，开启动态波动率目标仓位管理。已连接后端持久化存储。
+            </div>
+
+            <!-- Mini 5-Pillar Factor Allocations -->
+            <div class="apc-pillars">
+              <div class="apc-pillar-item">
+                <div class="apc-p-lbl"><span>12M-1M 动量</span><span id="sb-p-12-1">30%</span></div>
+                <div class="mini-pillar-track"><div class="mini-pillar-fill" id="sb-bar-12-1" style="width:30%; background:#0052cc;"></div></div>
+              </div>
+              <div class="apc-pillar-item">
+                <div class="apc-p-lbl"><span>低波风险调整</span><span id="sb-p-risk">25%</span></div>
+                <div class="mini-pillar-track"><div class="mini-pillar-fill" id="sb-bar-risk" style="width:25%; background:#059669;"></div></div>
+              </div>
+              <div class="apc-pillar-item">
+                <div class="apc-p-lbl"><span>残差 Alpha</span><span id="sb-p-res">20%</span></div>
+                <div class="mini-pillar-track"><div class="mini-pillar-fill" id="sb-bar-res" style="width:20%; background:#7c3aed;"></div></div>
+              </div>
+              <div class="apc-pillar-item">
+                <div class="apc-p-lbl"><span>R² 路径质量</span><span id="sb-p-qual">15%</span></div>
+                <div class="mini-pillar-track"><div class="mini-pillar-fill" id="sb-bar-qual" style="width:15%; background:#d97706;"></div></div>
+              </div>
+              <div class="apc-pillar-item">
+                <div class="apc-p-lbl"><span>量价共振确认</span><span id="sb-p-vol">10%</span></div>
+                <div class="mini-pillar-track"><div class="mini-pillar-fill" id="sb-bar-vol" style="width:10%; background:#0284c7;"></div></div>
+              </div>
+            </div>
+
+            <!-- Account & Execution Friction Summary -->
+            <div class="apc-friction-box">
+              <div class="apc-f-row">
+                <span class="apc-f-label">初始资金:</span>
+                <span class="apc-f-val" id="sb-f-cap">$100,000</span>
+              </div>
+              <div class="apc-f-row">
+                <span class="apc-f-label">手续费 / 滑点:</span>
+                <span class="apc-f-val" id="sb-f-friction">0.05% / 0.05%</span>
+              </div>
+              <div class="apc-f-row">
+                <span class="apc-f-label">目标年化波动率:</span>
+                <span class="apc-f-val" id="sb-f-vol">15.0% (动态目标化)</span>
+              </div>
+            </div>
+
+            <!-- Navigation to Dedicated Settings Hub -->
+            <a href="settings.html" class="btn-open-settings-hub" title="前往专属独立设置页面进行全面精细化调参与预设切换">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+              </svg>
+              <span>⚙️ 独立参数配置中心</span>
             </a>
-          </div>
-          <!-- Capital & Cost Settings -->
-          <div class="param-card">
-            <h3 class="param-card-title">交易账户与风控设定</h3>
-            
-            <div class="form-group">
-              <label for="initial-capital">初始资金 (USD)</label>
-              <div class="input-with-affix">
-                <span class="affix">$</span>
-                <input type="number" id="initial-capital" value="100000" step="5000" min="1000">
-              </div>
-            </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label for="commission-rate">交易手续费 (%)</label>
-                <input type="number" id="commission-rate" value="0.05" step="0.01" min="0">
-              </div>
-              <div class="form-group">
-                <label for="slippage-rate">滑点比例 (%)</label>
-                <input type="number" id="slippage-rate" value="0.05" step="0.01" min="0">
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label for="stop-loss">止损阀值 (%)</label>
-                <input type="number" id="stop-loss" placeholder="可选 (如 5)" step="0.5" min="0">
-              </div>
-              <div class="form-group">
-                <label for="take-profit">止盈阀值 (%)</label>
-                <input type="number" id="take-profit" placeholder="可选 (如 15)" step="0.5" min="0">
-              </div>
-            </div>
-          </div>
-
-          <!-- Strategy-Specific Dynamic Form -->
-          <div class="param-card" id="strategy-params-card">
-            <h3 class="param-card-title" id="param-card-heading">多因子动量模型参数</h3>
-            
-            <!-- Momentum Params -->
-            <div id="params-momentum" class="strat-param-group">
-              <div class="form-group">
-                <label for="param-w-mom-12-1">12M-1M 经典截面动量 (Jegadeesh & Titman)</label>
-                <div class="range-with-val">
-                  <input type="range" id="param-w-mom-12-1" min="0.05" max="0.70" step="0.05" value="0.30">
-                  <span id="w-mom-12-1-val">30%</span>
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label for="param-w-risk-adj">特质波动率风险调整 (Low-Vol Sizing)</label>
-                <div class="range-with-val">
-                  <input type="range" id="param-w-risk-adj" min="0.05" max="0.60" step="0.05" value="0.25">
-                  <span id="w-risk-adj-val">25%</span>
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label for="param-w-residual">Beta 中性化残差动量 (Residual Alpha)</label>
-                <div class="range-with-val">
-                  <input type="range" id="param-w-residual" min="0.05" max="0.60" step="0.05" value="0.20">
-                  <span id="w-residual-val">20%</span>
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label for="param-w-trend-qual">动量路径平滑度 (Frog-in-the-Pan R²)</label>
-                <div class="range-with-val">
-                  <input type="range" id="param-w-trend-qual" min="0.05" max="0.50" step="0.05" value="0.15">
-                  <span id="w-trend-qual-val">15%</span>
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label for="param-w-vol-confirm">量价协同动量 (Volume-Confirmed)</label>
-                <div class="range-with-val">
-                  <input type="range" id="param-w-vol-confirm" min="0.00" max="0.40" step="0.05" value="0.10">
-                  <span id="w-vol-confirm-val">10%</span>
-                </div>
-              </div>
-
-              <div class="checkbox-group">
-                <label class="checkbox-label">
-                  <input type="checkbox" id="param-use-vol-target" checked>
-                  <span>启用动态波动率目标仓位管理 (Volatility Targeting)</span>
-                </label>
-              </div>
-
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="param-fast-ma">快线均线周期 (EMA)</label>
-                  <input type="number" id="param-fast-ma" value="10" min="2" max="50">
-                </div>
-                <div class="form-group">
-                  <label for="param-slow-ma">慢线均线周期 (EMA)</label>
-                  <input type="number" id="param-slow-ma" value="30" min="10" max="200">
-                </div>
-              </div>
-
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="param-alpha-th">开仓 Alpha 阈值</label>
-                  <input type="number" id="param-alpha-th" value="0.30" min="0.10" max="1.50" step="0.05">
-                </div>
-                <div class="form-group">
-                  <label for="param-exit-th">平仓 Alpha 阈值</label>
-                  <input type="number" id="param-exit-th" value="-0.20" min="-1.50" max="0.0" step="0.05">
-                </div>
-              </div>
-            </div>
-
-            <!-- ML Params -->
-            <div id="params-ml" class="strat-param-group hidden">
-              <div class="form-group">
-                <label for="param-ml-model">算法模型引擎</label>
-                <select id="param-ml-model" class="custom-select">
-                  <option value="rf">Random Forest (随机森林决策树)</option>
-                  <option value="gb">Gradient Boosting (梯度提升决策树)</option>
-                </select>
-              </div>
-
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="param-ml-estimators">决策树数量 (n_estimators)</label>
-                  <input type="number" id="param-ml-estimators" value="100" min="20" max="300" step="20">
-                </div>
-                <div class="form-group">
-                  <label for="param-ml-depth">树最大深度 (max_depth)</label>
-                  <input type="number" id="param-ml-depth" value="5" min="2" max="15">
-                </div>
-              </div>
-
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="param-ml-horizon">预测周期窗口 (日)</label>
-                  <input type="number" id="param-ml-horizon" value="2" min="1" max="10">
-                </div>
-                <div class="form-group">
-                  <label for="param-ml-threshold">多头置信度阈值</label>
-                  <input type="number" id="param-ml-threshold" value="0.53" step="0.01" min="0.50" max="0.75">
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label for="param-ml-split">时序训练集占比 (Train Ratio)</label>
-                <div class="range-with-val">
-                  <input type="range" id="param-ml-split" min="0.50" max="0.85" step="0.05" value="0.70">
-                  <span id="train-ratio-val">70%</span>
-                </div>
-                <span class="input-hint">严格按时间序列前向划分，杜绝未来函数</span>
-              </div>
-            </div>
-
-            <!-- Turtle Params -->
-            <div id="params-turtle" class="strat-param-group hidden">
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="param-turtle-entry">唐奇安突破周期 (入场)</label>
-                  <input type="number" id="param-turtle-entry" value="20" min="5" max="60">
-                </div>
-                <div class="form-group">
-                  <label for="param-turtle-exit">唐奇安离场周期 (出场)</label>
-                  <input type="number" id="param-turtle-exit" value="10" min="3" max="30">
-                </div>
-              </div>
-
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="param-turtle-stop">动态止损 N 倍数</label>
-                  <input type="number" id="param-turtle-stop" value="2.0" step="0.5" min="1.0" max="4.0">
-                </div>
-                <div class="form-group">
-                  <label for="param-turtle-atr">ATR(N) 计算周期</label>
-                  <input type="number" id="param-turtle-atr" value="20" min="5" max="50">
-                </div>
-              </div>
-
-              <div class="info-alert">
-                <strong>海龟法则纪律：</strong>顺应突破趋势进场，利用真实波幅 ATR(N) 计算仓位上限，严格执行 2N 追踪止损。
-              </div>
-            </div>
-          </div>
-
-          <!-- Quick Action Buttons -->
-          <div class="sidebar-actions">
-            <button id="reset-params-btn" class="btn-secondary">恢复默认参数</button>
-            <button id="cli-view-btn" class="btn-secondary">终端命令行运行命令</button>
+            <!-- Quick Tweak Drawer Trigger -->
+            <button id="btn-open-quick-drawer" class="btn-quick-tweak" title="在当前页面弹出侧边抽屉快速微调参数">
+              <span>⚡ 侧边快速微调 (抽屉)</span>
+            </button>
           </div>
         </div>
       </aside>
 
       <!-- Center Workspace: Charts & Analytics Dashboard -->
       <section class="content-workspace">
+        <!-- Brokerage Real-time Quote & Market Stats Banner -->
+        <div class="brokerage-quote-banner" id="brokerage-quote-banner">
+          <div class="bqu-main-info">
+            <div class="bqu-ticker-row">
+              <span class="bqu-ticker-sym" id="bqu-symbol">AAPL</span>
+              <span class="bqu-ticker-name" id="bqu-name">Apple Inc. (苹果公司)</span>
+              <span class="bqu-badge-market" id="bqu-market">NASDAQ · USD</span>
+            </div>
+            <div class="bqu-price-row">
+              <span class="bqu-current-price" id="bqu-price">$234.15</span>
+              <div class="bqu-change-badge positive" id="bqu-change-badge">
+                <span id="bqu-change-val">+3.12</span>
+                <span id="bqu-change-pct">(+1.35%)</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bqu-stats-grid">
+            <div class="bqu-stat-item">
+              <span class="bqu-stat-lbl">今开 Open</span>
+              <span class="bqu-stat-val" id="bqu-open">--</span>
+            </div>
+            <div class="bqu-stat-item">
+              <span class="bqu-stat-lbl">最高 High</span>
+              <span class="bqu-stat-val val-high" id="bqu-high">--</span>
+            </div>
+            <div class="bqu-stat-item">
+              <span class="bqu-stat-lbl">最低 Low</span>
+              <span class="bqu-stat-val val-low" id="bqu-low">--</span>
+            </div>
+            <div class="bqu-stat-item">
+              <span class="bqu-stat-lbl">昨收 Prev</span>
+              <span class="bqu-stat-val" id="bqu-prev-close">--</span>
+            </div>
+            <div class="bqu-stat-item">
+              <span class="bqu-stat-lbl">成交量 Vol</span>
+              <span class="bqu-stat-val" id="bqu-volume">--</span>
+            </div>
+            <div class="bqu-stat-item">
+              <span class="bqu-stat-lbl">振幅 Amp</span>
+              <span class="bqu-stat-val" id="bqu-amplitude">--</span>
+            </div>
+            <div class="bqu-stat-item">
+              <span class="bqu-stat-lbl">52周范围 52W</span>
+              <span class="bqu-stat-val" id="bqu-52w">--</span>
+            </div>
+          </div>
+
+          <div class="bqu-actions-col">
+            <div class="bqu-nav-btns">
+              <button id="btn-quote-prev-ticker" class="btn-quote-nav" type="button" title="切换到组合上一只标的">‹ 上一标的</button>
+              <button id="btn-quote-next-ticker" class="btn-quote-nav" type="button" title="切换到组合下一只标的">下一标的 ›</button>
+            </div>
+            <button id="btn-quote-fav-toggle" class="btn-quote-fav" type="button" title="加入或移出自选">
+              <span id="bqu-fav-icon">★</span>
+              <span id="bqu-fav-label">自选</span>
+            </button>
+          </div>
+        </div>
+
         <!-- Top Metrics KPI Cards Banner -->
         <div class="kpi-grid" id="kpi-grid">
           <div class="kpi-card">
@@ -680,6 +615,121 @@
             <li><code>--capital &lt;FLOAT&gt;</code>: 初始回测账户本金</li>
             <li><code>--export &lt;PATH.json&gt;</code>: 自动将回测结果导出为 JSON 文件</li>
           </ul>
+        </div>
+      </div>
+    <!-- Modal: Quick Settings Drawer (侧边抽屉快速调参) -->
+    <div id="quick-drawer-modal" class="quick-drawer-backdrop hidden">
+      <div class="quick-drawer-panel">
+        <div class="quick-drawer-header">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);">⚡ 动量因子权重与风控快速微调</span>
+            <span class="badge-blue" style="font-size: 10px; padding: 2px 6px;">Quick Tweak</span>
+          </div>
+          <button id="btn-close-quick-drawer" style="background: transparent; border: none; font-size: 20px; line-height: 1; cursor: pointer; color: var(--text-muted);">&times;</button>
+        </div>
+        <div class="quick-drawer-body">
+          <div style="background: #f8fafc; padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); font-size: 11px; color: var(--text-secondary);">
+            💡 在此快速调整参数并点击“应用并运行回测”将立即刷新下方图表与 IC 因子诊断；如需保存方案或切换机构预设，请访问 <a href="settings.html" style="color: #0052cc; font-weight: 600;">独立配置中心</a>。
+          </div>
+
+          <!-- Account Settings in Drawer -->
+          <div class="param-card">
+            <h4 style="font-size: 12.5px; font-weight: 700; margin: 0 0 10px 0; color: var(--text-primary);">交易账户与费率</h4>
+            <div class="form-group" style="margin-bottom: 8px;">
+              <label for="initial-capital" style="font-size: 11px;">初始资金 (USD)</label>
+              <input type="number" id="initial-capital" value="100000" step="5000" style="width: 100%;">
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="commission-rate" style="font-size: 11px;">手续费率 (%)</label>
+                <input type="number" id="commission-rate" value="0.05" step="0.01">
+              </div>
+              <div class="form-group">
+                <label for="slippage-rate" style="font-size: 11px;">滑点比例 (%)</label>
+                <input type="number" id="slippage-rate" value="0.05" step="0.01">
+              </div>
+            </div>
+          </div>
+
+          <!-- 5 Pillars Sliders in Drawer -->
+          <div class="param-card">
+            <h4 style="font-size: 12.5px; font-weight: 700; margin: 0 0 10px 0; color: var(--text-primary);">动量 5 大支柱权重</h4>
+            
+            <div class="form-group" style="margin-bottom: 12px;">
+              <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
+                <label for="param-w-mom-12-1">12M-1M 经典截面动量</label>
+                <span id="w-mom-12-1-val" style="font-family: var(--font-mono); font-weight: 700; color: #0052cc;">30%</span>
+              </div>
+              <input type="range" id="param-w-mom-12-1" min="0.00" max="0.80" step="0.05" value="0.30" style="width: 100%;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 12px;">
+              <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
+                <label for="param-w-risk-adj">特质波动率风险调整</label>
+                <span id="w-risk-adj-val" style="font-family: var(--font-mono); font-weight: 700; color: #0ea5e9;">25%</span>
+              </div>
+              <input type="range" id="param-w-risk-adj" min="0.00" max="0.80" step="0.05" value="0.25" style="width: 100%;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 12px;">
+              <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
+                <label for="param-w-residual">Beta 中性化残差 Alpha</label>
+                <span id="w-residual-val" style="font-family: var(--font-mono); font-weight: 700; color: #6366f1;">20%</span>
+              </div>
+              <input type="range" id="param-w-residual" min="0.00" max="0.80" step="0.05" value="0.20" style="width: 100%;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 12px;">
+              <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
+                <label for="param-w-trend-qual">动量路径平滑度 (R²)</label>
+                <span id="w-trend-qual-val" style="font-family: var(--font-mono); font-weight: 700; color: #f59e0b;">15%</span>
+              </div>
+              <input type="range" id="param-w-trend-qual" min="0.00" max="0.60" step="0.05" value="0.15" style="width: 100%;">
+            </div>
+
+            <div class="form-group">
+              <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
+                <label for="param-w-vol-confirm">量价放量协同动量</label>
+                <span id="w-vol-confirm-val" style="font-family: var(--font-mono); font-weight: 700; color: #8b5cf6;">10%</span>
+              </div>
+              <input type="range" id="param-w-vol-confirm" min="0.00" max="0.60" step="0.05" value="0.10" style="width: 100%;">
+            </div>
+          </div>
+
+          <!-- Vol Target & Thresholds -->
+          <div class="param-card">
+            <h4 style="font-size: 12.5px; font-weight: 700; margin: 0 0 10px 0; color: var(--text-primary);">动态波控与阈值</h4>
+            <div class="checkbox-group" style="margin-bottom: 8px;">
+              <label class="checkbox-label" style="font-size: 11.5px; font-weight: 600;">
+                <input type="checkbox" id="param-use-vol-target" checked>
+                <span>动态波动率目标管理</span>
+              </label>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="param-target-vol" style="font-size: 11px;">目标年化波 (%)</label>
+                <input type="number" id="param-target-vol" value="15" min="5" max="50">
+              </div>
+              <div class="form-group">
+                <label for="param-z-win" style="font-size: 11px;">Z-Score窗口 (日)</label>
+                <input type="number" id="param-z-win" value="30" min="10" max="100">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="param-alpha-th" style="font-size: 11px;">开仓 Alpha 阈值</label>
+                <input type="number" id="param-alpha-th" value="0.30" min="0.10" max="1.50" step="0.05">
+              </div>
+              <div class="form-group">
+                <label for="param-exit-th" style="font-size: 11px;">平仓 Alpha 阈值</label>
+                <input type="number" id="param-exit-th" value="-0.20" min="-1.50" max="0.0" step="0.05">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="quick-drawer-footer">
+          <a href="settings.html" style="font-size: 12px; font-weight: 600; color: #0052cc; text-decoration: none;">⚙️ 进入独立设置中心 &rarr;</a>
+          <button id="btn-drawer-apply-backtest" class="btn-primary-action" style="padding: 6px 14px; font-size: 12px;">应用并运行回测</button>
         </div>
       </div>
     </div>
