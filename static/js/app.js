@@ -1,0 +1,814 @@
+/**
+ * AlphaQuant Web Application Logic & State Controller
+ */
+
+// Application State
+const state = {
+  ticker: 'AAPL',
+  period: '1y',
+  strategy: 'momentum',
+  capital: 100000,
+  stockData: null,
+  backtestResult: null,
+  comparisonResult: null,
+  isLoading: false
+};
+
+// Chart Instances
+let klineChart = null;
+let equityChart = null;
+let compareEquityChart = null;
+let icChart = null;
+
+// Initialize Application
+document.addEventListener('DOMContentLoaded', () => {
+  const page = document.body.dataset.page;
+  if (page) state.strategy = page;
+  initCharts();
+  initEventHandlers();
+  loadPresets();
+  runAnalysis();
+});
+
+function initCharts() {
+  klineChart = new CandlestickChart('kline-canvas', 'kline-tooltip-bar');
+  equityChart = new EquityChart('equity-canvas', 'equity-tooltip-bar');
+  compareEquityChart = new MultiEquityChart('compare-equity-canvas');
+  if (document.getElementById('ic-canvas')) {
+    icChart = new RollingICChart('ic-canvas');
+  }
+}
+
+function initEventHandlers() {
+  // Strategy Tab Switching
+  document.querySelectorAll('.strat-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const strat = tab.dataset.strat;
+      switchStrategy(strat);
+    });
+  });
+
+  // Period Selector Buttons
+  document.querySelectorAll('.period-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.period = btn.dataset.period;
+      runAnalysis();
+    });
+  });
+
+  // Ticker Search
+  const searchInput = document.getElementById('custom-ticker-input');
+  const searchBtn = document.getElementById('search-ticker-btn');
+
+  const executeSearch = () => {
+    const val = searchInput.value.trim().toUpperCase();
+    if (val && val !== state.ticker) {
+      state.ticker = val;
+      updateTickerDisplay();
+      runAnalysis();
+    }
+  };
+
+  searchBtn.addEventListener('click', executeSearch);
+  searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') executeSearch();
+  });
+
+  // Run Backtest Button
+  document.getElementById('run-backtest-btn').addEventListener('click', () => {
+    runAnalysis();
+  });
+
+  // ML Train Ratio Slider
+  const splitSlider = document.getElementById('param-ml-split');
+  const splitValDisplay = document.getElementById('train-ratio-val');
+  if (splitSlider && splitValDisplay) {
+    splitSlider.addEventListener('input', (e) => {
+      splitValDisplay.textContent = `${Math.round(e.target.value * 100)}%`;
+    });
+  }
+
+  // Institutional Factor Weight Sliders
+  const factorSliders = [
+    { id: 'param-w-mom-12-1', valId: 'w-mom-12-1-val' },
+    { id: 'param-w-risk-adj', valId: 'w-risk-adj-val' },
+    { id: 'param-w-residual', valId: 'w-residual-val' },
+    { id: 'param-w-trend-qual', valId: 'w-trend-qual-val' },
+    { id: 'param-w-vol-confirm', valId: 'w-vol-confirm-val' }
+  ];
+  factorSliders.forEach(item => {
+    const el = document.getElementById(item.id);
+    const valEl = document.getElementById(item.valId);
+    if (el && valEl) {
+      el.addEventListener('input', (e) => {
+        valEl.textContent = `${Math.round(e.target.value * 100)}%`;
+      });
+    }
+  });
+
+  // Reset Parameters Button
+  const resetBtn = document.getElementById('reset-params-btn');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      resetParameters();
+    });
+  }
+
+  // CLI Command Modal Handlers
+  const modal = document.getElementById('cli-modal');
+  const cliBtn = document.getElementById('cli-view-btn');
+  const closeBtn = document.getElementById('close-modal-btn');
+  const copyBtn = document.getElementById('copy-cli-btn');
+
+  if (cliBtn && modal) {
+    cliBtn.addEventListener('click', () => {
+      updateCLIPreview();
+      modal.classList.remove('hidden');
+    });
+  }
+
+  if (closeBtn && modal) {
+    closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.classList.add('hidden');
+    });
+  }
+
+  if (copyBtn) {
+    copyBtn.addEventListener('click', () => {
+      const cmd = document.getElementById('cli-command-preview').textContent;
+      navigator.clipboard.writeText(cmd).then(() => {
+        copyBtn.textContent = "已复制!";
+        setTimeout(() => copyBtn.textContent = "复制命令", 2000);
+      });
+    });
+  }
+
+  // Export CSV
+  const exportBtn = document.getElementById('export-csv-btn');
+  if (exportBtn) exportBtn.addEventListener('click', exportTradesCSV);
+}
+
+async function loadPresets() {
+  try {
+    const res = await fetch('/api/presets');
+    const json = await res.json();
+    if (json.status === 'success') {
+      const container = document.getElementById('ticker-presets');
+      container.innerHTML = '';
+      json.data.forEach(item => {
+        const chip = document.createElement('button');
+        chip.className = `ticker-chip ${item.symbol === state.ticker ? 'active' : ''}`;
+        chip.textContent = item.symbol;
+        chip.title = `${item.name} (${item.badge})`;
+        chip.addEventListener('click', () => {
+          document.querySelectorAll('.ticker-chip').forEach(c => c.classList.remove('active'));
+          chip.classList.add('active');
+          state.ticker = item.symbol;
+          updateTickerDisplay();
+          runAnalysis();
+        });
+        container.appendChild(chip);
+      });
+    }
+  } catch (err) {
+    console.error("Failed to load presets:", err);
+  }
+}
+
+function updateTickerDisplay() {
+  const display = document.getElementById('current-ticker-display');
+  if (display) display.textContent = state.ticker;
+  const klineTitle = document.getElementById('kline-chart-title');
+  if (klineTitle) klineTitle.textContent = `${state.ticker} 历史行情与交易信号标定 (Candlestick & Signals)`;
+  updateActivePresetChip();
+}
+
+function updateActivePresetChip() {
+  document.querySelectorAll('.ticker-chip').forEach(c => {
+    if (c.textContent === state.ticker) c.classList.add('active');
+    else c.classList.remove('active');
+  });
+}
+
+function switchStrategy(strat) {
+  state.strategy = strat;
+
+  // Update tabs UI
+  document.querySelectorAll('.strat-tab').forEach(t => {
+    if (t.dataset.strat === strat) t.classList.add('active');
+    else t.classList.remove('active');
+  });
+
+  // Switch parameter cards
+  const groupMomentum = document.getElementById('params-momentum');
+  const groupML = document.getElementById('params-ml');
+  const groupTurtle = document.getElementById('params-turtle');
+  const heading = document.getElementById('param-card-heading');
+
+  groupMomentum.classList.add('hidden');
+  groupML.classList.add('hidden');
+  groupTurtle.classList.add('hidden');
+
+  if (strat === 'momentum') {
+    groupMomentum.classList.remove('hidden');
+    heading.textContent = '多因子动量模型参数';
+  } else if (strat === 'ml') {
+    groupML.classList.remove('hidden');
+    heading.textContent = '机器学习预测模型参数';
+  } else if (strat === 'turtle') {
+    groupTurtle.classList.remove('hidden');
+    heading.textContent = '海龟法则与网格风控参数';
+  } else if (strat === 'compare') {
+    heading.textContent = '横向对决通用参数设定';
+  }
+
+  // Switch main views
+  const singleView = document.getElementById('single-strategy-view');
+  const compareView = document.getElementById('comparison-view');
+  const mlDiag = document.getElementById('ml-diagnostics-panel');
+
+  if (strat === 'compare') {
+    singleView.classList.add('hidden');
+    compareView.classList.remove('hidden');
+  } else {
+    singleView.classList.remove('hidden');
+    compareView.classList.add('hidden');
+    if (strat === 'ml') mlDiag.classList.remove('hidden');
+    else mlDiag.classList.add('hidden');
+  }
+
+  runAnalysis();
+}
+
+function collectBacktestParams() {
+  const capital = parseFloat(document.getElementById('initial-capital').value) || 100000;
+  const comm = parseFloat(document.getElementById('commission-rate').value) / 100 || 0.0005;
+  const slip = parseFloat(document.getElementById('slippage-rate').value) / 100 || 0.0005;
+  const sl = document.getElementById('stop-loss').value ? parseFloat(document.getElementById('stop-loss').value) : null;
+  const tp = document.getElementById('take-profit').value ? parseFloat(document.getElementById('take-profit').value) : null;
+
+  const params = {};
+  if (state.strategy === 'momentum') {
+    const w12_1 = document.getElementById('param-w-mom-12-1');
+    const wRisk = document.getElementById('param-w-risk-adj');
+    const wRes = document.getElementById('param-w-residual');
+    const wQual = document.getElementById('param-w-trend-qual');
+    const wVol = document.getElementById('param-w-vol-confirm');
+    const useVolTarget = document.getElementById('param-use-vol-target');
+    const targetVol = document.getElementById('param-target-vol');
+    const alphaTh = document.getElementById('param-alpha-th');
+    const exitTh = document.getElementById('param-exit-th');
+    const fastMa = document.getElementById('param-fast-ma');
+    const slowMa = document.getElementById('param-slow-ma');
+    const zWin = document.getElementById('param-z-win');
+
+    if (w12_1) params.w_mom_12_1 = parseFloat(w12_1.value);
+    if (wRisk) params.w_risk_adj = parseFloat(wRisk.value);
+    if (wRes) params.w_residual = parseFloat(wRes.value);
+    if (wQual) params.w_trend_qual = parseFloat(wQual.value);
+    if (wVol) params.w_vol_confirm = parseFloat(wVol.value);
+    if (useVolTarget) params.use_vol_targeting = useVolTarget.checked;
+    if (targetVol) params.target_vol_annual = parseFloat(targetVol.value) / 100.0;
+    if (alphaTh) params.alpha_threshold = parseFloat(alphaTh.value);
+    if (exitTh) params.exit_threshold = parseFloat(exitTh.value);
+    if (fastMa) params.fast_ma = parseInt(fastMa.value) || 10;
+    if (slowMa) params.slow_ma = parseInt(slowMa.value) || 30;
+    if (zWin) params.zscore_window = parseInt(zWin.value) || 30;
+
+    // Legacy fallback if elements exist on index.html
+    const rsiOverS = document.getElementById('param-rsi-oversold');
+    const rsiOverB = document.getElementById('param-rsi-overbought');
+    const useMacd = document.getElementById('param-use-macd');
+    const useBb = document.getElementById('param-use-bb');
+    if (rsiOverS) params.rsi_oversold = parseFloat(rsiOverS.value);
+    if (rsiOverB) params.rsi_overbought = parseFloat(rsiOverB.value);
+    if (useMacd) params.use_macd = useMacd.checked;
+    if (useBb) params.use_bb = useBb.checked;
+  } else if (state.strategy === 'ml') {
+    params.model_type = document.getElementById('param-ml-model') ? document.getElementById('param-ml-model').value : 'rf';
+    params.n_estimators = document.getElementById('param-ml-estimators') ? parseInt(document.getElementById('param-ml-estimators').value) || 100 : 100;
+    params.max_depth = document.getElementById('param-ml-depth') ? parseInt(document.getElementById('param-ml-depth').value) || 5 : 5;
+    params.horizon = document.getElementById('param-ml-horizon') ? parseInt(document.getElementById('param-ml-horizon').value) || 2 : 2;
+    params.prob_threshold = document.getElementById('param-ml-threshold') ? parseFloat(document.getElementById('param-ml-threshold').value) || 0.53 : 0.53;
+    params.train_ratio = document.getElementById('param-ml-split') ? parseFloat(document.getElementById('param-ml-split').value) || 0.70 : 0.70;
+  } else if (state.strategy === 'turtle') {
+    params.entry_period = document.getElementById('param-turtle-entry') ? parseInt(document.getElementById('param-turtle-entry').value) || 20 : 20;
+    params.exit_period = document.getElementById('param-turtle-exit') ? parseInt(document.getElementById('param-turtle-exit').value) || 10 : 10;
+    params.stop_loss_n = document.getElementById('param-turtle-stop') ? parseFloat(document.getElementById('param-turtle-stop').value) || 2.0 : 2.0;
+    params.atr_period = document.getElementById('param-turtle-atr') ? parseInt(document.getElementById('param-turtle-atr').value) || 20 : 20;
+  }
+
+  return {
+    ticker: state.ticker,
+    period: state.period,
+    strategy: state.strategy,
+    capital,
+    commission_rate: comm,
+    slippage_rate: slip,
+    stop_loss_pct: sl,
+    take_profit_pct: tp,
+    params
+  };
+}
+
+async function runAnalysis() {
+  if (state.isLoading) return;
+  setLoadingState(true);
+
+  try {
+    if (state.strategy === 'compare') {
+      await runComparison();
+    } else {
+      await runSingleBacktest();
+    }
+  } catch (err) {
+    console.error("Backtest error:", err);
+    showStatus(`回测发生异常: ${err.message}`, true);
+  } finally {
+    setLoadingState(false);
+  }
+}
+
+async function runSingleBacktest() {
+  showStatus(`正在拉取 ${state.ticker} 行情并计算技术指标...`);
+  
+  // 1. Fetch candlestick & indicators
+  const histRes = await fetch(`/api/stock/history?ticker=${state.ticker}&period=${state.period}`);
+  const histJson = await histRes.json();
+  if (histJson.status !== 'success') {
+    throw new Error(histJson.message || '获取股票数据失败');
+  }
+  state.stockData = histJson;
+
+  // 2. Post Backtest
+  showStatus(`执行 ${state.strategy.toUpperCase()} 量化模型运算与撮合...`);
+  const payload = collectBacktestParams();
+  const btRes = await fetch('/api/backtest', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  const btJson = await btRes.json();
+  if (btJson.status !== 'success') {
+    throw new Error(btJson.message || '回测计算失败');
+  }
+  state.backtestResult = btJson;
+
+  // 3. Render charts and stats
+  renderKPIs(btJson.metrics);
+  klineChart.setData(histJson.candles, btJson.signals);
+  equityChart.setData(btJson.equity_curve);
+  renderTradesTable(btJson.trades);
+
+  // If ML strategy, render diagnostics
+  if (state.strategy === 'ml' && btJson.meta) {
+    renderMLDiagnostics(btJson.meta);
+  }
+  // If Momentum strategy, render factor diagnostics
+  if (state.strategy === 'momentum' && btJson.meta) {
+    renderFactorDiagnostics(btJson.meta, btJson.metrics);
+  }
+
+  showStatus(`回测完成 · ${state.ticker} [${state.period}] · 交易日: ${histJson.total_bars}天`);
+}
+
+async function runComparison() {
+  showStatus(`正在对 ${state.ticker} 同时运行三大策略对比测试...`);
+  const capital = parseFloat(document.getElementById('initial-capital').value) || 100000;
+
+  const res = await fetch('/api/compare', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      ticker: state.ticker,
+      period: state.period,
+      capital: capital
+    })
+  });
+  const json = await res.json();
+  if (json.status !== 'success') throw new Error(json.message);
+
+  state.comparisonResult = json.results;
+  renderComparisonCards(json.results);
+  renderComparisonMatrixTable(json.results);
+
+  // Overlay Equity Curves
+  const colors = {
+    momentum: '#f59e0b',
+    ml: '#00f2fe',
+    turtle: '#10b981'
+  };
+
+  const seriesList = [];
+  json.results.forEach(r => {
+    seriesList.push({
+      name: r.strategy_name,
+      color: colors[r.strategy_key] || '#6366f1',
+      lineWidth: 2.2,
+      data: r.equity_curve.map(pt => ({ date: pt.date, val: pt.equity }))
+    });
+  });
+
+  // Benchmark line from first result
+  if (json.results.length > 0 && json.results[0].equity_curve.length > 0) {
+    seriesList.push({
+      name: 'Benchmark',
+      color: '#64748b',
+      lineWidth: 1.5,
+      dashed: true,
+      data: json.results[0].equity_curve.map(pt => ({ date: pt.date, val: pt.benchmark }))
+    });
+  }
+
+  compareEquityChart.setSeries(seriesList);
+  showStatus(`三大策略横向对决回测完成 · ${state.ticker}`);
+}
+
+function renderKPIs(m) {
+  if (!m) return;
+  const kpiReturn = document.getElementById('kpi-return');
+  const kpiCagr = document.getElementById('kpi-cagr');
+  const kpiBench = document.getElementById('kpi-bench-return');
+
+  if (kpiReturn) {
+    kpiReturn.textContent = `${m.total_return_pct >= 0 ? '+' : ''}${m.total_return_pct.toFixed(2)}%`;
+    kpiReturn.className = `kpi-value ${m.total_return_pct >= 0 ? 'positive' : 'negative'}`;
+  }
+  if (kpiCagr) kpiCagr.textContent = `CAGR ${m.cagr_pct >= 0 ? '+' : ''}${m.cagr_pct.toFixed(2)}%`;
+  if (kpiBench) kpiBench.textContent = `基准 (买入持有): ${m.benchmark_return_pct >= 0 ? '+' : ''}${m.benchmark_return_pct.toFixed(2)}%`;
+
+  const kpiSharpe = document.getElementById('kpi-sharpe');
+  if (kpiSharpe) kpiSharpe.textContent = m.sharpe_ratio.toFixed(2);
+  const kpiSortino = document.getElementById('kpi-sortino');
+  if (kpiSortino) kpiSortino.textContent = `Sortino ${m.sortino_ratio.toFixed(2)}`;
+  const kpiVol = document.getElementById('kpi-volatility');
+  if (kpiVol) kpiVol.textContent = `年化总波动率: ${m.annual_volatility_pct.toFixed(2)}%`;
+
+  const kpiMdd = document.getElementById('kpi-mdd');
+  if (kpiMdd) kpiMdd.textContent = `-${m.max_drawdown_pct.toFixed(2)}%`;
+  const kpiCalmar = document.getElementById('kpi-calmar');
+  if (kpiCalmar) kpiCalmar.textContent = `Calmar ${m.calmar_ratio.toFixed(2)}`;
+  const kpiAlphaBeta = document.getElementById('kpi-alpha-beta');
+  if (kpiAlphaBeta) kpiAlphaBeta.textContent = `Alpha: ${m.alpha_pct >= 0 ? '+' : ''}${m.alpha_pct.toFixed(2)}% · Beta: ${m.beta.toFixed(2)}`;
+
+  const kpiWin = document.getElementById('kpi-winrate');
+  if (kpiWin) kpiWin.textContent = `${m.win_rate_pct.toFixed(1)}%`;
+  const kpiPf = document.getElementById('kpi-profit-factor');
+  if (kpiPf) kpiPf.textContent = `盈亏比 ${m.profit_factor.toFixed(2)}`;
+  const kpiTrades = document.getElementById('kpi-trades-count');
+  if (kpiTrades) kpiTrades.textContent = `总交易: ${m.total_trades} 笔 (胜 ${m.winning_trades} / 负 ${m.losing_trades})`;
+}
+
+function renderFactorDiagnostics(meta, metrics) {
+  if (!meta) return;
+
+  // 1. Rolling IC Canvas
+  if (icChart && meta.recent_rolling_ic) {
+    icChart.setData(meta.recent_rolling_ic, meta.overall_ic || 0.0);
+  }
+
+  // 2. KPI Cards
+  const kpiIc = document.getElementById('kpi-ic');
+  if (kpiIc && meta.overall_ic !== undefined) {
+    const icVal = meta.overall_ic;
+    kpiIc.textContent = `${icVal >= 0 ? '+' : ''}${icVal.toFixed(3)}`;
+    kpiIc.style.color = icVal >= 0 ? '#00f2fe' : '#f43f5e';
+  }
+  const kpiIr = document.getElementById('kpi-ir');
+  if (kpiIr && meta.factor_ir !== undefined) {
+    kpiIr.textContent = `IR: ${meta.factor_ir >= 0 ? '+' : ''}${meta.factor_ir.toFixed(2)}`;
+  }
+  const kpiTstat = document.getElementById('kpi-tstat');
+  if (kpiTstat && meta.ic_t_stat !== undefined) {
+    kpiTstat.textContent = `t-统计量: ${meta.ic_t_stat} | IC均值: ${meta.ic_mean >= 0 ? '+' : ''}${meta.ic_mean}`;
+  }
+  const kpiGkVol = document.getElementById('kpi-gk-vol');
+  if (kpiGkVol && meta.avg_gk_vol !== undefined) {
+    kpiGkVol.textContent = `GK日内年化波动: ${meta.avg_gk_vol}%`;
+  }
+  const kpiVar = document.getElementById('kpi-var');
+  const kpiCvar = document.getElementById('kpi-cvar');
+  if (meta.risk_measures) {
+    if (kpiVar) kpiVar.textContent = `-${meta.risk_measures.var_95_pct}%`;
+    if (kpiCvar) kpiCvar.textContent = `CVaR -${meta.risk_measures.cvar_95_pct}%`;
+  }
+
+  // 3. Stat pills
+  const diagIcVal = document.getElementById('diag-ic-val');
+  if (diagIcVal) diagIcVal.textContent = `${meta.ic_mean >= 0 ? '+' : ''}${meta.ic_mean} / ${meta.factor_ir}`;
+
+  const diagTstat = document.getElementById('diag-tstat-val');
+  if (diagTstat) diagTstat.textContent = `${meta.ic_t_stat}`;
+
+  const diagSpread = document.getElementById('diag-spread-val');
+  if (diagSpread && meta.quintile_spread) {
+    const sp = meta.quintile_spread.spread;
+    diagSpread.textContent = `${sp >= 0 ? '+' : ''}${sp.toFixed(2)}%`;
+    diagSpread.style.color = sp >= 0 ? '#10b981' : '#f43f5e';
+  }
+
+  const diagGk = document.getElementById('diag-gk-val');
+  if (diagGk) diagGk.textContent = `${meta.avg_gk_vol}%`;
+
+  const diagVolSizing = document.getElementById('diag-vol-sizing-val');
+  if (diagVolSizing) {
+    diagVolSizing.textContent = meta.use_vol_targeting ? `动态目标 (${Math.round((meta.target_vol_annual || 0.15) * 100)}%)` : '全仓 (100%)';
+    diagVolSizing.style.color = meta.use_vol_targeting ? '#10b981' : '#94a3b8';
+  }
+
+  const diagWin = document.getElementById('diag-win-val');
+  if (diagWin && metrics) {
+    diagWin.textContent = `${metrics.win_rate_pct.toFixed(1)}%`;
+  }
+
+  // 4. Sub-factor IC breakdown bars
+  const subfactorList = document.getElementById('subfactor-bars-list');
+  if (subfactorList && meta.sub_factor_ics) {
+    subfactorList.innerHTML = '';
+    for (const [name, ic] of Object.entries(meta.sub_factor_ics)) {
+      const icVal = typeof ic === 'number' ? ic : 0.0;
+      const isPos = icVal >= 0;
+      const pctBar = Math.min(100, Math.max(8, Math.abs(icVal) * 350));
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex; align-items:center; justify-content:space-between; font-size:11px; padding:2px 0;';
+      row.innerHTML = `
+        <span style="color:#cbd5e1; width:135px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${name}</span>
+        <div style="flex:1; height:6px; background:rgba(255,255,255,0.06); border-radius:3px; margin:0 8px; position:relative; overflow:hidden;">
+          <div style="position:absolute; ${isPos ? 'left:50%' : 'right:50%'}; width:${pctBar / 2}%; height:100%; background:${isPos ? '#00f2fe' : '#f43f5e'}; border-radius:2px;"></div>
+        </div>
+        <span style="font-family:var(--font-mono); font-size:10.5px; color:${isPos ? '#00f2fe' : '#f43f5e'}; min-width:48px; text-align:right;">
+          ${isPos ? '+' : ''}${icVal.toFixed(3)}
+        </span>
+      `;
+      subfactorList.appendChild(row);
+    }
+  }
+
+  // 5. IC Decay chips
+  const decayChipsContainer = document.getElementById('ic-decay-chips');
+  if (decayChipsContainer && meta.ic_decay) {
+    decayChipsContainer.innerHTML = '';
+    for (const [horizon, ic] of Object.entries(meta.ic_decay)) {
+      const icVal = typeof ic === 'number' ? ic : 0.0;
+      const isPos = icVal >= 0;
+      const chip = document.createElement('div');
+      chip.style.cssText = `
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid ${isPos ? 'rgba(0, 242, 254, 0.3)' : 'rgba(244, 63, 94, 0.3)'};
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 10.5px;
+        font-family: var(--font-mono);
+        color: ${isPos ? '#00f2fe' : '#f43f5e'};
+      `;
+      chip.innerHTML = `<span style="color:#94a3b8">${horizon}:</span> ${isPos ? '+' : ''}${icVal.toFixed(3)}`;
+      decayChipsContainer.appendChild(chip);
+    }
+  }
+}
+
+function renderMLDiagnostics(meta) {
+  const container = document.getElementById('feature-importance-bars');
+  const tagsContainer = document.getElementById('ml-meta-tags');
+  if (!container || !meta) return;
+
+  tagsContainer.innerHTML = `
+    <span class="ml-tag">模型: ${meta.model_type}</span>
+    <span class="ml-tag">训练样本: ${meta.train_samples}</span>
+    <span class="ml-tag">测试样本: ${meta.test_samples}</span>
+  `;
+
+  document.getElementById('ml-acc-val').textContent = `${meta.accuracy}%`;
+  document.getElementById('ml-prec-val').textContent = `${meta.precision}%`;
+  document.getElementById('ml-rec-val').textContent = `${meta.recall}%`;
+
+  container.innerHTML = '';
+  const features = meta.feature_importances || [];
+  const maxImp = features.length > 0 ? features[0].importance : 1;
+
+  features.slice(0, 6).forEach(f => {
+    const pct = ((f.importance / maxImp) * 100).toFixed(1);
+    const item = document.createElement('div');
+    item.className = 'feature-bar-item';
+    item.innerHTML = `
+      <div class="feature-meta">
+        <span>${f.feature}</span>
+        <span>${(f.importance * 100).toFixed(2)}%</span>
+      </div>
+      <div class="feature-track">
+        <div class="feature-fill" style="width: ${pct}%"></div>
+      </div>
+    `;
+    container.appendChild(item);
+  });
+}
+
+function renderTradesTable(trades) {
+  const tbody = document.getElementById('trades-table-body');
+  if (!tbody) return;
+
+  if (!trades || trades.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="11" class="empty-state">当前参数区间内无触发交易订单</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = trades.slice().reverse().map(t => {
+    const isWin = t.pnl >= 0;
+    const pnlColor = isWin ? '#10b981' : '#f43f5e';
+    const reasonMap = {
+      'SIGNAL_SELL': '信号死叉离场',
+      'STOP_LOSS': '止损线触发平仓',
+      'TAKE_PROFIT': '止盈线触发平仓',
+      'END_OF_PERIOD': '回测期末清仓'
+    };
+    const reasonText = reasonMap[t.exit_reason] || t.exit_reason;
+
+    return `
+      <tr>
+        <td>#${t.trade_id}</td>
+        <td><span class="tag-badge long">LONG</span></td>
+        <td>${t.entry_date}</td>
+        <td>$${t.entry_price.toFixed(2)}</td>
+        <td>${t.exit_date}</td>
+        <td>$${t.exit_price.toFixed(2)}</td>
+        <td>${t.shares.toLocaleString()}</td>
+        <td>${t.holding_days} 天</td>
+        <td style="color:${pnlColor}">$${t.pnl >= 0 ? '+' : ''}${t.pnl.toFixed(2)}</td>
+        <td style="color:${pnlColor}">${t.pnl_pct >= 0 ? '+' : ''}${t.pnl_pct.toFixed(2)}%</td>
+        <td><span class="tag-reason">${reasonText}</span></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function renderComparisonCards(results) {
+  const container = document.getElementById('comparison-cards-grid');
+  if (!container || !results) return;
+
+  container.innerHTML = '';
+  results.forEach(r => {
+    const m = r.metrics;
+    const card = document.createElement('div');
+    card.className = `comp-card ${m.total_return_pct > 20 ? 'highlight' : ''}`;
+    card.innerHTML = `
+      <div class="comp-card-badge">${r.strategy_key.toUpperCase()}</div>
+      <h4 class="comp-title">${r.strategy_name}</h4>
+      <div class="comp-stat-grid">
+        <div class="comp-stat-item">
+          <span class="cs-label">累计收益率</span>
+          <span class="cs-val" style="color:${m.total_return_pct >= 0 ? '#10b981' : '#f43f5e'}">
+            ${m.total_return_pct >= 0 ? '+' : ''}${m.total_return_pct.toFixed(2)}%
+          </span>
+        </div>
+        <div class="comp-stat-item">
+          <span class="cs-label">夏普比率 (Sharpe)</span>
+          <span class="cs-val" style="color:#00f2fe">${m.sharpe_ratio.toFixed(2)}</span>
+        </div>
+        <div class="comp-stat-item">
+          <span class="cs-label">最大回撤 (MDD)</span>
+          <span class="cs-val" style="color:#f43f5e">-${m.max_drawdown_pct.toFixed(2)}%</span>
+        </div>
+        <div class="comp-stat-item">
+          <span class="cs-label">交易胜率 / 交易笔数</span>
+          <span class="cs-val">${m.win_rate_pct.toFixed(1)}% / ${m.total_trades}笔</span>
+        </div>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function renderComparisonMatrixTable(results) {
+  const tbody = document.getElementById('comparison-matrix-body');
+  if (!tbody || !results) return;
+
+  tbody.innerHTML = results.map(r => {
+    const m = r.metrics;
+    const isPos = m.total_return_pct >= 0;
+    return `
+      <tr>
+        <td style="font-weight:700; color:#fff">${r.strategy_name}</td>
+        <td style="color:${isPos ? '#10b981' : '#f43f5e'}">${isPos ? '+' : ''}${m.total_return_pct.toFixed(2)}%</td>
+        <td>${m.cagr_pct >= 0 ? '+' : ''}${m.cagr_pct.toFixed(2)}%</td>
+        <td style="color:#00f2fe">${m.sharpe_ratio.toFixed(2)}</td>
+        <td>${m.sortino_ratio.toFixed(2)}</td>
+        <td style="color:#f43f5e">-${m.max_drawdown_pct.toFixed(2)}%</td>
+        <td>${m.win_rate_pct.toFixed(1)}%</td>
+        <td>${m.profit_factor.toFixed(2)}</td>
+        <td>${m.total_trades}</td>
+        <td style="color:${m.alpha_pct >= 0 ? '#10b981' : '#f43f5e'}">${m.alpha_pct >= 0 ? '+' : ''}${m.alpha_pct.toFixed(2)}%</td>
+        <td>${m.beta.toFixed(2)}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function exportTradesCSV() {
+  if (!state.backtestResult || !state.backtestResult.trades || state.backtestResult.trades.length === 0) {
+    alert("暂无可导出的交易记录");
+    return;
+  }
+  const trades = state.backtestResult.trades;
+  const headers = ["Trade_ID", "Type", "Entry_Date", "Entry_Price", "Exit_Date", "Exit_Price", "Shares", "Holding_Days", "PnL", "PnL_Pct", "Exit_Reason"];
+  const rows = trades.map(t => [
+    t.trade_id,
+    t.type,
+    t.entry_date,
+    t.entry_price,
+    t.exit_date,
+    t.exit_price,
+    t.shares,
+    t.holding_days,
+    t.pnl,
+    t.pnl_pct,
+    t.exit_reason
+  ]);
+
+  const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", `trades_${state.ticker}_${state.strategy}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function updateCLIPreview() {
+  const stratArg = state.strategy === 'compare' ? 'all' : state.strategy;
+  const cmd = `python backtest_cli.py --ticker ${state.ticker} --strategy ${stratArg} --period ${state.period} --capital ${state.capital}`;
+  const el = document.getElementById('cli-command-preview');
+  if (el) el.textContent = cmd;
+}
+
+function resetParameters() {
+  const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+  const setCheck = (id, checked) => { const el = document.getElementById(id); if (el) el.checked = checked; };
+  const setText = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+
+  setVal('initial-capital', '100000');
+  setVal('commission-rate', '0.05');
+  setVal('slippage-rate', '0.05');
+  setVal('stop-loss', '');
+  setVal('take-profit', '');
+
+  // Institutional Momentum sliders
+  setVal('param-w-mom-12-1', '0.30'); setText('w-mom-12-1-val', '30%');
+  setVal('param-w-risk-adj', '0.25'); setText('w-risk-adj-val', '25%');
+  setVal('param-w-residual', '0.20'); setText('w-residual-val', '20%');
+  setVal('param-w-trend-qual', '0.15'); setText('w-trend-qual-val', '15%');
+  setVal('param-w-vol-confirm', '0.10'); setText('w-vol-confirm-val', '10%');
+  setCheck('param-use-vol-target', true);
+  setVal('param-target-vol', '15');
+  setVal('param-alpha-th', '0.30');
+  setVal('param-exit-th', '-0.20');
+
+  setVal('param-fast-ma', '10');
+  setVal('param-slow-ma', '30');
+  setVal('param-z-win', '30');
+  setVal('param-rsi-oversold', '35');
+  setVal('param-rsi-overbought', '70');
+  setCheck('param-use-macd', true);
+  setCheck('param-use-bb', true);
+
+  setVal('param-ml-model', 'rf');
+  setVal('param-ml-estimators', '100');
+  setVal('param-ml-depth', '5');
+  setVal('param-ml-horizon', '2');
+  setVal('param-ml-threshold', '0.53');
+  setVal('param-ml-split', '0.70');
+  setText('train-ratio-val', '70%');
+
+  setVal('param-turtle-entry', '20');
+  setVal('param-turtle-exit', '10');
+  setVal('param-turtle-stop', '2.0');
+  setVal('param-turtle-atr', '20');
+
+  runAnalysis();
+}
+
+function setLoadingState(isLoading) {
+  state.isLoading = isLoading;
+  const btn = document.getElementById('run-backtest-btn');
+  if (!btn) return;
+  if (isLoading) {
+    btn.innerHTML = `<span class="btn-icon">⏳</span><span class="btn-label">回测计算中...</span>`;
+    btn.style.opacity = '0.75';
+    btn.style.pointerEvents = 'none';
+  } else {
+    btn.innerHTML = `<span class="btn-icon">⚡</span><span class="btn-label">运行回测 (Run Model)</span>`;
+    btn.style.opacity = '1';
+    btn.style.pointerEvents = 'auto';
+  }
+}
+
+function showStatus(msg, isError = false) {
+  const el = document.getElementById('status-text');
+  if (el) {
+    el.textContent = msg;
+    el.style.color = isError ? '#f43f5e' : '#94a3b8';
+  }
+}

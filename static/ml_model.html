@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>机构机器学习量化预测模型 - AlphaQuant 机构终端</title>
+  <meta name="description" content="基于Marcos López de Prado机构级净化时序交叉验证、随机森林与高频波动率因子的量化预测模型">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="ml">
+  <div class="app-layout">
+    <header class="app-header">
+      <div class="header-left">
+        <a href="/ml" class="brand-logo">
+          <div class="logo-icon">
+            <span class="pulse-ring"></span>
+            <span class="logo-symbol">AQ</span>
+          </div>
+          <div class="brand-text">
+            <h1 class="brand-title">AlphaQuant <span class="badge-pro">PRO</span></h1>
+            <span class="brand-subtitle">Institutional ML & AI Engine</span>
+          </div>
+        </a>
+
+        <!-- Dedicated Page Switcher -->
+        <nav class="nav-pages-bar">
+          <a href="/factor" class="nav-page-link">
+            <span>📊 多因子Alpha模型</span>
+            <span class="nav-page-badge badge-barra">BARRA</span>
+          </a>
+          <a href="/ml" class="nav-page-link active">
+            <span>🤖 机器学习预测</span>
+            <span class="nav-page-badge badge-ml">ML/AI</span>
+          </a>
+          <a href="/cta" class="nav-page-link">
+            <span>🐢 CTA波动率平价</span>
+            <span class="nav-page-badge badge-cta">CTA</span>
+          </a>
+          <a href="/portfolio" class="nav-page-link">
+            <span>🏛️ 多策略组合矩阵</span>
+            <span class="nav-page-badge badge-alloc">ALLOC</span>
+          </a>
+        </nav>
+
+        <div class="ticker-presets" id="ticker-presets"></div>
+      </div>
+
+      <div class="header-right">
+        <div class="search-box">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="custom-ticker-input" placeholder="输入股票代码..." autocomplete="off">
+          <button id="search-ticker-btn" class="btn-search">切换标的</button>
+        </div>
+
+        <div class="period-selector" id="period-selector">
+          <button class="period-btn" data-period="6mo">6月</button>
+          <button class="period-btn active" data-period="1y">1年</button>
+          <button class="period-btn" data-period="2y">2年</button>
+          <button class="period-btn" data-period="3y">3年</button>
+          <button class="period-btn" data-period="5y">5年</button>
+        </div>
+
+        <div class="system-status">
+          <span class="status-dot"></span>
+          <span class="status-text" id="status-text">系统就绪</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="strategy-navbar">
+      <div class="page-title-banner">
+        <h2>机构级机器学习与量化对冲预测模型 (Institutional ML Hedge Fund Engine)</h2>
+        <p>基于 Marcos López de Prado 净化时序交叉验证机制 (Purged & Embargoed CV)，集成 Garman-Klass 与 Parkinson 高频日内波动率特征，输出概率置信度下注决策</p>
+      </div>
+      <button id="run-backtest-btn" class="btn-primary-action">
+        <span class="btn-icon">🤖</span>
+        <span class="btn-label">训练并回测模型 (Train & Backtest ML)</span>
+      </button>
+    </div>
+
+    <!-- Main Workspace -->
+    <main class="main-workspace">
+      <!-- Left Sidebar: ML Hyperparameters -->
+      <aside class="control-sidebar">
+        <div class="sidebar-header">
+          <h2 class="sidebar-title">机器学习算法超参配置</h2>
+          <span class="ticker-badge" id="current-ticker-display">AAPL</span>
+        </div>
+
+        <div class="sidebar-scroll">
+          <div class="param-card">
+            <h3 class="param-card-title">交易账户基础设定</h3>
+            <div class="form-group">
+              <label for="initial-capital">初始资金 (USD)</label>
+              <div class="input-with-affix">
+                <span class="affix">$</span>
+                <input type="number" id="initial-capital" value="100000" step="5000">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="commission-rate">手续费率 (%)</label>
+                <input type="number" id="commission-rate" value="0.05" step="0.01">
+              </div>
+              <div class="form-group">
+                <label for="slippage-rate">滑点比例 (%)</label>
+                <input type="number" id="slippage-rate" value="0.05" step="0.01">
+              </div>
+            </div>
+          </div>
+
+          <!-- ML Params -->
+          <div class="param-card">
+            <h3 class="param-card-title">集成树与时序验证架构</h3>
+            <div class="form-group">
+              <label for="param-ml-model">模型算法类型</label>
+              <select id="param-ml-model" class="custom-select">
+                <option value="rf">Random Forest (随机森林决策树)</option>
+                <option value="gb">Gradient Boosting (梯度提升决策树)</option>
+              </select>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="param-ml-estimators">决策树数量 (n_estimators)</label>
+                <input type="number" id="param-ml-estimators" value="100" min="20" max="300" step="20">
+              </div>
+              <div class="form-group">
+                <label for="param-ml-depth">树深度 (max_depth)</label>
+                <input type="number" id="param-ml-depth" value="5" min="2" max="12">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="param-ml-horizon">预测窗口 (日)</label>
+                <input type="number" id="param-ml-horizon" value="3" min="1" max="10">
+              </div>
+              <div class="form-group">
+                <label for="param-ml-threshold">多头开仓概率阈值</label>
+                <input type="number" id="param-ml-threshold" value="0.54" step="0.01" min="0.50" max="0.75">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="param-ml-embargo">机构净化隔离期 (Embargo Days)</label>
+              <input type="number" id="param-ml-embargo" value="5" min="2" max="20">
+              <span class="input-hint">隔离训练集与测试集重叠，避免未来信息泄露</span>
+            </div>
+
+            <div class="form-group">
+              <label for="param-ml-split">时序训练集占比 (Train Ratio)</label>
+              <div class="range-with-val">
+                <input type="range" id="param-ml-split" min="0.50" max="0.85" step="0.05" value="0.70">
+                <span id="train-ratio-val">70%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Center Workspace -->
+      <section class="content-workspace">
+        <!-- Institutional KPI Grid -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <span class="kpi-label">机器学习策略累计收益</span>
+            <div class="kpi-value-row">
+              <span class="kpi-value positive" id="kpi-return">+0.00%</span>
+              <span class="kpi-tag" id="kpi-cagr">CAGR 0.0%</span>
+            </div>
+            <span class="kpi-subtext" id="kpi-bench-return">基准 (买入持有): +0.00%</span>
+          </div>
+
+          <div class="kpi-card">
+            <span class="kpi-label">测试集预测准确率 / ROC-AUC</span>
+            <div class="kpi-value-row">
+              <span class="kpi-value" id="kpi-acc" style="color:#00f2fe">--%</span>
+              <span class="kpi-tag" id="kpi-auc">AUC --</span>
+            </div>
+            <span class="kpi-subtext" id="kpi-brier">Brier 校准误差: --</span>
+          </div>
+
+          <div class="kpi-card">
+            <span class="kpi-label">夏普比率 / 索提诺比率</span>
+            <div class="kpi-value-row">
+              <span class="kpi-value" id="kpi-sharpe">0.00</span>
+              <span class="kpi-tag" id="kpi-sortino">Sortino 0.00</span>
+            </div>
+            <span class="kpi-subtext" id="kpi-volatility">年化总波动率: 0.00%</span>
+          </div>
+
+          <div class="kpi-card">
+            <span class="kpi-label">机构在险价值 (VaR 95% / CVaR)</span>
+            <div class="kpi-value-row">
+              <span class="kpi-value negative" id="kpi-var">-0.00%</span>
+              <span class="kpi-tag" id="kpi-cvar">CVaR -0.00%</span>
+            </div>
+            <span class="kpi-subtext" id="kpi-mdd">历史最大回撤: -0.00%</span>
+          </div>
+        </div>
+
+        <!-- Candlestick Chart -->
+        <div class="chart-container-card">
+          <div class="chart-header">
+            <div class="chart-title-group">
+              <h3 class="chart-title" id="kline-chart-title">AAPL 历史行情与机器学习预测信号标定</h3>
+              <div class="legend-row">
+                <span class="legend-item"><span class="legend-dot dot-sma20"></span>SMA 20</span>
+                <span class="legend-item"><span class="legend-dot dot-sma50"></span>SMA 50</span>
+                <span class="legend-item"><span class="legend-marker marker-buy">▲</span>高置信度多头</span>
+                <span class="legend-item"><span class="legend-marker marker-sell">▼</span>平仓离场</span>
+              </div>
+            </div>
+            <span class="cursor-price-info" id="kline-tooltip-bar">移动光标查看具体日K线行情</span>
+          </div>
+          <div class="canvas-wrapper">
+            <canvas id="kline-canvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Equity Curve Chart -->
+        <div class="chart-container-card">
+          <div class="chart-header">
+            <div class="chart-title-group">
+              <h3 class="chart-title">机器学习量化对冲净值走势 (ML Strategy Equity vs Benchmark)</h3>
+              <div class="legend-row">
+                <span class="legend-item"><span class="legend-line line-strategy"></span>机器学习净值</span>
+                <span class="legend-item"><span class="legend-line line-benchmark"></span>基准 (买入持有)</span>
+              </div>
+            </div>
+            <span class="cursor-price-info" id="equity-tooltip-bar">资金曲线追踪</span>
+          </div>
+          <div class="canvas-wrapper" style="height: 300px;">
+            <canvas id="equity-canvas"></canvas>
+          </div>
+        </div>
+
+        <!-- ML Feature Importance & Diagnostics -->
+        <div class="diagnostics-card">
+          <div class="card-inner-header">
+            <h3 class="card-inner-title">
+              <span class="ai-sparkle">✦</span> 机器学习模型诊断与特征贡献度分析 (Feature Importance Top Rankings)
+            </h3>
+            <div class="ml-meta-tags" id="ml-meta-tags"></div>
+          </div>
+          <div class="ml-diagnostics-grid">
+            <div class="feature-bar-list" id="feature-importance-bars"></div>
+            <div class="ml-explanation-box">
+              <h4>特征重要性与时序净化机制</h4>
+              <p>系统自动将 Garman-Klass 日内高频波动率、多周期收益率滞后、振荡器与成交量放大率送入决策树拟合，严格使用 Embargo 隔离避免前后重叠样本污染测试集。</p>
+              <div class="ml-stat-pills">
+                <div class="stat-pill">
+                  <span class="p-label">查准率 (Precision)</span>
+                  <span class="p-val" id="ml-prec-val">--</span>
+                </div>
+                <div class="stat-pill">
+                  <span class="p-label">查全率 (Recall)</span>
+                  <span class="p-val" id="ml-rec-val">--</span>
+                </div>
+                <div class="stat-pill">
+                  <span class="p-label">交易胜率</span>
+                  <span class="p-val" id="ml-win-val">--</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trades Log Table -->
+        <div class="trades-card">
+          <div class="trades-card-header">
+            <h3 class="trades-card-title">机器学习交易成交流水与收益明细</h3>
+            <button id="export-csv-btn" class="btn-sm">导出 CSV</button>
+          </div>
+          <div class="table-container">
+            <table class="trades-table" id="trades-table">
+              <thead>
+                <tr>
+                  <th>序号</th><th>类型</th><th>入场日期</th><th>入场价格</th><th>出场日期</th><th>出场价格</th>
+                  <th>持仓股数</th><th>持仓天数</th><th>净盈亏 ($)</th><th>收益率 (%)</th><th>出场原因</th>
+                </tr>
+              </thead>
+              <tbody id="trades-table-body">
+                <tr><td colspan="11" class="empty-state">等待执行回测获取记录...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/chart_renderer.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

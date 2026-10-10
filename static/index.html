@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AlphaQuant - 专业股票量化交易与多模型智能回测终端</title>
+  <meta name="description" content="基于多因子动量、机器学习预测与海龟法则的专业全栈股票量化交易与回测分析平台">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Top Navigation Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="brand-logo">
+          <div class="logo-icon">
+            <span class="pulse-ring"></span>
+            <span class="logo-symbol">AQ</span>
+          </div>
+          <div class="brand-text">
+            <h1 class="brand-title">AlphaQuant <span class="badge-pro">PRO</span></h1>
+            <span class="brand-subtitle">AI & Multi-Model Quantitative Terminal</span>
+          </div>
+        </div>
+
+        <!-- Preset Tickers Quick Bar -->
+        <div class="ticker-presets" id="ticker-presets">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <div class="header-right">
+        <!-- Stock Search Input -->
+        <div class="search-box">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="custom-ticker-input" placeholder="输入股票代码 (如 AAPL, NVDA)..." autocomplete="off" spellcheck="false">
+          <button id="search-ticker-btn" class="btn-search">切换标的</button>
+        </div>
+
+        <!-- Period Selector -->
+        <div class="period-selector" id="period-selector">
+          <button class="period-btn" data-period="6mo">6月</button>
+          <button class="period-btn active" data-period="1y">1年</button>
+          <button class="period-btn" data-period="2y">2年</button>
+          <button class="period-btn" data-period="3y">3年</button>
+          <button class="period-btn" data-period="5y">5年</button>
+        </div>
+
+        <div class="system-status">
+          <span class="status-dot"></span>
+          <span class="status-text" id="status-text">系统就绪</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Strategy Selection Navigation Tabs -->
+    <nav class="strategy-navbar">
+      <div class="strategy-tabs" id="strategy-tabs">
+        <button class="strat-tab active" data-strat="momentum">
+          <span class="tab-icon">📊</span>
+          <div class="tab-content">
+            <span class="tab-title">机构多因子动量策略 (Barra/AQR)</span>
+            <span class="tab-desc">12M-1M中长动量 · 波动率风险调整 · Beta残差中性化 · 路径平滑质量</span>
+          </div>
+        </button>
+        <button class="strat-tab" data-strat="ml">
+          <span class="tab-icon">🤖</span>
+          <div class="tab-content">
+            <span class="tab-title">机器学习预测模型</span>
+            <span class="tab-desc">随机森林 / 梯度提升树 · 时序特征工程 · 概率置信过滤</span>
+          </div>
+        </button>
+        <button class="strat-tab" data-strat="turtle">
+          <span class="tab-icon">🐢</span>
+          <div class="tab-content">
+            <span class="tab-title">海龟法则与动态网格</span>
+            <span class="tab-desc">唐奇安20日突破 · ATR(N)风险头寸 · 2N动态移动止损</span>
+          </div>
+        </button>
+        <button class="strat-tab" data-strat="compare">
+          <span class="tab-icon">⚔️</span>
+          <div class="tab-content">
+            <span class="tab-title">三大策略横向对决</span>
+            <span class="tab-desc">同周期回测对比 · 夏普比率 / 最大回撤 / 收益曲线叠图</span>
+          </div>
+        </button>
+      </div>
+
+      <div class="action-bar-right">
+        <button id="run-backtest-btn" class="btn-primary-action">
+          <span class="btn-icon">⚡</span>
+          <span class="btn-label">运行回测 (Run Model)</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Main Workspace Grid -->
+    <main class="main-workspace">
+      <!-- Left Sidebar: Parameters & Sizing Controls -->
+      <aside class="control-sidebar">
+        <div class="sidebar-header">
+          <h2 class="sidebar-title">
+            <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            策略参数与资金管理
+          </h2>
+          <span class="ticker-badge" id="current-ticker-display">AAPL</span>
+        </div>
+
+        <div class="sidebar-scroll">
+          <!-- Capital & Cost Settings -->
+          <div class="param-card">
+            <h3 class="param-card-title">交易账户与风控设定</h3>
+            
+            <div class="form-group">
+              <label for="initial-capital">初始资金 (USD)</label>
+              <div class="input-with-affix">
+                <span class="affix">$</span>
+                <input type="number" id="initial-capital" value="100000" step="5000" min="1000">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="commission-rate">交易手续费 (%)</label>
+                <input type="number" id="commission-rate" value="0.05" step="0.01" min="0">
+              </div>
+              <div class="form-group">
+                <label for="slippage-rate">滑点比例 (%)</label>
+                <input type="number" id="slippage-rate" value="0.05" step="0.01" min="0">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="stop-loss">止损阀值 (%)</label>
+                <input type="number" id="stop-loss" placeholder="可选 (如 5)" step="0.5" min="0">
+              </div>
+              <div class="form-group">
+                <label for="take-profit">止盈阀值 (%)</label>
+                <input type="number" id="take-profit" placeholder="可选 (如 15)" step="0.5" min="0">
+              </div>
+            </div>
+          </div>
+
+          <!-- Strategy-Specific Dynamic Form -->
+          <div class="param-card" id="strategy-params-card">
+            <h3 class="param-card-title" id="param-card-heading">多因子动量模型参数</h3>
+            
+            <!-- Momentum Params -->
+            <div id="params-momentum" class="strat-param-group">
+              <div class="form-group">
+                <label for="param-w-mom-12-1">12M-1M 经典截面动量 (Jegadeesh & Titman)</label>
+                <div class="range-with-val">
+                  <input type="range" id="param-w-mom-12-1" min="0.05" max="0.70" step="0.05" value="0.30">
+                  <span id="w-mom-12-1-val">30%</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="param-w-risk-adj">特质波动率风险调整 (Low-Vol Sizing)</label>
+                <div class="range-with-val">
+                  <input type="range" id="param-w-risk-adj" min="0.05" max="0.60" step="0.05" value="0.25">
+                  <span id="w-risk-adj-val">25%</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="param-w-residual">Beta 中性化残差动量 (Residual Alpha)</label>
+                <div class="range-with-val">
+                  <input type="range" id="param-w-residual" min="0.05" max="0.60" step="0.05" value="0.20">
+                  <span id="w-residual-val">20%</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="param-w-trend-qual">动量路径平滑度 (Frog-in-the-Pan R²)</label>
+                <div class="range-with-val">
+                  <input type="range" id="param-w-trend-qual" min="0.05" max="0.50" step="0.05" value="0.15">
+                  <span id="w-trend-qual-val">15%</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="param-w-vol-confirm">量价协同动量 (Volume-Confirmed)</label>
+                <div class="range-with-val">
+                  <input type="range" id="param-w-vol-confirm" min="0.00" max="0.40" step="0.05" value="0.10">
+                  <span id="w-vol-confirm-val">10%</span>
+                </div>
+              </div>
+
+              <div class="checkbox-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="param-use-vol-target" checked>
+                  <span>启用动态波动率目标仓位管理 (Volatility Targeting)</span>
+                </label>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="param-fast-ma">快线均线周期 (EMA)</label>
+                  <input type="number" id="param-fast-ma" value="10" min="2" max="50">
+                </div>
+                <div class="form-group">
+                  <label for="param-slow-ma">慢线均线周期 (EMA)</label>
+                  <input type="number" id="param-slow-ma" value="30" min="10" max="200">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="param-alpha-th">开仓 Alpha 阈值</label>
+                  <input type="number" id="param-alpha-th" value="0.30" min="0.10" max="1.50" step="0.05">
+                </div>
+                <div class="form-group">
+                  <label for="param-exit-th">平仓 Alpha 阈值</label>
+                  <input type="number" id="param-exit-th" value="-0.20" min="-1.50" max="0.0" step="0.05">
+                </div>
+              </div>
+            </div>
+
+            <!-- ML Params -->
+            <div id="params-ml" class="strat-param-group hidden">
+              <div class="form-group">
+                <label for="param-ml-model">算法模型引擎</label>
+                <select id="param-ml-model" class="custom-select">
+                  <option value="rf">Random Forest (随机森林决策树)</option>
+                  <option value="gb">Gradient Boosting (梯度提升决策树)</option>
+                </select>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="param-ml-estimators">决策树数量 (n_estimators)</label>
+                  <input type="number" id="param-ml-estimators" value="100" min="20" max="300" step="20">
+                </div>
+                <div class="form-group">
+                  <label for="param-ml-depth">树最大深度 (max_depth)</label>
+                  <input type="number" id="param-ml-depth" value="5" min="2" max="15">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="param-ml-horizon">预测周期窗口 (日)</label>
+                  <input type="number" id="param-ml-horizon" value="2" min="1" max="10">
+                </div>
+                <div class="form-group">
+                  <label for="param-ml-threshold">多头置信度阈值</label>
+                  <input type="number" id="param-ml-threshold" value="0.53" step="0.01" min="0.50" max="0.75">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="param-ml-split">时序训练集占比 (Train Ratio)</label>
+                <div class="range-with-val">
+                  <input type="range" id="param-ml-split" min="0.50" max="0.85" step="0.05" value="0.70">
+                  <span id="train-ratio-val">70%</span>
+                </div>
+                <span class="input-hint">严格按时间序列前向划分，杜绝未来函数</span>
+              </div>
+            </div>
+
+            <!-- Turtle Params -->
+            <div id="params-turtle" class="strat-param-group hidden">
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="param-turtle-entry">唐奇安突破周期 (入场)</label>
+                  <input type="number" id="param-turtle-entry" value="20" min="5" max="60">
+                </div>
+                <div class="form-group">
+                  <label for="param-turtle-exit">唐奇安离场周期 (出场)</label>
+                  <input type="number" id="param-turtle-exit" value="10" min="3" max="30">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="param-turtle-stop">动态止损 N 倍数</label>
+                  <input type="number" id="param-turtle-stop" value="2.0" step="0.5" min="1.0" max="4.0">
+                </div>
+                <div class="form-group">
+                  <label for="param-turtle-atr">ATR(N) 计算周期</label>
+                  <input type="number" id="param-turtle-atr" value="20" min="5" max="50">
+                </div>
+              </div>
+
+              <div class="info-alert">
+                <strong>海龟法则纪律：</strong>顺应突破趋势进场，利用真实波幅 ATR(N) 计算仓位上限，严格执行 2N 追踪止损。
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Action Buttons -->
+          <div class="sidebar-actions">
+            <button id="reset-params-btn" class="btn-secondary">恢复默认参数</button>
+            <button id="cli-view-btn" class="btn-secondary">终端命令行运行命令</button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Center Workspace: Charts & Analytics Dashboard -->
+      <section class="content-workspace">
+        <!-- Top Metrics KPI Cards Banner -->
+        <div class="kpi-grid" id="kpi-grid">
+          <div class="kpi-card">
+            <span class="kpi-label">策略累计收益率</span>
+            <div class="kpi-value-row">
+              <span class="kpi-value positive" id="kpi-return">+0.00%</span>
+              <span class="kpi-tag" id="kpi-cagr">CAGR 0.0%</span>
+            </div>
+            <span class="kpi-subtext" id="kpi-bench-return">基准 (买入持有): +0.00%</span>
+          </div>
+
+          <div class="kpi-card">
+            <span class="kpi-label">夏普比率 (Sharpe)</span>
+            <div class="kpi-value-row">
+              <span class="kpi-value" id="kpi-sharpe">0.00</span>
+              <span class="kpi-tag" id="kpi-sortino">Sortino 0.00</span>
+            </div>
+            <span class="kpi-subtext" id="kpi-volatility">年化波动率: 0.00%</span>
+          </div>
+
+          <div class="kpi-card">
+            <span class="kpi-label">最大回撤 (Max Drawdown)</span>
+            <div class="kpi-value-row">
+              <span class="kpi-value negative" id="kpi-mdd">-0.00%</span>
+              <span class="kpi-tag" id="kpi-calmar">Calmar 0.00</span>
+            </div>
+            <span class="kpi-subtext" id="kpi-alpha-beta">Alpha: +0.0% · Beta: 1.0</span>
+          </div>
+
+          <div class="kpi-card">
+            <span class="kpi-label">交易胜率 / 盈亏比</span>
+            <div class="kpi-value-row">
+              <span class="kpi-value" id="kpi-winrate">0.0%</span>
+              <span class="kpi-tag" id="kpi-profit-factor">盈亏比 0.00</span>
+            </div>
+            <span class="kpi-subtext" id="kpi-trades-count">总交易: 0 笔 (胜 0 / 负 0)</span>
+          </div>
+        </div>
+
+        <!-- Single Strategy View (Candlestick + Equity Curve) -->
+        <div id="single-strategy-view" class="view-panel active">
+          <!-- Chart 1: Candlestick & Technical Indicators -->
+          <div class="chart-container-card">
+            <div class="chart-header">
+              <div class="chart-title-group">
+                <h3 class="chart-title" id="kline-chart-title">AAPL 历史行情与交易信号标定 (Candlestick & Signals)</h3>
+                <div class="legend-row">
+                  <span class="legend-item"><span class="legend-dot dot-sma20"></span>SMA 20</span>
+                  <span class="legend-item"><span class="legend-dot dot-sma50"></span>SMA 50</span>
+                  <span class="legend-item"><span class="legend-dot dot-bb"></span>Bollinger</span>
+                  <span class="legend-item"><span class="legend-marker marker-buy">▲</span>买入信号</span>
+                  <span class="legend-item"><span class="legend-marker marker-sell">▼</span>卖出平仓</span>
+                </div>
+              </div>
+              <div class="chart-tools">
+                <span class="cursor-price-info" id="kline-tooltip-bar">移动光标查看具体日K线行情</span>
+              </div>
+            </div>
+            <div class="canvas-wrapper" id="kline-wrapper">
+              <canvas id="kline-canvas"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 2: Equity Growth & Drawdown Analysis -->
+          <div class="chart-container-card">
+            <div class="chart-header">
+              <div class="chart-title-group">
+                <h3 class="chart-title">策略净值曲线对比 (Strategy Equity vs Buy & Hold Benchmark)</h3>
+                <div class="legend-row">
+                  <span class="legend-item"><span class="legend-line line-strategy"></span>量化策略净值</span>
+                  <span class="legend-item"><span class="legend-line line-benchmark"></span>基准(买入持有)</span>
+                  <span class="legend-item"><span class="legend-area area-drawdown"></span>动态回撤深度</span>
+                </div>
+              </div>
+              <div class="chart-tools">
+                <span class="cursor-price-info" id="equity-tooltip-bar">资金曲线追踪</span>
+              </div>
+            </div>
+            <div class="canvas-wrapper" id="equity-wrapper">
+              <canvas id="equity-canvas"></canvas>
+            </div>
+          </div>
+
+          <!-- ML Diagnostics Sub-Panel (Visible when ML is selected) -->
+          <div id="ml-diagnostics-panel" class="diagnostics-card hidden">
+            <div class="card-inner-header">
+              <h3 class="card-inner-title">
+                <span class="ai-sparkle">✦</span> 机器学习模型诊断与特征贡献度分析 (Feature Importance)
+              </h3>
+              <div class="ml-meta-tags" id="ml-meta-tags">
+                <!-- Accuracy, Samples, etc. -->
+              </div>
+            </div>
+            <div class="ml-diagnostics-grid">
+              <div class="feature-bar-list" id="feature-importance-bars">
+                <!-- Dynamically populated bars -->
+              </div>
+              <div class="ml-explanation-box">
+                <h4>特征重要性与时序训练机制</h4>
+                <p>模型在历史特征（多周期涨跌幅滞后、RSI振荡器、MACD零轴偏离度、布林带%B、ATR波动率等）上拟合非线性决策树，自动识别对未来涨跌最具备预测力的关键技术因子。</p>
+                <div class="ml-stat-pills">
+                  <div class="stat-pill">
+                    <span class="p-label">验证集预测准确率</span>
+                    <span class="p-val" id="ml-acc-val">--</span>
+                  </div>
+                  <div class="stat-pill">
+                    <span class="p-label">查准率 (Precision)</span>
+                    <span class="p-val" id="ml-prec-val">--</span>
+                  </div>
+                  <div class="stat-pill">
+                    <span class="p-label">查全率 (Recall)</span>
+                    <span class="p-val" id="ml-rec-val">--</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Trade Execution Log Table -->
+          <div class="trades-card">
+            <div class="trades-card-header">
+              <h3 class="trades-card-title">历史交易成交明细与出场原因追踪</h3>
+              <div class="table-actions">
+                <button id="export-csv-btn" class="btn-sm">导出 CSV</button>
+              </div>
+            </div>
+            <div class="table-container">
+              <table class="trades-table" id="trades-table">
+                <thead>
+                  <tr>
+                    <th>序号</th>
+                    <th>类型</th>
+                    <th>入场日期</th>
+                    <th>入场价格</th>
+                    <th>出场日期</th>
+                    <th>出场价格</th>
+                    <th>持仓股数</th>
+                    <th>持仓天数</th>
+                    <th>净盈亏 ($)</th>
+                    <th>收益率 (%)</th>
+                    <th>出场判定原因</th>
+                  </tr>
+                </thead>
+                <tbody id="trades-table-body">
+                  <tr>
+                    <td colspan="11" class="empty-state">等待执行回测获取交易记录...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Strategy Comparison Matrix View -->
+        <div id="comparison-view" class="view-panel hidden">
+          <div class="comparison-cards-grid" id="comparison-cards-grid">
+            <!-- Dynamically populated side-by-side cards -->
+          </div>
+
+          <!-- Overlaid Equity Curve Chart for All 3 Strategies -->
+          <div class="chart-container-card">
+            <div class="chart-header">
+              <div class="chart-title-group">
+                <h3 class="chart-title">三大策略同台竞技净值曲线叠加对比 (Head-to-Head Equity Curves)</h3>
+                <div class="legend-row">
+                  <span class="legend-item"><span class="legend-line line-momentum"></span>多因子动量策略</span>
+                  <span class="legend-item"><span class="legend-line line-ml"></span>机器学习预测模型</span>
+                  <span class="legend-item"><span class="legend-line line-turtle"></span>海龟法则与网格</span>
+                  <span class="legend-item"><span class="legend-line line-benchmark"></span>基准 (SPY/买入持有)</span>
+                </div>
+              </div>
+            </div>
+            <div class="canvas-wrapper" id="compare-equity-wrapper">
+              <canvas id="compare-equity-canvas"></canvas>
+            </div>
+          </div>
+
+          <!-- Comparison Table -->
+          <div class="trades-card">
+            <div class="trades-card-header">
+              <h3 class="trades-card-title">三大策略全维度量化指标深度对比矩阵</h3>
+            </div>
+            <div class="table-container">
+              <table class="trades-table comparison-table" id="comparison-matrix-table">
+                <thead>
+                  <tr>
+                    <th>交易模型</th>
+                    <th>累计收益率</th>
+                    <th>年化收益率 (CAGR)</th>
+                    <th>夏普比率 (Sharpe)</th>
+                    <th>索提诺比率 (Sortino)</th>
+                    <th>最大回撤 (MDD)</th>
+                    <th>交易胜率</th>
+                    <th>盈亏比</th>
+                    <th>总交易笔数</th>
+                    <th>Alpha 超额收益</th>
+                    <th>Beta 系数</th>
+                  </tr>
+                </thead>
+                <tbody id="comparison-matrix-body">
+                  <!-- Generated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Modal: CLI Command Helper -->
+    <div id="cli-modal" class="modal-backdrop hidden">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h3>纯 Python 命令行独立运行指南</h3>
+          <button id="close-modal-btn" class="btn-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>您也可以随时在终端直接运行独立的纯 Python 量化回测框架，支持一键生成 ANSI 彩色绩效报表与导出 JSON：</p>
+          <div class="code-snippet-box">
+            <code id="cli-command-preview">python backtest_cli.py --ticker NVDA --strategy all --period 2y</code>
+            <button id="copy-cli-btn" class="btn-copy">复制命令</button>
+          </div>
+          <h4>可用命令行参数：</h4>
+          <ul>
+            <li><code>--ticker &lt;SYMBOL&gt;</code>: 股票代码（如 AAPL, NVDA, TSLA, SPY, QQQ）</li>
+            <li><code>--strategy &lt;momentum|ml|turtle|all&gt;</code>: 策略类型或三大策略同时对比</li>
+            <li><code>--period &lt;6mo|1y|2y|3y|5y&gt;</code>: 回测历史周期跨度</li>
+            <li><code>--capital &lt;FLOAT&gt;</code>: 初始回测账户本金</li>
+            <li><code>--export &lt;PATH.json&gt;</code>: 自动将回测结果导出为 JSON 文件</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/chart_renderer.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

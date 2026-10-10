@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CTA 趋势跟踪与波动率目标化模型 - AlphaQuant 机构终端</title>
+  <meta name="description" content="基于Bridgewater与Man AHL量化对冲基金风格的CTA趋势跟踪、多周期唐奇安通道与波动率目标化头寸管理模型">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="turtle">
+  <div class="app-layout">
+    <header class="app-header">
+      <div class="header-left">
+        <a href="/cta" class="brand-logo">
+          <div class="logo-icon">
+            <span class="pulse-ring"></span>
+            <span class="logo-symbol">AQ</span>
+          </div>
+          <div class="brand-text">
+            <h1 class="brand-title">AlphaQuant <span class="badge-pro">PRO</span></h1>
+            <span class="brand-subtitle">Institutional CTA & Risk Engine</span>
+          </div>
+        </a>
+
+        <!-- Dedicated Page Switcher -->
+        <nav class="nav-pages-bar">
+          <a href="/factor" class="nav-page-link">
+            <span>📊 多因子Alpha模型</span>
+            <span class="nav-page-badge badge-barra">BARRA</span>
+          </a>
+          <a href="/ml" class="nav-page-link">
+            <span>🤖 机器学习预测</span>
+            <span class="nav-page-badge badge-ml">ML/AI</span>
+          </a>
+          <a href="/cta" class="nav-page-link active">
+            <span>🐢 CTA波动率平价</span>
+            <span class="nav-page-badge badge-cta">CTA</span>
+          </a>
+          <a href="/portfolio" class="nav-page-link">
+            <span>🏛️ 多策略组合矩阵</span>
+            <span class="nav-page-badge badge-alloc">ALLOC</span>
+          </a>
+        </nav>
+
+        <div class="ticker-presets" id="ticker-presets"></div>
+      </div>
+
+      <div class="header-right">
+        <div class="search-box">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="custom-ticker-input" placeholder="输入股票代码..." autocomplete="off">
+          <button id="search-ticker-btn" class="btn-search">切换标的</button>
+        </div>
+
+        <div class="period-selector" id="period-selector">
+          <button class="period-btn" data-period="6mo">6月</button>
+          <button class="period-btn active" data-period="1y">1年</button>
+          <button class="period-btn" data-period="2y">2年</button>
+          <button class="period-btn" data-period="3y">3年</button>
+          <button class="period-btn" data-period="5y">5年</button>
+        </div>
+
+        <div class="system-status">
+          <span class="status-dot"></span>
+          <span class="status-text" id="status-text">系统就绪</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="strategy-navbar">
+      <div class="page-title-banner">
+        <h2>CTA 趋势跟踪与波动率目标化平价模型 (Institutional CTA Trend & Vol-Targeting)</h2>
+        <p>基于顶级趋势对冲基金框架，采用双周期唐奇安通道突破开仓，结合日内高频波动率目标化（Vol-Targeting）自适应调节杠杆敞口，实施严格 2N 移动追踪止损</p>
+      </div>
+      <button id="run-backtest-btn" class="btn-primary-action">
+        <span class="btn-icon">🐢</span>
+        <span class="btn-label">运行 CTA 策略 (Run CTA Vol-Targeting)</span>
+      </button>
+    </div>
+
+    <!-- Main Workspace -->
+    <main class="main-workspace">
+      <!-- Left Sidebar: CTA Parameters -->
+      <aside class="control-sidebar">
+        <div class="sidebar-header">
+          <h2 class="sidebar-title">CTA 风控与突破参数</h2>
+          <span class="ticker-badge" id="current-ticker-display">AAPL</span>
+        </div>
+
+        <div class="sidebar-scroll">
+          <div class="param-card">
+            <h3 class="param-card-title">交易账户基础设定</h3>
+            <div class="form-group">
+              <label for="initial-capital">初始资金 (USD)</label>
+              <div class="input-with-affix">
+                <span class="affix">$</span>
+                <input type="number" id="initial-capital" value="100000" step="5000">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="commission-rate">手续费率 (%)</label>
+                <input type="number" id="commission-rate" value="0.05" step="0.01">
+              </div>
+              <div class="form-group">
+                <label for="slippage-rate">滑点比例 (%)</label>
+                <input type="number" id="slippage-rate" value="0.05" step="0.01">
+              </div>
+            </div>
+          </div>
+
+          <!-- CTA Params -->
+          <div class="param-card">
+            <h3 class="param-card-title">唐奇安通道与波动率目标化</h3>
+            <div class="form-group">
+              <label for="param-turtle-system">海龟交易系统类型</label>
+              <select id="param-turtle-system" class="custom-select">
+                <option value="s1">System 1 (20日高点突破 / 10日低点平仓)</option>
+                <option value="s2">System 2 (55日高点突破 / 20日低点平仓)</option>
+              </select>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="param-turtle-vol">目标年化波动率</label>
+                <input type="number" id="param-turtle-vol" value="15" min="5" max="40" step="1">
+              </div>
+              <div class="form-group">
+                <label for="param-turtle-lev">最大头寸杠杆上限</label>
+                <input type="number" id="param-turtle-lev" value="1.2" min="0.5" max="2.0" step="0.1">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="param-turtle-stop">动态止损 N 倍数</label>
+                <input type="number" id="param-turtle-stop" value="2.0" step="0.5" min="1.0" max="4.0">
+              </div>
+              <div class="form-group">
+                <label for="param-turtle-atr">ATR(N) 周期</label>
+                <input type="number" id="param-turtle-atr" value="20" min="5" max="50">
+              </div>
+            </div>
+
+            <div class="info-alert">
+              <strong>机构波动率目标化：</strong>当市场实际波动率升高时，模型自动调低持仓头寸；当波动率收敛时自动提升利用率，保持整个生命周期内的组合风险预算恒定。
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Center Workspace -->
+      <section class="content-workspace">
+        <!-- Institutional KPI Grid -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <span class="kpi-label">CTA 策略累计收益率</span>
+            <div class="kpi-value-row">
+              <span class="kpi-value positive" id="kpi-return">+0.00%</span>
+              <span class="kpi-tag" id="kpi-cagr">CAGR 0.0%</span>
+            </div>
+            <span class="kpi-subtext" id="kpi-bench-return">基准 (买入持有): +0.00%</span>
+          </div>
+
+          <div class="kpi-card">
+            <span class="kpi-label">目标波动率 / 平均头寸杠杆</span>
+            <div class="kpi-value-row">
+              <span class="kpi-value" id="kpi-target-vol" style="color:#10b981">15.0%</span>
+              <span class="kpi-tag" id="kpi-avg-lev">杠杆 1.0x</span>
+            </div>
+            <span class="kpi-subtext" id="kpi-actual-vol">GK 实际年化波动: --%</span>
+          </div>
+
+          <div class="kpi-card">
+            <span class="kpi-label">夏普比率 / 卡玛比率 (Calmar)</span>
+            <div class="kpi-value-row">
+              <span class="kpi-value" id="kpi-sharpe">0.00</span>
+              <span class="kpi-tag" id="kpi-calmar">Calmar 0.00</span>
+            </div>
+            <span class="kpi-subtext" id="kpi-sortino">Sortino 0.00</span>
+          </div>
+
+          <div class="kpi-card">
+            <span class="kpi-label">最大回撤 / 机构 VaR (95%)</span>
+            <div class="kpi-value-row">
+              <span class="kpi-value negative" id="kpi-mdd">-0.00%</span>
+              <span class="kpi-tag" id="kpi-var">VaR -0.00%</span>
+            </div>
+            <span class="kpi-subtext" id="kpi-trades-count">总交易: 0 笔 (胜率 0%)</span>
+          </div>
+        </div>
+
+        <!-- Candlestick Chart -->
+        <div class="chart-container-card">
+          <div class="chart-header">
+            <div class="chart-title-group">
+              <h3 class="chart-title" id="kline-chart-title">AAPL 唐奇安通道突破与交易信号标定</h3>
+              <div class="legend-row">
+                <span class="legend-item"><span class="legend-dot dot-sma20"></span>Donchian Upper (突破上轨)</span>
+                <span class="legend-item"><span class="legend-dot dot-sma50"></span>Donchian Lower (离场下轨)</span>
+                <span class="legend-item"><span class="legend-marker marker-buy">▲</span>突破开多</span>
+                <span class="legend-item"><span class="legend-marker marker-sell">▼</span>跌破平仓</span>
+              </div>
+            </div>
+            <span class="cursor-price-info" id="kline-tooltip-bar">移动光标查看具体日K线行情</span>
+          </div>
+          <div class="canvas-wrapper">
+            <canvas id="kline-canvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Equity Curve Chart -->
+        <div class="chart-container-card">
+          <div class="chart-header">
+            <div class="chart-title-group">
+              <h3 class="chart-title">CTA 波动率目标化净值走势 (CTA Equity vs Benchmark)</h3>
+              <div class="legend-row">
+                <span class="legend-item"><span class="legend-line line-turtle"></span>CTA 策略净值</span>
+                <span class="legend-item"><span class="legend-line line-benchmark"></span>基准 (买入持有)</span>
+              </div>
+            </div>
+            <span class="cursor-price-info" id="equity-tooltip-bar">资金曲线追踪</span>
+          </div>
+          <div class="canvas-wrapper" style="height: 300px;">
+            <canvas id="equity-canvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Dedicated CTA Rules & Risk Ladder Panel -->
+        <div class="diagnostics-card">
+          <div class="card-inner-header">
+            <h3 class="card-inner-title">
+              <span class="ai-sparkle">✦</span> 机构 CTA 交易纪律与波动率自适应风控防线
+            </h3>
+            <span class="ticker-badge" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border-color: rgba(16, 185, 129, 0.3);">
+              风控运行中
+            </span>
+          </div>
+          <div class="ml-diagnostics-grid">
+            <div class="cta-rules-list" id="cta-rules-list">
+              <div class="info-alert" style="margin-bottom: 8px;">
+                <strong>1. 顺势突破入场：</strong>当标的价格突破前 20 日（或 55 日）高点时，以确定性趋势反转为核心，建立基础仓位。
+              </div>
+              <div class="info-alert" style="margin-bottom: 8px;">
+                <strong>2. 波动率倒数加权 (Inverse Vol Sizing)：</strong>根据日内高频 Garman-Klass 波动率动态计算头寸，波动率倍增时自动对半减仓。
+              </div>
+              <div class="info-alert">
+                <strong>3. 棘轮追踪止损 (Trailing Ratchet Stop)：</strong>以入场价下方 2*ATR 设定硬止损，若盈利上行，止损线随价格同向上移锁定利润。
+              </div>
+            </div>
+            <div class="ml-explanation-box">
+              <h4>CTA 风险平价统计摘要</h4>
+              <p>CTA 策略在牛市趋势形成时充分捕获波段收益，在震荡盘整或暴跌突发事件中依靠 2N 止损快速规避系统性极端左侧暴跌。</p>
+              <div class="ml-stat-pills">
+                <div class="stat-pill">
+                  <span class="p-label">平均持仓周期</span>
+                  <span class="p-val" id="cta-holding-val">-- 天</span>
+                </div>
+                <div class="stat-pill">
+                  <span class="p-label">盈亏比 (Profit Factor)</span>
+                  <span class="p-val" id="cta-pf-val">--</span>
+                </div>
+                <div class="stat-pill">
+                  <span class="p-label">交易胜率</span>
+                  <span class="p-val" id="cta-win-val">--</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trades Log Table -->
+        <div class="trades-card">
+          <div class="trades-card-header">
+            <h3 class="trades-card-title">CTA 成交流水与离场原因追踪</h3>
+            <button id="export-csv-btn" class="btn-sm">导出 CSV</button>
+          </div>
+          <div class="table-container">
+            <table class="trades-table" id="trades-table">
+              <thead>
+                <tr>
+                  <th>序号</th><th>类型</th><th>入场日期</th><th>入场价格</th><th>出场日期</th><th>出场价格</th>
+                  <th>持仓股数</th><th>持仓天数</th><th>净盈亏 ($)</th><th>收益率 (%)</th><th>出场原因</th>
+                </tr>
+              </thead>
+              <tbody id="trades-table-body">
+                <tr><td colspan="11" class="empty-state">等待执行回测获取记录...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/chart_renderer.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

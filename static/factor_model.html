@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>多因子 Alpha 预测模型 - AlphaQuant 机构终端</title>
+  <meta name="description" content="基于Barra风格的经典多因子动量、低波动异常与均值回归Alpha量化预测模型">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="momentum">
+  <div class="app-layout">
+    <!-- Top Navigation Header with Dedicated Page Navigation -->
+    <header class="app-header">
+      <div class="header-left">
+        <a href="/factor" class="brand-logo">
+          <div class="logo-icon">
+            <span class="pulse-ring"></span>
+            <span class="logo-symbol">AQ</span>
+          </div>
+          <div class="brand-text">
+            <h1 class="brand-title">AlphaQuant <span class="badge-pro">PRO</span></h1>
+            <span class="brand-subtitle">Institutional Multi-Factor Engine</span>
+          </div>
+        </a>
+
+        <!-- Dedicated Page Switcher -->
+        <nav class="nav-pages-bar">
+          <a href="/factor" class="nav-page-link active">
+            <span>📊 多因子Alpha模型</span>
+            <span class="nav-page-badge badge-barra">BARRA</span>
+          </a>
+          <a href="/ml" class="nav-page-link">
+            <span>🤖 机器学习预测</span>
+            <span class="nav-page-badge badge-ml">ML/AI</span>
+          </a>
+          <a href="/cta" class="nav-page-link">
+            <span>🐢 CTA波动率平价</span>
+            <span class="nav-page-badge badge-cta">CTA</span>
+          </a>
+          <a href="/portfolio" class="nav-page-link">
+            <span>🏛️ 多策略组合矩阵</span>
+            <span class="nav-page-badge badge-alloc">ALLOC</span>
+          </a>
+        </nav>
+
+        <!-- Presets -->
+        <div class="ticker-presets" id="ticker-presets"></div>
+      </div>
+
+      <div class="header-right">
+        <div class="search-box">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="custom-ticker-input" placeholder="输入股票代码..." autocomplete="off">
+          <button id="search-ticker-btn" class="btn-search">切换标的</button>
+        </div>
+
+        <div class="period-selector" id="period-selector">
+          <button class="period-btn" data-period="6mo">6月</button>
+          <button class="period-btn active" data-period="1y">1年</button>
+          <button class="period-btn" data-period="2y">2年</button>
+          <button class="period-btn" data-period="3y">3年</button>
+          <button class="period-btn" data-period="5y">5年</button>
+        </div>
+
+        <div class="system-status">
+          <span class="status-dot"></span>
+          <span class="status-text" id="status-text">系统就绪</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Sub Header Action Banner -->
+    <div class="strategy-navbar">
+      <div class="page-title-banner">
+        <h2>多因子 Alpha 预测与动态配置引擎 (Barra / AQR Style)</h2>
+        <p>集成趋势动量因子、Garman-Klass 高频日内低波动异常因子与均值回归振荡因子，输出标准化 Rolling Z-Score 复合 Alpha</p>
+      </div>
+      <button id="run-backtest-btn" class="btn-primary-action">
+        <span class="btn-icon">⚡</span>
+        <span class="btn-label">运行因子模型 (Run Factor Alpha)</span>
+      </button>
+    </div>
+
+    <!-- Main Workspace Grid -->
+    <main class="main-workspace">
+      <!-- Left Sidebar: Factor Parameters & Risk Sizing -->
+      <aside class="control-sidebar">
+        <div class="sidebar-header">
+          <h2 class="sidebar-title">因子权重与风控参数</h2>
+          <span class="ticker-badge" id="current-ticker-display">AAPL</span>
+        </div>
+
+        <div class="sidebar-scroll">
+          <div class="param-card">
+            <h3 class="param-card-title">交易账户基础设定</h3>
+            <div class="form-group">
+              <label for="initial-capital">初始资金 (USD)</label>
+              <div class="input-with-affix">
+                <span class="affix">$</span>
+                <input type="number" id="initial-capital" value="100000" step="5000">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="commission-rate">手续费率 (%)</label>
+                <input type="number" id="commission-rate" value="0.05" step="0.01">
+              </div>
+              <div class="form-group">
+                <label for="slippage-rate">滑点比例 (%)</label>
+                <input type="number" id="slippage-rate" value="0.05" step="0.01">
+              </div>
+            </div>
+          </div>
+
+          <!-- Factor Weights Form -->
+          <div class="param-card">
+            <h3 class="param-card-title">机构动量因子体系 (5大核心支柱)</h3>
+            
+            <div class="form-group">
+              <label for="param-w-mom-12-1">12M-1M 经典截面动量 (Jegadeesh & Titman)</label>
+              <div class="range-with-val">
+                <input type="range" id="param-w-mom-12-1" min="0.05" max="0.70" step="0.05" value="0.30">
+                <span id="w-mom-12-1-val">30%</span>
+              </div>
+              <span class="input-hint">剥离近1个月反转噪声，纯净捕捉中期趋势</span>
+            </div>
+
+            <div class="form-group">
+              <label for="param-w-risk-adj">特质波动率风险调整 (Barroso Low-Vol Sizing)</label>
+              <div class="range-with-val">
+                <input type="range" id="param-w-risk-adj" min="0.05" max="0.60" step="0.05" value="0.25">
+                <span id="w-risk-adj-val">25%</span>
+              </div>
+              <span class="input-hint">Garman-Klass高频日内波动率缩放，消除动量崩溃</span>
+            </div>
+
+            <div class="form-group">
+              <label for="param-w-residual">Beta 中性化残差动量 (Blitz Residual Alpha)</label>
+              <div class="range-with-val">
+                <input type="range" id="param-w-residual" min="0.05" max="0.60" step="0.05" value="0.20">
+                <span id="w-residual-val">20%</span>
+              </div>
+              <span class="input-hint">剥离大盘系统性 Beta 敞口，提炼纯个股特质 Alpha</span>
+            </div>
+
+            <div class="form-group">
+              <label for="param-w-trend-qual">动量路径平滑度 (Frog-in-the-Pan R² 质量)</label>
+              <div class="range-with-val">
+                <input type="range" id="param-w-trend-qual" min="0.05" max="0.50" step="0.05" value="0.15">
+                <span id="w-trend-qual-val">15%</span>
+              </div>
+              <span class="input-hint">Da et al. 判定系数加权，奖励平稳持续慢涨，惩罚突发跳空</span>
+            </div>
+
+            <div class="form-group">
+              <label for="param-w-vol-confirm">量价协同动量 (Volume-Confirmed Momentum)</label>
+              <div class="range-with-val">
+                <input type="range" id="param-w-vol-confirm" min="0.00" max="0.40" step="0.05" value="0.10">
+                <span id="w-vol-confirm-val">10%</span>
+              </div>
+              <span class="input-hint">Lee & Swaminathan 机构成交量放量脉冲协同验证</span>
+            </div>
+          </div>
+
+          <!-- Institutional Risk & Execution Parameters -->
+          <div class="param-card">
+            <h3 class="param-card-title">机构动态风控与头寸管理</h3>
+            
+            <div class="checkbox-group" style="margin-bottom: 12px;">
+              <label class="checkbox-label" style="font-weight: 600; color: #fff;">
+                <input type="checkbox" id="param-use-vol-target" checked>
+                <span>动态波动率目标仓位管理 (Volatility Targeting)</span>
+              </label>
+              <span class="input-hint" style="margin-left: 24px;">AQR/桥水全天候风格，高波动期自动减仓，熨平净值曲线</span>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="param-target-vol">目标年化波动率 (%)</label>
+                <input type="number" id="param-target-vol" value="15" min="5" max="50" step="1">
+              </div>
+              <div class="form-group">
+                <label for="param-z-win">滚动 Z-Score 窗口 (日)</label>
+                <input type="number" id="param-z-win" value="30" min="10" max="100">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="param-alpha-th">多头开仓 Alpha 阈值</label>
+                <input type="number" id="param-alpha-th" value="0.30" min="0.10" max="1.50" step="0.05">
+              </div>
+              <div class="form-group">
+                <label for="param-exit-th">平仓退出 Alpha 阈值</label>
+                <input type="number" id="param-exit-th" value="-0.20" min="-1.50" max="0.0" step="0.05">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="param-fast-ma">快线 EMA</label>
+                <input type="number" id="param-fast-ma" value="10" min="2" max="50">
+              </div>
+              <div class="form-group">
+                <label for="param-slow-ma">慢线 EMA</label>
+                <input type="number" id="param-slow-ma" value="30" min="10" max="200">
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Center Workspace -->
+      <section class="content-workspace">
+        <!-- Institutional KPI Grid -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <span class="kpi-label">多因子策略累计收益率</span>
+            <div class="kpi-value-row">
+              <span class="kpi-value positive" id="kpi-return">+0.00%</span>
+              <span class="kpi-tag" id="kpi-cagr">CAGR 0.0%</span>
+            </div>
+            <span class="kpi-subtext" id="kpi-bench-return">基准 (买入持有): +0.00%</span>
+          </div>
+
+          <div class="kpi-card">
+            <span class="kpi-label">因子有效性 (Rank IC & Factor IR)</span>
+            <div class="kpi-value-row">
+              <span class="kpi-value" id="kpi-ic" style="color:#00f2fe">--</span>
+              <span class="kpi-tag" id="kpi-ir">IR: --</span>
+            </div>
+            <span class="kpi-subtext" id="kpi-tstat">t-统计量: -- | 5D前瞻</span>
+          </div>
+
+          <div class="kpi-card">
+            <span class="kpi-label">夏普比率 / 索提诺比率</span>
+            <div class="kpi-value-row">
+              <span class="kpi-value" id="kpi-sharpe">0.00</span>
+              <span class="kpi-tag" id="kpi-sortino">Sortino 0.00</span>
+            </div>
+            <span class="kpi-subtext" id="kpi-volatility">年化总波动率: 0.00%</span>
+          </div>
+
+          <div class="kpi-card">
+            <span class="kpi-label">机构在险价值 (VaR 95% / CVaR)</span>
+            <div class="kpi-value-row">
+              <span class="kpi-value negative" id="kpi-var">-0.00%</span>
+              <span class="kpi-tag" id="kpi-cvar">CVaR -0.00%</span>
+            </div>
+            <span class="kpi-subtext" id="kpi-mdd">历史最大回撤: -0.00%</span>
+          </div>
+        </div>
+
+        <!-- Candlestick Chart -->
+        <div class="chart-container-card">
+          <div class="chart-header">
+            <div class="chart-title-group">
+              <h3 class="chart-title" id="kline-chart-title">AAPL 历史行情与多因子 Alpha 标定 (Candlestick & Signals)</h3>
+              <div class="legend-row">
+                <span class="legend-item"><span class="legend-dot dot-sma20"></span>EMA Fast</span>
+                <span class="legend-item"><span class="legend-dot dot-sma50"></span>EMA Slow</span>
+                <span class="legend-item"><span class="legend-dot dot-bb"></span>Bollinger</span>
+                <span class="legend-item"><span class="legend-marker marker-buy">▲</span>Alpha 开多</span>
+                <span class="legend-item"><span class="legend-marker marker-sell">▼</span>Alpha 平仓</span>
+              </div>
+            </div>
+            <span class="cursor-price-info" id="kline-tooltip-bar">移动光标查看具体日K线行情</span>
+          </div>
+          <div class="canvas-wrapper">
+            <canvas id="kline-canvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Equity Curve Chart -->
+        <div class="chart-container-card">
+          <div class="chart-header">
+            <div class="chart-title-group">
+              <h3 class="chart-title">多因子投资组合净值走势 (Strategy Equity vs Benchmark)</h3>
+              <div class="legend-row">
+                <span class="legend-item"><span class="legend-line line-strategy"></span>多因子 Alpha 净值</span>
+                <span class="legend-item"><span class="legend-line line-benchmark"></span>基准 (买入持有)</span>
+              </div>
+            </div>
+            <span class="cursor-price-info" id="equity-tooltip-bar">资金曲线追踪</span>
+          </div>
+          <div class="canvas-wrapper" style="height: 300px;">
+            <canvas id="equity-canvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Dedicated IC Rolling Panel & Factor Decomposition -->
+        <div class="diagnostics-card">
+          <div class="card-inner-header">
+            <h3 class="card-inner-title">
+              <span class="ai-sparkle">✦</span> 因子有效性诊断与信息系数走势 (Rolling Information Coefficient)
+            </h3>
+            <span class="ticker-badge">机构 IC 监控体系</span>
+          </div>
+          <div class="ml-diagnostics-grid">
+            <div class="canvas-wrapper" style="height: 220px;">
+              <canvas id="ic-canvas"></canvas>
+            </div>
+            <div class="ml-explanation-box">
+              <h4>机构动量 Alpha 预测力与子因子归因</h4>
+              <p>采用 Spearman Rank IC 衡量因子对未来 5 日收益的预测力。结合信息比率 (IR)、t-统计量与 IC 期限结构衰减，消除伪动量，确保真实选股 Alpha 稳健性。</p>
+              
+              <!-- Sub-factor IC Breakdown Bars -->
+              <div id="subfactor-ic-container" style="margin-top: 10px;">
+                <div style="font-size: 11px; font-weight: 600; color: #94a3b8; margin-bottom: 6px;">各细分动量子因子 IC 预测力水平:</div>
+                <div id="subfactor-bars-list" style="display: flex; flex-direction: column; gap: 4px;"></div>
+              </div>
+
+              <!-- IC Decay Chips -->
+              <div style="margin-top: 10px;">
+                <div style="font-size: 11px; font-weight: 600; color: #94a3b8; margin-bottom: 4px;">前瞻预测期衰减期限结构 (IC Term Structure):</div>
+                <div id="ic-decay-chips" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+              </div>
+
+              <div class="ml-stat-pills" style="grid-template-columns: repeat(3, 1fr); margin-top: 12px;">
+                <div class="stat-pill">
+                  <span class="p-label">IC 均值 / IR</span>
+                  <span class="p-val" id="diag-ic-val">--</span>
+                </div>
+                <div class="stat-pill">
+                  <span class="p-label">t-统计量 (显著性)</span>
+                  <span class="p-val" id="diag-tstat-val">--</span>
+                </div>
+                <div class="stat-pill">
+                  <span class="p-label">多空分位数利差(Q5-Q1)</span>
+                  <span class="p-val" id="diag-spread-val">--</span>
+                </div>
+                <div class="stat-pill">
+                  <span class="p-label">GK高频日内波动率</span>
+                  <span class="p-val" id="diag-gk-val">--</span>
+                </div>
+                <div class="stat-pill">
+                  <span class="p-label">动态波动率目标仓位</span>
+                  <span class="p-val" id="diag-vol-sizing-val">100%</span>
+                </div>
+                <div class="stat-pill">
+                  <span class="p-label">策略交易胜率</span>
+                  <span class="p-val" id="diag-win-val">--</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trades Log Table -->
+        <div class="trades-card">
+          <div class="trades-card-header">
+            <h3 class="trades-card-title">历史交易执行记录与出场归因</h3>
+            <button id="export-csv-btn" class="btn-sm">导出 CSV</button>
+          </div>
+          <div class="table-container">
+            <table class="trades-table" id="trades-table">
+              <thead>
+                <tr>
+                  <th>序号</th><th>类型</th><th>入场日期</th><th>入场价格</th><th>出场日期</th><th>出场价格</th>
+                  <th>持仓股数</th><th>持仓天数</th><th>净盈亏 ($)</th><th>收益率 (%)</th><th>出场归因</th>
+                </tr>
+              </thead>
+              <tbody id="trades-table-body">
+                <tr><td colspan="11" class="empty-state">等待执行回测获取记录...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/chart_renderer.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
