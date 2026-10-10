@@ -368,7 +368,7 @@
 
         <!-- Single Strategy View (Candlestick + Equity Curve) -->
         <div id="single-strategy-view" class="view-panel active">
-          <!-- Chart 1: Candlestick & Technical Indicators -->
+          <!-- Chart 1: Candlestick & Technical Indicators with Prediction Dock -->
           <div class="chart-container-card">
             <div class="chart-header">
               <div class="chart-title-group">
@@ -379,14 +379,108 @@
                   <span class="legend-item"><span class="legend-dot dot-bb"></span>Bollinger</span>
                   <span class="legend-item"><span class="legend-marker marker-buy">▲</span>买入信号</span>
                   <span class="legend-item"><span class="legend-marker marker-sell">▼</span>卖出平仓</span>
+                  <span class="legend-item"><span class="legend-line line-prediction-buy"></span>预期买点</span>
+                  <span class="legend-item"><span class="legend-line line-prediction-tp"></span>目标止盈</span>
+                  <span class="legend-item"><span class="legend-line line-prediction-sl"></span>防守止损</span>
                 </div>
               </div>
-              <div class="chart-tools">
-                <span class="cursor-price-info" id="kline-tooltip-bar">移动光标查看具体日K线行情</span>
+              <div class="chart-header-right">
+                <span class="cursor-price-info" id="kline-tooltip-bar">移动光标查看具体日K线行情与信号标定</span>
+                <button class="btn-dock-toggle" id="btn-toggle-prediction-dock" title="展开或收起右侧预期买点决策看板">
+                  <span id="btn-toggle-dock-icon">⌃</span> <span id="btn-toggle-dock-text">收起买点看板</span>
+                </button>
               </div>
             </div>
-            <div class="canvas-wrapper" id="kline-wrapper">
-              <canvas id="kline-canvas"></canvas>
+            <div class="kline-workbench-grid" id="kline-workbench-grid">
+              <div class="canvas-wrapper kline-canvas-wrapper" id="kline-wrapper">
+                <canvas id="kline-canvas"></canvas>
+              </div>
+
+              <!-- 右侧框选处：预期买点与买卖预测看板 (Brokerage Buy Point & Signal Dock) -->
+              <div class="kline-prediction-dock" id="kline-prediction-dock">
+                <div class="dock-header">
+                  <div class="dock-title-group">
+                    <span class="dock-status-pulse"></span>
+                    <span class="dock-title">预期买点与交易决策</span>
+                  </div>
+                  <span class="dock-strategy-badge" id="dock-strategy-tag">多因子 Alpha</span>
+                </div>
+
+                <!-- Main Hero Card: Signal, Status & Expected Buy Point -->
+                <div class="dock-hero-card" id="dock-hero-card">
+                  <div class="hero-status-bar">
+                    <span class="hero-signal-badge bull" id="dock-signal-tag">🟢 建议逢低建仓</span>
+                    <span class="hero-confidence-badge" id="dock-confidence-tag">置信度: 88%</span>
+                  </div>
+                  <div class="hero-price-display">
+                    <div class="hero-price-meta">
+                      <span class="hero-price-title">核心预期买点</span>
+                      <span class="hero-price-val" id="dock-buy-point">$0.00</span>
+                    </div>
+                    <div class="hero-price-diff-box">
+                      <span class="hero-diff-label">距现价</span>
+                      <span class="hero-diff-val" id="dock-buy-diff">0.0%</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Key Price Levels 2x2 Grid -->
+                <div class="dock-levels-grid">
+                  <div class="level-cell">
+                    <span class="cell-label">建议建仓区间</span>
+                    <span class="cell-val" id="dock-buy-range">$0.00 ~ $0.00</span>
+                  </div>
+                  <div class="level-cell">
+                    <span class="cell-label">预期止盈位 (TP)</span>
+                    <span class="cell-val profit-color" id="dock-tp-point">$0.00 (+0.0%)</span>
+                  </div>
+                  <div class="level-cell">
+                    <span class="cell-label">防守止损位 (SL)</span>
+                    <span class="cell-val loss-color" id="dock-sl-point">$0.00 (-0.0%)</span>
+                  </div>
+                  <div class="level-cell">
+                    <span class="cell-label">预期盈亏比 (R:R)</span>
+                    <span class="cell-val rr-color" id="dock-rr-ratio">1 : 2.4 (优)</span>
+                  </div>
+                </div>
+
+                <!-- Forecast Analytics Rows -->
+                <div class="dock-forecast-section">
+                  <div class="forecast-item-row">
+                    <span class="fc-row-label">未来5日预测走势</span>
+                    <span class="fc-row-val bull" id="dock-fc-return">+2.8% (胜率 71%)</span>
+                  </div>
+                  <div class="forecast-item-row">
+                    <span class="fc-row-label">Alpha 因子强度</span>
+                    <span class="fc-row-val" id="dock-alpha-score">Z-Score +1.45 (极强)</span>
+                  </div>
+                  <div class="forecast-item-row">
+                    <span class="fc-row-label">建议动态仓位</span>
+                    <span class="fc-row-val" id="dock-suggested-size">80% (GK波动率自适应)</span>
+                  </div>
+                </div>
+
+                <!-- Commentary Box -->
+                <div class="dock-commentary-box">
+                  <div class="commentary-header">
+                    <span class="comm-icon">💡</span>
+                    <span class="comm-title">操盘决策指引</span>
+                  </div>
+                  <p class="commentary-text" id="dock-guidance-text">
+                    计算中，等待模型生成前瞻交易指引...
+                  </p>
+                </div>
+
+                <!-- Dock Tool Actions -->
+                <div class="dock-actions-row">
+                  <button class="dock-action-btn active" id="btn-toggle-chart-levels" title="在K线图上切换预期买卖水平标线与阴影区间">
+                    <span>📐 图表标线: 开</span>
+                  </button>
+                  <button class="dock-action-btn" id="btn-copy-trade-plan" title="复制买点交易计划">
+                    <span>📋 复制计划</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 

@@ -32,15 +32,32 @@ class CandlestickChart {
     this.tooltipEl = document.getElementById(tooltipId);
     this.data = [];
     this.signals = [];
+    this.predictionLevels = null;
+    this.showProjectionLines = true;
+    this.padding = { top: 22, right: 96, bottom: 25, left: 15 };
     this.hoverIdx = -1;
 
     this.setupListeners();
   }
 
-  setData(candles, signals = []) {
+  setData(candles, signals = [], predictionLevels = null) {
     this.data = candles || [];
     this.signals = signals || [];
+    if (predictionLevels !== null && predictionLevels !== undefined) {
+      this.predictionLevels = predictionLevels;
+    }
     this.render();
+  }
+
+  setPredictionLevels(predictionLevels) {
+    this.predictionLevels = predictionLevels;
+    this.render();
+  }
+
+  toggleProjectionLines() {
+    this.showProjectionLines = !this.showProjectionLines;
+    this.render();
+    return this.showProjectionLines;
   }
 
   setupListeners() {
@@ -53,16 +70,33 @@ class CandlestickChart {
       const total = this.data.length;
       if (total === 0) return;
 
-      const paddingLeft = 50;
-      const paddingRight = 75;
+      const paddingLeft = this.padding.left;
+      const paddingRight = this.padding.right;
       const chartWidth = this.canvas.clientWidth - paddingLeft - paddingRight;
-      const barWidth = chartWidth / total;
+      const extraBars = (this.predictionLevels && this.showProjectionLines) ? 7 : 0;
+      const barWidth = chartWidth / (total + extraBars);
 
       const idx = Math.floor((mouseX - paddingLeft) / barWidth);
       if (idx >= 0 && idx < total) {
         this.hoverIdx = idx;
         this.render();
         this.updateTooltip(this.data[idx]);
+      } else if (idx >= total && this.predictionLevels) {
+        // Hovering over forward projection zone
+        this.hoverIdx = -1;
+        this.render();
+        if (this.tooltipEl) {
+          const buyP = Number(this.predictionLevels.expectedBuy || 0).toFixed(2);
+          const tpP = Number(this.predictionLevels.targetProfit || 0).toFixed(2);
+          const slP = Number(this.predictionLevels.stopLoss || 0).toFixed(2);
+          this.tooltipEl.innerHTML = `
+            <span style="color:#0052cc;font-weight:700;">✦ 前瞻预测:</span> 
+            核心买点: <span style="color:#16a34a;font-weight:700;">$${buyP}</span> | 
+            止盈目标: <span style="color:#0284c7;font-weight:700;">$${tpP} (${this.predictionLevels.target_gain_pct || ''})</span> | 
+            止损防守: <span style="color:#dc2626;font-weight:700;">$${slP} (${this.predictionLevels.stop_loss_pct || ''})</span> | 
+            盈亏比: <span style="color:#0f172a;font-weight:700;">${this.predictionLevels.risk_reward_ratio || '1:2.4'}</span>
+          `;
+        }
       }
     });
 
@@ -121,7 +155,7 @@ class CandlestickChart {
       return;
     }
 
-    const padding = { top: 20, right: 75, bottom: 25, left: 15 };
+    const padding = this.padding;
     const mainHeight = height * 0.72;
     const volHeight = height * 0.20;
     const volTop = height * 0.75;
@@ -138,6 +172,21 @@ class CandlestickChart {
       if (c.bb_lower && c.bb_lower < minPrice) minPrice = c.bb_lower;
       if (c.bb_upper && c.bb_upper > maxPrice) maxPrice = c.bb_upper;
       if (c.volume > maxVol) maxVol = c.volume;
+    }
+
+    // Include prediction levels in visible y-scale
+    if (this.predictionLevels && this.showProjectionLines) {
+      const pred = this.predictionLevels;
+      if (pred.expectedBuy && !isNaN(pred.expectedBuy)) {
+        minPrice = Math.min(minPrice, Number(pred.expectedBuy));
+        maxPrice = Math.max(maxPrice, Number(pred.expectedBuy));
+      }
+      if (pred.targetProfit && !isNaN(pred.targetProfit)) {
+        maxPrice = Math.max(maxPrice, Number(pred.targetProfit));
+      }
+      if (pred.stopLoss && !isNaN(pred.stopLoss)) {
+        minPrice = Math.min(minPrice, Number(pred.stopLoss));
+      }
     }
 
     const priceMargin = (maxPrice - minPrice) * 0.08 || 1;
@@ -167,7 +216,8 @@ class CandlestickChart {
     }
 
     const n = this.data.length;
-    const barWidth = chartWidth / n;
+    const extraBars = (this.predictionLevels && this.showProjectionLines) ? 7 : 0;
+    const barWidth = chartWidth / (n + extraBars);
     const candleWidth = Math.max(1.8, barWidth * 0.7);
 
     // Map signals for fast lookup
@@ -270,7 +320,12 @@ class CandlestickChart {
       y: c.sma_50 ? priceToY(c.sma_50) : null
     })), INSTITUTIONAL_PALETTE.teal, 1.8);
 
-    // 6. Crosshair if hovered
+    // 6. Draw Forward Trade Predictions & Buy Point Overlays (Cirled Area on Right)
+    if (this.predictionLevels && this.showProjectionLines && n > 0) {
+      this.drawPredictionOverlay(ctx, width, height, padding, priceToY, minPrice, maxPrice, barWidth, n);
+    }
+
+    // 7. Crosshair if hovered
     if (this.hoverIdx >= 0 && this.hoverIdx < n) {
       const hx = padding.left + this.hoverIdx * barWidth + barWidth / 2;
       const hc = this.data[this.hoverIdx];
@@ -286,6 +341,143 @@ class CandlestickChart {
       ctx.stroke();
       ctx.setLineDash([]);
     }
+  }
+
+  drawPredictionOverlay(ctx, width, height, padding, priceToY, minPrice, maxPrice, barWidth, n) {
+    const pred = this.predictionLevels;
+    const cLast = this.data[n - 1];
+    const xLast = padding.left + (n - 1) * barWidth + barWidth / 2;
+    const yLast = priceToY(cLast.close);
+    const rightEdge = width - padding.right;
+    const zoneLeft = Math.max(padding.left, xLast - barWidth * 12);
+
+    const buyPrice = Number(pred.expectedBuy);
+    const tpPrice = Number(pred.targetProfit);
+    const slPrice = Number(pred.stopLoss);
+    const buyMin = Number(pred.buy_range_min || buyPrice * 0.992);
+    const buyMax = Number(pred.buy_range_max || buyPrice * 1.008);
+
+    // 1. Shaded Accumulation Zone for Expected Buy
+    if (!isNaN(buyMin) && !isNaN(buyMax)) {
+      const yMax = priceToY(buyMax);
+      const yMin = priceToY(buyMin);
+      ctx.fillStyle = 'rgba(22, 163, 74, 0.08)';
+      ctx.fillRect(zoneLeft, Math.min(yMax, yMin), rightEdge - zoneLeft, Math.max(4, Math.abs(yMin - yMax)));
+
+      ctx.strokeStyle = 'rgba(22, 163, 74, 0.28)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([2, 2]);
+      ctx.strokeRect(zoneLeft, Math.min(yMax, yMin), rightEdge - zoneLeft, Math.max(4, Math.abs(yMin - yMax)));
+      ctx.setLineDash([]);
+    }
+
+    // 2. Expected Buy Point Horizontal Line
+    if (!isNaN(buyPrice)) {
+      const yBuy = priceToY(buyPrice);
+      ctx.strokeStyle = '#16a34a';
+      ctx.lineWidth = 1.8;
+      ctx.setLineDash([6, 3]);
+      ctx.beginPath();
+      ctx.moveTo(zoneLeft, yBuy);
+      ctx.lineTo(rightEdge, yBuy);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      this.drawAxisBadge(ctx, rightEdge + 3, yBuy, `🟢买点 $${buyPrice.toFixed(2)}`, '#16a34a');
+    }
+
+    // 3. Target Profit Horizontal Line
+    if (!isNaN(tpPrice)) {
+      const yTp = priceToY(tpPrice);
+      ctx.strokeStyle = '#0284c7';
+      ctx.lineWidth = 1.6;
+      ctx.setLineDash([6, 3]);
+      ctx.beginPath();
+      ctx.moveTo(xLast, yTp);
+      ctx.lineTo(rightEdge, yTp);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      this.drawAxisBadge(ctx, rightEdge + 3, yTp, `🎯止盈 $${tpPrice.toFixed(2)}`, '#0284c7');
+    }
+
+    // 4. Stop Loss Horizontal Line
+    if (!isNaN(slPrice)) {
+      const ySl = priceToY(slPrice);
+      ctx.strokeStyle = '#dc2626';
+      ctx.lineWidth = 1.6;
+      ctx.setLineDash([5, 3]);
+      ctx.beginPath();
+      ctx.moveTo(xLast, ySl);
+      ctx.lineTo(rightEdge, ySl);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      this.drawAxisBadge(ctx, rightEdge + 3, ySl, `🛡️止损 $${slPrice.toFixed(2)}`, '#dc2626');
+    }
+
+    // 5. Future 5-Day Forward Forecast Cone & Arrow Trajectory
+    const futureX = Math.min(rightEdge - 6, xLast + barWidth * 5);
+    const targetY = (pred.status === 'WAITING_BUY' && buyPrice < cLast.close)
+      ? priceToY(buyPrice)
+      : priceToY(tpPrice);
+
+    // Shaded forecast cone
+    ctx.fillStyle = 'rgba(22, 163, 74, 0.07)';
+    ctx.beginPath();
+    ctx.moveTo(xLast, yLast);
+    ctx.lineTo(futureX, targetY - 14);
+    ctx.lineTo(futureX, targetY + 14);
+    ctx.closePath();
+    ctx.fill();
+
+    // Dotted projection ray
+    ctx.strokeStyle = '#16a34a';
+    ctx.lineWidth = 1.8;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+    ctx.moveTo(xLast, yLast);
+    ctx.lineTo(futureX, targetY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Future endpoint marker dot
+    ctx.fillStyle = '#16a34a';
+    ctx.beginPath();
+    ctx.arc(futureX, targetY, 3.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Text label for forward forecast
+    ctx.font = `bold 10px ${INSTITUTIONAL_PALETTE.fontSans}`;
+    ctx.fillStyle = '#0f172a';
+    ctx.textAlign = 'right';
+    ctx.fillText('✦ 5日预期通道', futureX - 6, targetY - 6);
+  }
+
+  drawAxisBadge(ctx, x, y, text, bgColor) {
+    const w = 84;
+    const h = 18;
+    const radius = 3;
+    const top = y - h / 2;
+
+    ctx.fillStyle = bgColor;
+    ctx.beginPath();
+    ctx.moveTo(x + radius, top);
+    ctx.lineTo(x + w - radius, top);
+    ctx.quadraticCurveTo(x + w, top, x + w, top + radius);
+    ctx.lineTo(x + w, top + h - radius);
+    ctx.quadraticCurveTo(x + w, top + h, x + w - radius, top + h);
+    ctx.lineTo(x + radius, top + h);
+    ctx.quadraticCurveTo(x, top + h, x, top + h - radius);
+    ctx.lineTo(x, top + radius);
+    ctx.quadraticCurveTo(x, top, x + radius, top);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `bold 9.5px ${INSTITUTIONAL_PALETTE.fontMono}`;
+    ctx.textAlign = 'center';
+    ctx.fillText(text, x + w / 2, y + 3.5);
   }
 
   drawLineSeries(ctx, points, color, lineWidth = 1.8) {

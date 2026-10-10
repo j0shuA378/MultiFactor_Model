@@ -11,6 +11,7 @@ from core.data_loader import fetch_stock_data, get_preset_tickers, search_yahoo_
 from core.config_manager import load_config, save_config, apply_preset, reset_to_defaults, INSTITUTIONAL_PRESETS
 from core.indicators import add_all_indicators
 from core.backtest_engine import BacktestEngine
+from core.prediction_engine import generate_trade_prediction
 from strategies.factor_momentum import MultiFactorMomentumStrategy
 from strategies.ml_predictor import MLPredictorStrategy
 from strategies.turtle_grid import TurtleGridStrategy
@@ -258,6 +259,17 @@ def api_backtest():
 
         result = engine.run(df, signals, position_sizes=pos_sizes)
 
+        # Compute forward trade prediction, expected buy point, target profit, and stop loss
+        trade_prediction = generate_trade_prediction(
+            df=df,
+            signals=signals,
+            trades=result["trades"],
+            meta=meta,
+            strategy_key=strategy_key,
+            take_profit_pct=take_profit_pct,
+            stop_loss_pct=stop_loss_pct
+        )
+
         response_payload = {
             "status": "success",
             "ticker": ticker,
@@ -268,7 +280,8 @@ def api_backtest():
             "metrics": result["metrics"],
             "equity_curve": result["equity_curve"],
             "trades": result["trades"],
-            "signals": result["signals"]
+            "signals": result["signals"],
+            "trade_prediction": trade_prediction
         }
         return jsonify(sanitize_json(response_payload))
     except Exception as e:
