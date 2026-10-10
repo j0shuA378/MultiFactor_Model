@@ -141,6 +141,7 @@ function initEventHandlers() {
 // ==========================================================================
 
 const FALLBACK_AUTOCOMPLETE_STOCKS = [
+  { symbol: "ASX", name: "ASE Technology Holding Co., Ltd.", exchange: "NYSE", price: 46.43, change_pct: 2.04, type: "Equity" },
   { symbol: "AAPL", name: "Apple Inc.", exchange: "NASDAQ", price: 336.64, change_pct: -1.11, type: "Equity" },
   { symbol: "NVDA", name: "NVIDIA Corporation", exchange: "NASDAQ", price: 229.28, change_pct: -0.52, type: "Equity" },
   { symbol: "TSLA", name: "Tesla, Inc.", exchange: "NASDAQ", price: 268.45, change_pct: 2.34, type: "Equity" },
@@ -153,27 +154,108 @@ const FALLBACK_AUTOCOMPLETE_STOCKS = [
   { symbol: "QQQ", name: "Invesco QQQ Trust", exchange: "NASDAQ", price: 492.60, change_pct: 0.45, type: "ETF" },
   { symbol: "BABA", name: "Alibaba Group Holding", exchange: "NYSE", price: 98.40, change_pct: -0.75, type: "Equity" },
   { symbol: "TSM", name: "Taiwan Semiconductor Mfg", exchange: "NYSE", price: 190.50, change_pct: 1.95, type: "Equity" },
+  { symbol: "GS", name: "Goldman Sachs Group, Inc.", exchange: "NYSE", price: 512.30, change_pct: 1.15, type: "Equity" },
+  { symbol: "MS", name: "Morgan Stanley", exchange: "NYSE", price: 118.40, change_pct: 0.82, type: "Equity" },
+  { symbol: "JPM", name: "JPMorgan Chase & Co.", exchange: "NYSE", price: 222.50, change_pct: 0.65, type: "Equity" },
   { symbol: "PLTR", name: "Palantir Technologies", exchange: "NYSE", price: 43.80, change_pct: 3.45, type: "Equity" },
   { symbol: "COIN", name: "Coinbase Global, Inc.", exchange: "NASDAQ", price: 215.30, change_pct: 4.12, type: "Equity" },
   { symbol: "NFLX", name: "Netflix, Inc.", exchange: "NASDAQ", price: 712.50, change_pct: -0.25, type: "Equity" }
 ];
 
+const COMPANY_ALIAS_CLIENT_MAP = {
+  "日月光": "ASX",
+  "日月光投控": "ASX",
+  "日月光半导体": "ASX",
+  "ase": "ASX",
+  "asx": "ASX",
+  "ase technology": "ASX",
+  "台积电": "TSM",
+  "台积": "TSM",
+  "tsmc": "TSM",
+  "苹果": "AAPL",
+  "apple": "AAPL",
+  "英伟达": "NVDA",
+  "辉达": "NVDA",
+  "nvidia": "NVDA",
+  "微软": "MSFT",
+  "特斯拉": "TSLA",
+  "亚马逊": "AMZN",
+  "谷歌": "GOOGL",
+  "脸书": "META",
+  "高盛": "GS",
+  "摩根士丹利": "MS",
+  "大摩": "MS",
+  "摩根大通": "JPM",
+  "小摩": "JPM",
+  "阿里巴巴": "BABA",
+  "阿里": "BABA",
+  "腾讯": "TCEHY",
+  "超微": "AMD"
+};
+
+function sanitizeTickerClient(raw) {
+  if (!raw) return "AAPL";
+  let s = String(raw).trim();
+  // 1. Bracket extraction: e.g. "ASE Technology Holding Co., Ltd. (ASX）" -> "ASX"
+  const m = s.match(/[\(（\[【]([A-Za-z0-9\.\-\^]+)[\)）\]】]/);
+  if (m && m[1]) return m[1].toUpperCase().trim();
+
+  // 2. Chinese/English company alias check
+  const sClean = s.replace(/['’]/g, '').trim().toLowerCase();
+  if (COMPANY_ALIAS_CLIENT_MAP[sClean]) return COMPANY_ALIAS_CLIENT_MAP[sClean];
+  for (const [k, v] of Object.entries(COMPANY_ALIAS_CLIENT_MAP)) {
+    if (sClean.includes(k) || k.includes(sClean)) return v;
+  }
+
+  // 3. Fallback alphanumeric uppercase
+  const cleaned = sClean.replace(/[^A-Za-z0-9\.\-\^]/g, '').toUpperCase();
+  return cleaned || "AAPL";
+}
+
 async function fetchYahooSuggestions(query) {
+  if (!query) return [];
+  const cleanQ = query.replace(/['’]/g, '').trim();
+
+  // Check if brackets contain ticker
+  const bracketMatch = cleanQ.match(/[\(（\[【]([A-Za-z0-9\.\-\^]+)[\)）\]】]/);
+  const searchQ = bracketMatch ? bracketMatch[1] : cleanQ;
+
   try {
-    const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+    const res = await fetch(`/api/search?q=${encodeURIComponent(searchQ)}`);
     const json = await res.json();
     if (json.status === 'success' && Array.isArray(json.data) && json.data.length > 0) {
       return json.data.slice(0, 5);
     }
   } catch (err) {
-    console.warn("Backend /api/search unavailable (GitHub Pages mode), using fallback catalog:", err);
+    console.warn("Backend /api/search unavailable or timed out, using fallback catalog:", err);
   }
 
-  // Fallback matching
-  const qLower = query.toLowerCase().trim();
-  const matched = FALLBACK_AUTOCOMPLETE_STOCKS.filter(item => 
-    item.symbol.toLowerCase().includes(qLower) || item.name.toLowerCase().includes(qLower)
-  );
+  // Fallback matching with alias support
+  const qLower = searchQ.toLowerCase().trim();
+  let aliasSym = COMPANY_ALIAS_CLIENT_MAP[qLower];
+  if (!aliasSym) {
+    for (const [k, v] of Object.entries(COMPANY_ALIAS_CLIENT_MAP)) {
+      if (qLower.includes(k) || k.includes(qLower)) {
+        aliasSym = v;
+        break;
+      }
+    }
+  }
+
+  const matched = [];
+  if (aliasSym) {
+    const primary = FALLBACK_AUTOCOMPLETE_STOCKS.find(s => s.symbol.toUpperCase() === aliasSym);
+    if (primary) matched.push(primary);
+  }
+
+  for (const item of FALLBACK_AUTOCOMPLETE_STOCKS) {
+    if (matched.includes(item)) continue;
+    if (item.symbol.toLowerCase().includes(qLower) || item.name.toLowerCase().includes(qLower)) {
+      matched.push(item);
+    }
+    if (matched.length >= 5) break;
+  }
+
   return matched.slice(0, 5);
 }
 
@@ -209,7 +291,7 @@ function setupSearchAutocomplete() {
 
   const selectSuggestion = (item) => {
     if (!item || !item.symbol) return;
-    const targetSymbol = item.symbol.toUpperCase();
+    const targetSymbol = sanitizeTickerClient(item.symbol);
     searchInput.value = targetSymbol;
     closeDropdown();
     if (targetSymbol !== state.ticker) {
@@ -220,9 +302,15 @@ function setupSearchAutocomplete() {
   };
 
   const executeSearch = () => {
-    const val = searchInput.value.trim().toUpperCase();
-    if (val && val !== state.ticker) {
-      state.ticker = val;
+    const rawVal = searchInput.value.trim();
+    if (!rawVal) {
+      closeDropdown();
+      return;
+    }
+    const targetSymbol = sanitizeTickerClient(rawVal);
+    searchInput.value = targetSymbol;
+    if (targetSymbol !== state.ticker) {
+      state.ticker = targetSymbol;
       updateTickerDisplay();
       runAnalysis();
     }

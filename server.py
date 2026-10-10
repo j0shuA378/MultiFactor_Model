@@ -7,7 +7,7 @@ from flask_cors import CORS
 # Add workspace directory to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from core.data_loader import fetch_stock_data, get_preset_tickers, search_yahoo_tickers
+from core.data_loader import fetch_stock_data, get_preset_tickers, search_yahoo_tickers, sanitize_ticker
 from core.indicators import add_all_indicators
 from core.backtest_engine import BacktestEngine
 from strategies.factor_momentum import MultiFactorMomentumStrategy
@@ -92,7 +92,7 @@ def api_stock_history():
     Returns historical candlestick OHLCV and indicator data
     Query params: ticker, period
     """
-    ticker = request.args.get("ticker", "AAPL").upper().strip()
+    ticker = sanitize_ticker(request.args.get("ticker", "AAPL"))
     period = request.args.get("period", "1y").lower().strip()
 
     try:
@@ -152,7 +152,7 @@ def api_backtest():
     }
     """
     data = request.get_json() or {}
-    ticker = data.get("ticker", "AAPL").upper().strip()
+    ticker = sanitize_ticker(data.get("ticker", "AAPL"))
     period = data.get("period", "1y").lower().strip()
     strategy_key = data.get("strategy", "momentum").lower().strip()
     capital = float(data.get("capital", 100000.0))
