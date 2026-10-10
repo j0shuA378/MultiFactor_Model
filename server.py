@@ -62,7 +62,7 @@ def page_cta():
 
 @app.route("/portfolio")
 def page_portfolio():
-    return send_from_directory("static", "portfolio_model.html")
+    return send_from_directory("static", "index.html")
 
 @app.route("/api/presets", methods=["GET"])
 def api_presets():
