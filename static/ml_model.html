@@ -74,20 +74,45 @@
       </div>
     </header>
 
-    <!-- Tier 2: Dedicated Market Benchmarks Ribbon Bar -->
+    <!-- Tier 2: Watchlist & Custom Groups Ribbon Bar (自选股与自建分组) -->
     <div class="market-ribbon-bar">
-      <div class="ribbon-label-group">
-        <svg class="ribbon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="12" y1="20" x2="12" y2="10"></line>
-          <line x1="18" y1="20" x2="18" y2="4"></line>
-          <line x1="6" y1="20" x2="6" y2="16"></line>
-        </svg>
-        <span class="ribbon-label">MARKET ASSETS</span>
+      <!-- Group Switcher Section -->
+      <div class="ribbon-group-section">
+        <div class="ribbon-group-label">
+          <svg class="ribbon-icon" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
+          <span class="ribbon-group-text">自选分组</span>
+        </div>
+        <div class="group-select-wrapper">
+          <select id="watchlist-group-select" class="group-select-dropdown" title="切换自选股分组"></select>
+        </div>
+        <button id="btn-create-group-quick" class="btn-ribbon-action" title="新建自选分组">+ 分组</button>
       </div>
-      <div class="ticker-presets" id="ticker-presets"></div>
-      <div class="ribbon-asset-indicator">
-        <span>当前分析标的:</span>
-        <span class="rai-code" id="ribbon-ticker-display">AAPL</span>
+
+      <!-- Ticker Chips Container -->
+      <div class="ticker-presets-container">
+        <div class="ticker-presets" id="ticker-presets"></div>
+        <button id="btn-add-ticker-chip" class="btn-add-chip" title="添加标的到当前分组">+ 添加标的</button>
+      </div>
+
+      <!-- Right Actions & Indicator -->
+      <div class="ribbon-actions-right">
+        <button id="btn-manage-groups" class="btn-manage-groups" title="管理所有自选分组与标的">
+          <svg class="icon-gear" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          <span>管理分组</span>
+        </button>
+        <div class="ribbon-asset-indicator">
+          <span class="rai-label">当前:</span>
+          <span class="rai-code" id="ribbon-ticker-display">AAPL</span>
+          <button id="btn-toggle-favorite" class="btn-fav-star" title="将当前标的添加/移出当前自选组">
+            <span id="fav-star-icon">★</span>
+            <span id="fav-star-text">自选</span>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -313,6 +338,64 @@
         </div>
       </section>
     </main>
+
+    <!-- Modal: Add Ticker to Active Group -->
+    <div id="add-ticker-modal" class="modal-backdrop hidden">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h3>添加标的至当前自选分组</h3>
+          <button id="close-add-ticker-modal-btn" class="btn-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>当前目标分组: <strong id="modal-target-group-name" style="color:var(--accent-blue)">⭐ 我的自选</strong></p>
+          <div class="new-group-input-row">
+            <input type="text" id="modal-ticker-input" placeholder="输入股票代码 (如 PLTR, BABA, TSM, AMD)..." autocomplete="off" spellcheck="false">
+            <button id="modal-btn-confirm-add-ticker" class="btn-primary-action" style="padding:7px 16px;">确认添加</button>
+          </div>
+          <div style="margin-top:14px;">
+            <div style="font-size:11px; font-weight:600; color:var(--text-muted); margin-bottom:6px;">热门快速添加选项:</div>
+            <div class="quick-stock-tags" id="quick-stock-tags">
+              <span class="tag-suggestion-chip">PLTR</span>
+              <span class="tag-suggestion-chip">TSM</span>
+              <span class="tag-suggestion-chip">AMD</span>
+              <span class="tag-suggestion-chip">BABA</span>
+              <span class="tag-suggestion-chip">META</span>
+              <span class="tag-suggestion-chip">COIN</span>
+              <span class="tag-suggestion-chip">AMZN</span>
+              <span class="tag-suggestion-chip">BRK-B</span>
+              <span class="tag-suggestion-chip">SMCI</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Manage Watchlist Groups -->
+    <div id="manage-groups-modal" class="modal-backdrop hidden">
+      <div class="modal-box" style="width:620px;">
+        <div class="modal-header">
+          <h3>自选股与分组管理 (Watchlist & Groups)</h3>
+          <button id="close-manage-groups-modal-btn" class="btn-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div style="font-size:12px; font-weight:600; color:var(--text-secondary); margin-bottom:6px;">新建自定义分组:</div>
+          <div class="new-group-input-row">
+            <input type="text" id="modal-new-group-name-input" placeholder="输入新分组名称 (如: 芯片半导体 / 医药生物 / 观察仓)...">
+            <button id="modal-btn-create-group" class="btn-primary-action" style="padding:7px 16px;">+ 创建分组</button>
+          </div>
+
+          <div style="margin-top:18px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <span style="font-size:12px; font-weight:600; color:var(--text-secondary);">已有分组清单:</span>
+              <button id="modal-btn-reset-groups" class="btn-sm" style="color:var(--text-muted);">恢复默认分组</button>
+            </div>
+            <div class="group-list-box" id="modal-group-list-container">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="js/chart_renderer.js"></script>

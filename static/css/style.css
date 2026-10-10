@@ -556,63 +556,131 @@ body {
    Tier 2: Institutional Market Watch & Benchmarks Ribbon Bar
    ========================================================================== */
 
+/* ==========================================================================
+   Tier 2: Watchlist & Custom Groups Ribbon Bar (自选股与自建分组)
+   ========================================================================== */
+
 .market-ribbon-bar {
   background: #ffffff;
   border-bottom: 1px solid var(--border-subtle);
-  padding: 6px 24px;
+  padding: 6px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
   position: sticky;
   top: 64px;
   z-index: 90;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.02);
 }
 
-.ribbon-label-group {
+/* Group Switcher Section */
+.ribbon-group-section {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   flex-shrink: 0;
+}
+
+.ribbon-group-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-muted);
 }
 
 .ribbon-icon {
   width: 14px;
   height: 14px;
-  color: var(--accent-blue);
+  color: #f59e0b;
 }
 
-.ribbon-label {
-  font-size: 10.5px;
+.ribbon-group-text {
+  font-size: 11px;
   font-weight: 700;
   color: var(--text-muted);
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
-.ticker-presets {
+.group-select-wrapper {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 6px;
+}
+
+.group-select-dropdown {
+  background: #f8fafc;
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  max-width: 170px;
+}
+
+.group-select-dropdown:focus {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 2px rgba(0, 82, 204, 0.12);
+}
+
+.btn-ribbon-action {
+  background: #eff6ff;
+  border: 1px dashed #bfdbfe;
+  color: var(--accent-blue);
+  padding: 3px 8px;
+  border-radius: var(--radius-xs);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-ribbon-action:hover {
+  background: #dbeafe;
+  border-color: var(--accent-blue);
+}
+
+/* Ticker Chips Container */
+.ticker-presets-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   overflow-x: auto;
   flex: 1;
   padding: 2px 0;
   scrollbar-width: thin;
 }
 
+.ticker-presets {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .ticker-chip {
   background: #f8fafc;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
-  padding: 4px 10px;
+  padding: 3px 6px 3px 10px;
   font-family: var(--font-mono);
   font-size: 11.5px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.15s ease;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
 }
 
 .ticker-chip:hover {
@@ -628,13 +696,106 @@ body {
   box-shadow: 0 2px 6px rgba(0, 82, 204, 0.25);
 }
 
+.chip-sym {
+  display: inline-block;
+}
+
+.chip-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  padding: 0;
+}
+
+.chip-remove:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.ticker-chip.active .chip-remove {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.ticker-chip.active .chip-remove:hover {
+  background: rgba(0, 0, 0, 0.25);
+  color: #ffffff;
+}
+
+.btn-add-chip {
+  background: #ffffff;
+  border: 1px dashed var(--border-input);
+  color: var(--accent-blue);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.btn-add-chip:hover {
+  border-color: var(--accent-blue);
+  background: #eff6ff;
+}
+
+/* Right Actions & Indicator */
+.ribbon-actions-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.btn-manage-groups {
+  background: #ffffff;
+  border: 1px solid var(--border-input);
+  color: var(--text-secondary);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s ease;
+}
+
+.btn-manage-groups:hover {
+  background: #f8fafc;
+  color: var(--text-primary);
+  border-color: #94a3b8;
+}
+
+.icon-gear {
+  flex-shrink: 0;
+}
+
 .ribbon-asset-indicator {
   display: flex;
   align-items: center;
   gap: 6px;
-  flex-shrink: 0;
   font-size: 11.5px;
   color: var(--text-muted);
+}
+
+.rai-label {
+  font-size: 11px;
 }
 
 .rai-code {
@@ -643,8 +804,171 @@ body {
   color: var(--accent-blue);
   background: #eff6ff;
   border: 1px solid #bfdbfe;
-  padding: 1px 8px;
+  padding: 1px 7px;
   border-radius: var(--radius-xs);
+}
+
+.btn-fav-star {
+  background: #ffffff;
+  border: 1px solid var(--border-input);
+  color: var(--text-muted);
+  padding: 2px 7px;
+  border-radius: var(--radius-xs);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  transition: all 0.15s ease;
+}
+
+.btn-fav-star:hover {
+  border-color: #f59e0b;
+  color: #b45309;
+}
+
+.btn-fav-star.active {
+  background: #fef3c7;
+  color: #b45309;
+  border-color: #fde68a;
+}
+
+/* Watchlist & Custom Groups Modals */
+.group-list-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 280px;
+  overflow-y: auto;
+  margin: 12px 0 16px 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 8px;
+  background: #f8fafc;
+}
+
+.group-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  transition: all 0.15s ease;
+}
+
+.group-list-item:hover {
+  border-color: #cbd5e1;
+}
+
+.group-item-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  overflow: hidden;
+}
+
+.group-item-name {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.group-item-tickers {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  font-size: 10.5px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+.group-item-badge {
+  background: #f1f5f9;
+  border: 1px solid var(--border-subtle);
+  padding: 1px 5px;
+  border-radius: var(--radius-xs);
+  white-space: nowrap;
+}
+
+.group-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.btn-group-switch {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: var(--accent-blue);
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+}
+
+.btn-group-switch:hover {
+  background: var(--accent-blue);
+  color: #ffffff;
+}
+
+.btn-group-del {
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  color: #dc2626;
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+}
+
+.btn-group-del:hover {
+  background: #fee2e2;
+  border-color: #fecaca;
+}
+
+.new-group-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.new-group-input-row input {
+  flex: 1;
+}
+
+.quick-stock-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.tag-suggestion-chip {
+  background: #f1f5f9;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tag-suggestion-chip:hover {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: var(--accent-blue);
 }
 
 /* ==========================================================================

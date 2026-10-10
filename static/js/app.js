@@ -372,57 +372,449 @@ function setupSearchAutocomplete() {
   });
 }
 
-async function loadPresets() {
+// ==========================================================================
+// Watchlist & Custom Groups Engine (自选股与自建分组系统)
+// ==========================================================================
+
+const WATCHLIST_STORAGE_KEY = 'alphaquant_watchlist_groups';
+const ACTIVE_GROUP_STORAGE_KEY = 'alphaquant_active_group_id';
+
+const DEFAULT_WATCHLIST_GROUPS = [
+  {
+    id: "group-fav",
+    name: "⭐ 我的自选",
+    tickers: ["AAPL", "NVDA", "TSLA", "MSFT", "AMZN"]
+  },
+  {
+    id: "group-index",
+    name: "🏛️ 宽基与ETF",
+    tickers: ["SPY", "QQQ", "IWM", "TLT", "GLD"]
+  },
+  {
+    id: "group-tech",
+    name: "🤖 科技与AI龙头",
+    tickers: ["NVDA", "MSFT", "GOOGL", "META", "AMD", "TSM", "PLTR"]
+  },
+  {
+    id: "group-china",
+    name: "🇨🇳 核心中概股",
+    tickers: ["BABA", "PDD", "BIDU", "JD", "NIO"]
+  }
+];
+
+function getWatchlistGroups() {
   try {
-    const res = await fetch('/api/presets');
-    const json = await res.json();
-    if (json.status === 'success') {
-      const container = document.getElementById('ticker-presets');
-      container.innerHTML = '';
-      json.data.forEach(item => {
-        const chip = document.createElement('button');
-        chip.className = `ticker-chip ${item.symbol === state.ticker ? 'active' : ''}`;
-        chip.textContent = item.symbol;
-        chip.title = `${item.name} (${item.badge})`;
-        chip.addEventListener('click', () => {
-          document.querySelectorAll('.ticker-chip').forEach(c => c.classList.remove('active'));
-          chip.classList.add('active');
-          state.ticker = item.symbol;
-          updateTickerDisplay();
-          runAnalysis();
-        });
-        container.appendChild(chip);
-      });
+    const raw = localStorage.getItem(WATCHLIST_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
     }
-  } catch (err) {
-    console.warn("API presets unavailable, using static fallback for GitHub Pages:", err);
-    const container = document.getElementById('ticker-presets');
-    if (container) {
-      container.innerHTML = '';
-      const fallbackList = [
-        { symbol: "AAPL", name: "Apple Inc.", badge: "Tech" },
-        { symbol: "NVDA", name: "NVIDIA Corp.", badge: "AI" },
-        { symbol: "TSLA", name: "Tesla Inc.", badge: "EV" },
-        { symbol: "MSFT", name: "Microsoft", badge: "Cloud" },
-        { symbol: "SPY", name: "S&P 500 ETF", badge: "Index" },
-        { symbol: "QQQ", name: "Invesco QQQ", badge: "Tech 100" }
-      ];
-      fallbackList.forEach(item => {
-        const chip = document.createElement('button');
-        chip.className = `ticker-chip ${item.symbol === state.ticker ? 'active' : ''}`;
-        chip.textContent = item.symbol;
-        chip.title = `${item.name} (${item.badge})`;
+  } catch (e) {
+    console.warn("Failed to load watchlist from localStorage:", e);
+  }
+  return JSON.parse(JSON.stringify(DEFAULT_WATCHLIST_GROUPS));
+}
+
+function saveWatchlistGroups(groups) {
+  try {
+    localStorage.setItem(WATCHLIST_STORAGE_KEY, JSON.stringify(groups));
+  } catch (e) {
+    console.warn("Failed to save watchlist to localStorage:", e);
+  }
+}
+
+function getActiveGroupId() {
+  return localStorage.getItem(ACTIVE_GROUP_STORAGE_KEY) || "group-fav";
+}
+
+function setActiveGroupId(id) {
+  try {
+    localStorage.setItem(ACTIVE_GROUP_STORAGE_KEY, id);
+  } catch (e) {}
+}
+
+function loadPresets() {
+  initWatchlistModule();
+}
+
+function initWatchlistModule() {
+  renderWatchlistRibbon();
+  initWatchlistEventHandlers();
+}
+
+function renderWatchlistRibbon() {
+  const groups = getWatchlistGroups();
+  let activeId = getActiveGroupId();
+
+  let activeGroup = groups.find(g => g.id === activeId);
+  if (!activeGroup) {
+    activeGroup = groups[0] || DEFAULT_WATCHLIST_GROUPS[0];
+    activeId = activeGroup.id;
+    setActiveGroupId(activeId);
+  }
+
+  // Populate group select dropdown
+  const select = document.getElementById('watchlist-group-select');
+  if (select) {
+    select.innerHTML = '';
+    groups.forEach(g => {
+      const opt = document.createElement('option');
+      opt.value = g.id;
+      opt.textContent = `${g.name} (${g.tickers.length})`;
+      if (g.id === activeId) opt.selected = true;
+      select.appendChild(opt);
+    });
+  }
+
+  // Populate ticker chips
+  const container = document.getElementById('ticker-presets');
+  if (container) {
+    container.innerHTML = '';
+    if (activeGroup.tickers.length === 0) {
+      const emptyHint = document.createElement('span');
+      emptyHint.style.cssText = 'font-size:11px; color:var(--text-muted); font-style:italic; padding:4px;';
+      emptyHint.textContent = '该分组暂无标的，点击右侧添加';
+      container.appendChild(emptyHint);
+    } else {
+      activeGroup.tickers.forEach(sym => {
+        const chip = document.createElement('div');
+        chip.className = `ticker-chip ${sym === state.ticker ? 'active' : ''}`;
+        chip.dataset.symbol = sym;
+        chip.title = `点击分析 ${sym} / 点击 × 从分组移除`;
+
+        const symSpan = document.createElement('span');
+        symSpan.className = 'chip-sym';
+        symSpan.textContent = sym;
+        chip.appendChild(symSpan);
+
+        const delBtn = document.createElement('button');
+        delBtn.className = 'chip-remove';
+        delBtn.title = `从 ${activeGroup.name} 移除 ${sym}`;
+        delBtn.innerHTML = '&times;';
+        delBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          removeTickerFromActiveGroup(sym);
+        });
+        chip.appendChild(delBtn);
+
         chip.addEventListener('click', () => {
           document.querySelectorAll('.ticker-chip').forEach(c => c.classList.remove('active'));
           chip.classList.add('active');
-          state.ticker = item.symbol;
+          state.ticker = sym;
           updateTickerDisplay();
           runAnalysis();
         });
+
         container.appendChild(chip);
       });
     }
   }
+
+  updateFavoriteStarButton();
+}
+
+function updateFavoriteStarButton() {
+  const btn = document.getElementById('btn-toggle-favorite');
+  const icon = document.getElementById('fav-star-icon');
+  const text = document.getElementById('fav-star-text');
+  if (!btn) return;
+
+  const groups = getWatchlistGroups();
+  const activeId = getActiveGroupId();
+  const activeGroup = groups.find(g => g.id === activeId) || groups[0];
+
+  const isFavorited = activeGroup && activeGroup.tickers.includes(state.ticker);
+  if (isFavorited) {
+    btn.classList.add('active');
+    if (icon) icon.textContent = '★';
+    if (text) text.textContent = '已自选';
+    btn.title = `从当前分组 (${activeGroup ? activeGroup.name : ''}) 移除 ${state.ticker}`;
+  } else {
+    btn.classList.remove('active');
+    if (icon) icon.textContent = '☆';
+    if (text) text.textContent = '加自选';
+    btn.title = `添加 ${state.ticker} 到当前分组 (${activeGroup ? activeGroup.name : ''})`;
+  }
+}
+
+function toggleCurrentTickerFavorite() {
+  const groups = getWatchlistGroups();
+  const activeId = getActiveGroupId();
+  const activeGroup = groups.find(g => g.id === activeId) || groups[0];
+  if (!activeGroup) return;
+
+  const idx = activeGroup.tickers.indexOf(state.ticker);
+  if (idx >= 0) {
+    activeGroup.tickers.splice(idx, 1);
+  } else {
+    activeGroup.tickers.push(state.ticker);
+  }
+
+  saveWatchlistGroups(groups);
+  renderWatchlistRibbon();
+}
+
+function removeTickerFromActiveGroup(sym) {
+  const groups = getWatchlistGroups();
+  const activeId = getActiveGroupId();
+  const activeGroup = groups.find(g => g.id === activeId) || groups[0];
+  if (!activeGroup) return;
+
+  const idx = activeGroup.tickers.indexOf(sym);
+  if (idx >= 0) {
+    activeGroup.tickers.splice(idx, 1);
+    saveWatchlistGroups(groups);
+    renderWatchlistRibbon();
+  }
+}
+
+function addTickerToActiveGroup(sym) {
+  const cleanSym = sym.trim().toUpperCase();
+  if (!cleanSym) return;
+
+  const groups = getWatchlistGroups();
+  const activeId = getActiveGroupId();
+  const activeGroup = groups.find(g => g.id === activeId) || groups[0];
+  if (!activeGroup) return;
+
+  if (!activeGroup.tickers.includes(cleanSym)) {
+    activeGroup.tickers.push(cleanSym);
+    saveWatchlistGroups(groups);
+  }
+
+  state.ticker = cleanSym;
+  renderWatchlistRibbon();
+  updateTickerDisplay();
+  runAnalysis();
+}
+
+function quickCreateGroup() {
+  const name = prompt("请输入新自选分组名称 (如: 芯片半导体 / 新能源 / 观察仓):");
+  if (!name || !name.trim()) return;
+
+  const trimmed = name.trim();
+  const groups = getWatchlistGroups();
+  const newId = "group-" + Date.now();
+  groups.push({
+    id: newId,
+    name: trimmed,
+    tickers: [state.ticker]
+  });
+
+  saveWatchlistGroups(groups);
+  setActiveGroupId(newId);
+  renderWatchlistRibbon();
+}
+
+function initWatchlistEventHandlers() {
+  // Group dropdown select
+  const select = document.getElementById('watchlist-group-select');
+  if (select) {
+    select.addEventListener('change', () => {
+      setActiveGroupId(select.value);
+      renderWatchlistRibbon();
+    });
+  }
+
+  // Quick "+ 分组" button
+  const quickBtn = document.getElementById('btn-create-group-quick');
+  if (quickBtn) {
+    quickBtn.addEventListener('click', quickCreateGroup);
+  }
+
+  // Favorite Star Button toggle
+  const favBtn = document.getElementById('btn-toggle-favorite');
+  if (favBtn) {
+    favBtn.addEventListener('click', toggleCurrentTickerFavorite);
+  }
+
+  // "+ 添加标的" chip button -> opens modal
+  const addChipBtn = document.getElementById('btn-add-ticker-chip');
+  const addModal = document.getElementById('add-ticker-modal');
+  const closeAddModalBtn = document.getElementById('close-add-ticker-modal-btn');
+  const confirmAddBtn = document.getElementById('modal-btn-confirm-add-ticker');
+  const tickerInput = document.getElementById('modal-ticker-input');
+
+  if (addChipBtn && addModal) {
+    addChipBtn.addEventListener('click', () => {
+      const groups = getWatchlistGroups();
+      const activeId = getActiveGroupId();
+      const activeGroup = groups.find(g => g.id === activeId) || groups[0];
+      const targetNameEl = document.getElementById('modal-target-group-name');
+      if (targetNameEl && activeGroup) targetNameEl.textContent = activeGroup.name;
+
+      if (tickerInput) {
+        tickerInput.value = '';
+        setTimeout(() => tickerInput.focus(), 100);
+      }
+      addModal.classList.remove('hidden');
+    });
+  }
+
+  if (closeAddModalBtn && addModal) {
+    closeAddModalBtn.addEventListener('click', () => addModal.classList.add('hidden'));
+    addModal.addEventListener('click', (e) => {
+      if (e.target === addModal) addModal.classList.add('hidden');
+    });
+  }
+
+  if (confirmAddBtn && tickerInput && addModal) {
+    const handleConfirm = () => {
+      const val = tickerInput.value.trim();
+      if (val) {
+        addTickerToActiveGroup(val);
+        addModal.classList.add('hidden');
+      }
+    };
+    confirmAddBtn.addEventListener('click', handleConfirm);
+    tickerInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') handleConfirm();
+    });
+  }
+
+  // Quick suggestion chips in add modal
+  document.querySelectorAll('.tag-suggestion-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      addTickerToActiveGroup(chip.textContent.trim());
+      if (addModal) addModal.classList.add('hidden');
+    });
+  });
+
+  // "管理分组" button -> opens modal
+  const manageBtn = document.getElementById('btn-manage-groups');
+  const manageModal = document.getElementById('manage-groups-modal');
+  const closeManageModalBtn = document.getElementById('close-manage-groups-modal-btn');
+  const newGroupNameInput = document.getElementById('modal-new-group-name-input');
+  const createGroupBtn = document.getElementById('modal-btn-create-group');
+  const resetGroupsBtn = document.getElementById('modal-btn-reset-groups');
+
+  if (manageBtn && manageModal) {
+    manageBtn.addEventListener('click', () => {
+      renderManageGroupsList();
+      if (newGroupNameInput) newGroupNameInput.value = '';
+      manageModal.classList.remove('hidden');
+    });
+  }
+
+  if (closeManageModalBtn && manageModal) {
+    closeManageModalBtn.addEventListener('click', () => manageModal.classList.add('hidden'));
+    manageModal.addEventListener('click', (e) => {
+      if (e.target === manageModal) manageModal.classList.add('hidden');
+    });
+  }
+
+  if (createGroupBtn && newGroupNameInput) {
+    createGroupBtn.addEventListener('click', () => {
+      const name = newGroupNameInput.value.trim();
+      if (!name) return;
+
+      const groups = getWatchlistGroups();
+      const newId = "group-" + Date.now();
+      groups.push({
+        id: newId,
+        name: name,
+        tickers: [state.ticker]
+      });
+
+      saveWatchlistGroups(groups);
+      setActiveGroupId(newId);
+      newGroupNameInput.value = '';
+      renderManageGroupsList();
+      renderWatchlistRibbon();
+    });
+  }
+
+  if (resetGroupsBtn && manageModal) {
+    resetGroupsBtn.addEventListener('click', () => {
+      if (confirm("确定要恢复默认自选股与分组配置吗？当前自定义分组将被重置。")) {
+        saveWatchlistGroups(DEFAULT_WATCHLIST_GROUPS);
+        setActiveGroupId("group-fav");
+        renderManageGroupsList();
+        renderWatchlistRibbon();
+      }
+    });
+  }
+}
+
+function renderManageGroupsList() {
+  const container = document.getElementById('modal-group-list-container');
+  if (!container) return;
+
+  const groups = getWatchlistGroups();
+  const activeId = getActiveGroupId();
+
+  container.innerHTML = '';
+  groups.forEach((g, idx) => {
+    const item = document.createElement('div');
+    item.className = 'group-list-item';
+
+    const left = document.createElement('div');
+    left.className = 'group-item-left';
+
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'group-item-name';
+    nameSpan.textContent = g.name;
+    left.appendChild(nameSpan);
+
+    const tickersDiv = document.createElement('div');
+    tickersDiv.className = 'group-item-tickers';
+    if (g.tickers.length === 0) {
+      tickersDiv.textContent = '(暂无标的)';
+    } else {
+      g.tickers.slice(0, 7).forEach(sym => {
+        const badge = document.createElement('span');
+        badge.className = 'group-item-badge';
+        badge.textContent = sym;
+        tickersDiv.appendChild(badge);
+      });
+      if (g.tickers.length > 7) {
+        const more = document.createElement('span');
+        more.className = 'group-item-badge';
+        more.textContent = `+${g.tickers.length - 7}`;
+        tickersDiv.appendChild(more);
+      }
+    }
+    left.appendChild(tickersDiv);
+    item.appendChild(left);
+
+    const actions = document.createElement('div');
+    actions.className = 'group-item-actions';
+
+    // Switch to this group
+    const switchBtn = document.createElement('button');
+    switchBtn.className = 'btn-group-switch';
+    switchBtn.textContent = g.id === activeId ? '当前生效' : '切换使用';
+    if (g.id === activeId) switchBtn.style.background = '#dcfce7';
+    switchBtn.addEventListener('click', () => {
+      setActiveGroupId(g.id);
+      renderManageGroupsList();
+      renderWatchlistRibbon();
+    });
+    actions.appendChild(switchBtn);
+
+    // Delete group (allow if more than 1 group)
+    if (groups.length > 1) {
+      const delBtn = document.createElement('button');
+      delBtn.className = 'btn-group-del';
+      delBtn.textContent = '删除';
+      delBtn.title = `删除分组: ${g.name}`;
+      delBtn.addEventListener('click', () => {
+        if (confirm(`确定要删除分组 "${g.name}" 吗？`)) {
+          groups.splice(idx, 1);
+          saveWatchlistGroups(groups);
+          if (g.id === activeId) {
+            setActiveGroupId(groups[0].id);
+          }
+          renderManageGroupsList();
+          renderWatchlistRibbon();
+        }
+      });
+      actions.appendChild(delBtn);
+    }
+
+    item.appendChild(actions);
+    container.appendChild(item);
+  });
 }
 
 function updateTickerDisplay() {
@@ -433,11 +825,13 @@ function updateTickerDisplay() {
   const klineTitle = document.getElementById('kline-chart-title');
   if (klineTitle) klineTitle.textContent = `${state.ticker} 历史行情与交易信号标定 (Candlestick & Signals)`;
   updateActivePresetChip();
+  updateFavoriteStarButton();
 }
 
 function updateActivePresetChip() {
   document.querySelectorAll('.ticker-chip').forEach(c => {
-    if (c.textContent === state.ticker) c.classList.add('active');
+    if (c.dataset && c.dataset.symbol === state.ticker) c.classList.add('active');
+    else if (c.textContent.trim().startsWith(state.ticker)) c.classList.add('active');
     else c.classList.remove('active');
   });
 }
