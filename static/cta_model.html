@@ -12,60 +12,53 @@
 </head>
 <body data-page="turtle">
   <div class="app-layout">
+    <!-- Tier 1: Main Institutional Navigation Header -->
     <header class="app-header">
       <div class="header-left">
-        <!-- macOS Window Traffic Lights -->
-        <div class="mac-window-controls">
-          <span class="mac-dot mac-dot-close"></span>
-          <span class="mac-dot mac-dot-min"></span>
-          <span class="mac-dot mac-dot-max"></span>
-        </div>
-
         <a href="factor_model.html" class="brand-logo">
           <div class="logo-icon">
-            <span class="pulse-ring"></span>
             <span class="logo-symbol">AQ</span>
           </div>
           <div class="brand-text">
-            <h1 class="brand-title">AlphaQuant <span class="badge-pro">PRO</span></h1>
-            <span class="brand-subtitle">Institutional CTA & Risk Engine</span>
+            <h1 class="brand-title">AlphaQuant <span class="badge-pro">INSTITUTIONAL</span></h1>
+            <span class="brand-subtitle">CTA & Volatility Parity Analytics</span>
           </div>
         </a>
 
         <!-- Dedicated Page Switcher -->
         <nav class="nav-pages-bar">
           <a href="factor_model.html" class="nav-page-link">
-            <span>📊 多因子Alpha模型</span>
+            <span>多因子Alpha模型</span>
             <span class="nav-page-badge badge-barra">BARRA</span>
           </a>
           <a href="ml_model.html" class="nav-page-link">
-            <span>🤖 机器学习预测</span>
+            <span>机器学习预测</span>
             <span class="nav-page-badge badge-ml">ML/AI</span>
           </a>
           <a href="cta_model.html" class="nav-page-link active">
-            <span>🐢 CTA波动率平价</span>
+            <span>CTA波动率平价</span>
             <span class="nav-page-badge badge-cta">CTA</span>
           </a>
           <a href="index.html" class="nav-page-link">
-            <span>🏛️ 多策略组合矩阵</span>
+            <span>多策略组合矩阵</span>
             <span class="nav-page-badge badge-alloc">ALLOC</span>
           </a>
         </nav>
-
-        <div class="ticker-presets" id="ticker-presets"></div>
       </div>
 
       <div class="header-right">
+        <!-- Stock Search Input -->
         <div class="search-box" id="search-box-wrap">
           <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
           <input type="text" id="custom-ticker-input" placeholder="输入代码或名称 (如 Apple, NVDA)..." autocomplete="off" spellcheck="false">
-          <button id="search-ticker-btn" class="btn-search">切换标的</button>
+          <button id="search-ticker-btn" class="btn-search">切换</button>
           <div class="search-suggestions-dropdown hidden" id="search-suggestions-dropdown"></div>
         </div>
 
+        <!-- Period Selector -->
         <div class="period-selector" id="period-selector">
           <button class="period-btn" data-period="6mo">6月</button>
           <button class="period-btn active" data-period="1y">1年</button>
@@ -80,6 +73,23 @@
         </div>
       </div>
     </header>
+
+    <!-- Tier 2: Dedicated Market Benchmarks Ribbon Bar -->
+    <div class="market-ribbon-bar">
+      <div class="ribbon-label-group">
+        <svg class="ribbon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="20" x2="12" y2="10"></line>
+          <line x1="18" y1="20" x2="18" y2="4"></line>
+          <line x1="6" y1="20" x2="6" y2="16"></line>
+        </svg>
+        <span class="ribbon-label">MARKET ASSETS</span>
+      </div>
+      <div class="ticker-presets" id="ticker-presets"></div>
+      <div class="ribbon-asset-indicator">
+        <span>当前分析标的:</span>
+        <span class="rai-code" id="ribbon-ticker-display">AAPL</span>
+      </div>
+    </div>
 
     <div class="strategy-navbar">
       <div class="page-title-banner">

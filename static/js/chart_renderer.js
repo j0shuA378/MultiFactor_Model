@@ -1,23 +1,27 @@
 /**
- * AlphaQuant Apple Cupertino Financial Canvas Chart Renderer
- * Features: High-DPI Retina support, SF Pro typography, Apple System Financial Palette,
- * Soft-glow equity curves, Candlesticks with iOS Green/Red, Bollinger Bands,
- * Interactive Crosshair with macOS blur tooltips, and Rolling IC Factor Diagnostics.
+ * AlphaQuant Institutional Financial Canvas Chart Renderer
+ * Inspired by Goldman Sachs & Invesco institutional web portals.
+ * Features: High-DPI Retina support, Crisp Institutional White Theme,
+ * High-legibility typography, Invesco Royal Navy (#0052cc) equity curves,
+ * Clean forest-green/crimson candlesticks, and crisp reference axes.
  */
 
-// Apple System Financial Palette
-const APPLE_PALETTE = {
-  blue: '#0A84FF',
-  green: '#30D158',
-  red: '#FF453A',
-  orange: '#FF9F0A',
-  teal: '#64D2FF',
-  purple: '#BF5AF2',
-  gray: '#8E8E93',
-  grid: 'rgba(255, 255, 255, 0.04)',
-  axisText: 'rgba(235, 235, 245, 0.45)',
-  fontSans: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif',
-  fontMono: '"SF Mono", "JetBrains Mono", Menlo, Consolas, monospace'
+const INSTITUTIONAL_PALETTE = {
+  blue: '#0052cc',        // Goldman/Invesco Signature Royal Navy-Blue
+  green: '#16a34a',       // Institutional Profit Green (Forest Green)
+  red: '#dc2626',         // Institutional Loss Red (Crimson)
+  orange: '#d97706',      // Warm Amber (Gold/Bronze)
+  teal: '#0284c7',        // Sky Slate
+  purple: '#6366f1',      // Refined Indigo
+  gray: '#64748b',        // Slate Gray Benchmark
+  grayLight: '#94a3b8',   // Light Slate
+  grid: '#f1f5f9',        // Light reference grid lines
+  gridBorder: '#e2e8f0',  // Chart baseline
+  axisText: '#64748b',    // Clear dark slate text
+  darkText: '#0f172a',    // Deep Navy-Charcoal Text
+  crosshair: 'rgba(15, 23, 42, 0.4)', // Crosshair
+  fontSans: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+  fontMono: '"JetBrains Mono", "SF Mono", Menlo, Consolas, monospace'
 };
 
 class CandlestickChart {
@@ -50,7 +54,7 @@ class CandlestickChart {
       if (total === 0) return;
 
       const paddingLeft = 50;
-      const paddingRight = 70;
+      const paddingRight = 75;
       const chartWidth = this.canvas.clientWidth - paddingLeft - paddingRight;
       const barWidth = chartWidth / total;
 
@@ -66,7 +70,7 @@ class CandlestickChart {
       this.hoverIdx = -1;
       this.render();
       if (this.tooltipEl) {
-        this.tooltipEl.textContent = "移动光标查看具体日K线行情与信号";
+        this.tooltipEl.textContent = "移动光标至图表区域查看日K线行情与信号标定";
       }
     });
   }
@@ -74,23 +78,24 @@ class CandlestickChart {
   updateTooltip(candle) {
     if (!this.tooltipEl || !candle) return;
     const isUp = candle.close >= candle.open;
-    const color = isUp ? APPLE_PALETTE.green : APPLE_PALETTE.red;
+    const color = isUp ? INSTITUTIONAL_PALETTE.green : INSTITUTIONAL_PALETTE.red;
     const chg = (((candle.close - candle.open) / candle.open) * 100).toFixed(2);
     
     // Check if signal exists on this date
     const sig = this.signals.find(s => s.date === candle.date);
     let sigText = "";
     if (sig) {
-      sigText = ` | 信号: [${sig.type === 'BUY' ? '▲ 买入' : '▼ 卖出'} - ${sig.reason}]`;
+      const sigColor = sig.type === 'BUY' ? INSTITUTIONAL_PALETTE.green : INSTITUTIONAL_PALETTE.red;
+      sigText = ` | <span style="color:${sigColor};font-weight:700;">[${sig.type === 'BUY' ? '▲ 买入' : '▼ 卖出'} - ${sig.reason}]</span>`;
     }
 
     this.tooltipEl.innerHTML = `
-      日期: <span style="color:#fff">${candle.date}</span> | 
-      开: <span style="color:#fff">$${candle.open.toFixed(2)}</span> | 
-      高: <span style="color:#fff">$${candle.high.toFixed(2)}</span> | 
-      低: <span style="color:#fff">$${candle.low.toFixed(2)}</span> | 
-      收: <span style="color:${color};font-weight:600;">$${candle.close.toFixed(2)} (${chg > 0 ? '+' : ''}${chg}%)</span> | 
-      量: <span style="color:${APPLE_PALETTE.axisText}">${(candle.volume / 1e6).toFixed(2)}M</span>${sigText}
+      日期: <span style="color:${INSTITUTIONAL_PALETTE.darkText};font-weight:600;">${candle.date}</span> | 
+      开: <span style="color:${INSTITUTIONAL_PALETTE.darkText}">$${candle.open.toFixed(2)}</span> | 
+      高: <span style="color:${INSTITUTIONAL_PALETTE.darkText}">$${candle.high.toFixed(2)}</span> | 
+      低: <span style="color:${INSTITUTIONAL_PALETTE.darkText}">$${candle.low.toFixed(2)}</span> | 
+      收: <span style="color:${color};font-weight:700;">$${candle.close.toFixed(2)} (${chg > 0 ? '+' : ''}${chg}%)</span> | 
+      量: <span style="color:${INSTITUTIONAL_PALETTE.axisText}">${(candle.volume / 1e6).toFixed(2)}M</span>${sigText}
     `;
   }
 
@@ -109,14 +114,14 @@ class CandlestickChart {
     ctx.clearRect(0, 0, width, height);
 
     if (!this.data || this.data.length === 0) {
-      ctx.fillStyle = APPLE_PALETTE.axisText;
-      ctx.font = `13px ${APPLE_PALETTE.fontSans}`;
+      ctx.fillStyle = INSTITUTIONAL_PALETTE.axisText;
+      ctx.font = `13px ${INSTITUTIONAL_PALETTE.fontSans}`;
       ctx.textAlign = 'center';
       ctx.fillText('暂无行情数据', width / 2, height / 2);
       return;
     }
 
-    const padding = { top: 20, right: 65, bottom: 25, left: 15 };
+    const padding = { top: 20, right: 75, bottom: 25, left: 15 };
     const mainHeight = height * 0.72;
     const volHeight = height * 0.20;
     const volTop = height * 0.75;
@@ -143,11 +148,11 @@ class CandlestickChart {
     const volToY = (v) => volTop + volHeight - (v / (maxVol || 1)) * volHeight;
 
     // Draw horizontal grid lines
-    ctx.strokeStyle = APPLE_PALETTE.grid;
+    ctx.strokeStyle = INSTITUTIONAL_PALETTE.grid;
     ctx.lineWidth = 1;
     const gridSteps = 5;
-    ctx.fillStyle = APPLE_PALETTE.axisText;
-    ctx.font = `10px ${APPLE_PALETTE.fontMono}`;
+    ctx.fillStyle = INSTITUTIONAL_PALETTE.axisText;
+    ctx.font = `11px ${INSTITUTIONAL_PALETTE.fontMono}`;
     ctx.textAlign = 'left';
 
     for (let i = 0; i <= gridSteps; i++) {
@@ -158,12 +163,12 @@ class CandlestickChart {
       ctx.lineTo(width - padding.right, y);
       ctx.stroke();
 
-      ctx.fillText(`$${p.toFixed(2)}`, width - padding.right + 6, y + 3);
+      ctx.fillText(`$${p.toFixed(2)}`, width - padding.right + 8, y + 4);
     }
 
     const n = this.data.length;
     const barWidth = chartWidth / n;
-    const candleWidth = Math.max(1.5, barWidth * 0.7);
+    const candleWidth = Math.max(1.8, barWidth * 0.7);
 
     // Map signals for fast lookup
     const signalMap = {};
@@ -172,7 +177,7 @@ class CandlestickChart {
     }
 
     // 1. Draw Bollinger Bands Area
-    ctx.fillStyle = 'rgba(191, 90, 242, 0.07)';
+    ctx.fillStyle = 'rgba(99, 102, 241, 0.06)';
     ctx.beginPath();
     let hasBB = false;
     for (let i = 0; i < n; i++) {
@@ -199,15 +204,15 @@ class CandlestickChart {
     ctx.closePath();
     ctx.fill();
 
-    // 2. Draw Candlesticks & Volume Bars (Apple Green & Red)
+    // 2. Draw Candlesticks & Volume Bars
     for (let i = 0; i < n; i++) {
       const c = this.data[i];
       const x = padding.left + i * barWidth + barWidth / 2;
       const isUp = c.close >= c.open;
-      const color = isUp ? APPLE_PALETTE.green : APPLE_PALETTE.red;
+      const color = isUp ? INSTITUTIONAL_PALETTE.green : INSTITUTIONAL_PALETTE.red;
 
       // Volume bar
-      ctx.fillStyle = isUp ? 'rgba(48, 209, 88, 0.35)' : 'rgba(255, 69, 58, 0.35)';
+      ctx.fillStyle = isUp ? 'rgba(22, 163, 74, 0.22)' : 'rgba(220, 38, 38, 0.22)';
       const vy = volToY(c.volume);
       ctx.fillRect(x - candleWidth / 2, vy, candleWidth, volTop + volHeight - vy);
 
@@ -223,7 +228,7 @@ class CandlestickChart {
       const yOpen = priceToY(c.open);
       const yClose = priceToY(c.close);
       const bodyTop = Math.min(yOpen, yClose);
-      const bodyHeight = Math.max(1.5, Math.abs(yClose - yOpen));
+      const bodyHeight = Math.max(1.8, Math.abs(yClose - yOpen));
 
       ctx.fillStyle = color;
       ctx.fillRect(x - candleWidth / 2, bodyTop, candleWidth, bodyHeight);
@@ -233,18 +238,18 @@ class CandlestickChart {
       if (sig) {
         if (sig.type === 'BUY') {
           const markerY = priceToY(c.low) + 14;
-          ctx.fillStyle = APPLE_PALETTE.green;
+          ctx.fillStyle = INSTITUTIONAL_PALETTE.green;
           ctx.beginPath();
-          ctx.moveTo(x, markerY - 6);
+          ctx.moveTo(x, markerY - 7);
           ctx.lineTo(x - 5, markerY + 4);
           ctx.lineTo(x + 5, markerY + 4);
           ctx.closePath();
           ctx.fill();
         } else if (sig.type === 'SELL') {
           const markerY = priceToY(c.high) - 14;
-          ctx.fillStyle = APPLE_PALETTE.red;
+          ctx.fillStyle = INSTITUTIONAL_PALETTE.red;
           ctx.beginPath();
-          ctx.moveTo(x, markerY + 6);
+          ctx.moveTo(x, markerY + 7);
           ctx.lineTo(x - 5, markerY - 4);
           ctx.lineTo(x + 5, markerY - 4);
           ctx.closePath();
@@ -253,17 +258,17 @@ class CandlestickChart {
       }
     }
 
-    // 4. Draw EMA Fast (Apple Orange)
+    // 4. Draw EMA Fast (Institutional Amber)
     this.drawLineSeries(ctx, this.data.map((c, i) => ({
       x: padding.left + i * barWidth + barWidth / 2,
       y: c.sma_20 ? priceToY(c.sma_20) : null
-    })), APPLE_PALETTE.orange, 1.5);
+    })), INSTITUTIONAL_PALETTE.orange, 1.8);
 
-    // 5. Draw EMA Slow (Apple Teal)
+    // 5. Draw EMA Slow (Institutional Sky Blue)
     this.drawLineSeries(ctx, this.data.map((c, i) => ({
       x: padding.left + i * barWidth + barWidth / 2,
       y: c.sma_50 ? priceToY(c.sma_50) : null
-    })), APPLE_PALETTE.teal, 1.5);
+    })), INSTITUTIONAL_PALETTE.teal, 1.8);
 
     // 6. Crosshair if hovered
     if (this.hoverIdx >= 0 && this.hoverIdx < n) {
@@ -271,7 +276,7 @@ class CandlestickChart {
       const hc = this.data[this.hoverIdx];
       const hy = priceToY(hc.close);
 
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.strokeStyle = INSTITUTIONAL_PALETTE.crosshair;
       ctx.setLineDash([4, 4]);
       ctx.beginPath();
       ctx.moveTo(hx, padding.top);
@@ -283,7 +288,7 @@ class CandlestickChart {
     }
   }
 
-  drawLineSeries(ctx, points, color, lineWidth = 1.5) {
+  drawLineSeries(ctx, points, color, lineWidth = 1.8) {
     ctx.strokeStyle = color;
     ctx.lineWidth = lineWidth;
     ctx.beginPath();
@@ -332,7 +337,7 @@ class EquityChart {
       if (total === 0) return;
 
       const paddingLeft = 60;
-      const paddingRight = 70;
+      const paddingRight = 75;
       const chartWidth = this.canvas.clientWidth - paddingLeft - paddingRight;
       const barWidth = chartWidth / total;
 
@@ -348,7 +353,7 @@ class EquityChart {
       this.hoverIdx = -1;
       this.render();
       if (this.tooltipEl) {
-        this.tooltipEl.textContent = "资金曲线追踪与动态回撤";
+        this.tooltipEl.textContent = "多因子投资组合净值走势与动态基准对比";
       }
     });
   }
@@ -360,10 +365,10 @@ class EquityChart {
     const dd = rec.drawdown_pct ? rec.drawdown_pct.toFixed(2) : '0.00';
 
     this.tooltipEl.innerHTML = `
-      日期: <span style="color:#fff">${rec.date}</span> | 
-      策略净值: <span style="color:${APPLE_PALETTE.blue};font-weight:600;">$${rec.equity.toLocaleString()} (${stratRet > 0 ? '+' : ''}${stratRet}%)</span> | 
-      基准净值: <span style="color:${APPLE_PALETTE.axisText}">$${rec.benchmark.toLocaleString()} (${benchRet > 0 ? '+' : ''}${benchRet}%)</span> | 
-      回撤: <span style="color:${APPLE_PALETTE.red}">-${dd}%</span>
+      日期: <span style="color:${INSTITUTIONAL_PALETTE.darkText};font-weight:600;">${rec.date}</span> | 
+      策略净值: <span style="color:${INSTITUTIONAL_PALETTE.blue};font-weight:700;">$${rec.equity.toLocaleString()} (${stratRet > 0 ? '+' : ''}${stratRet}%)</span> | 
+      基准净值: <span style="color:${INSTITUTIONAL_PALETTE.axisText}">$${rec.benchmark.toLocaleString()} (${benchRet > 0 ? '+' : ''}${benchRet}%)</span> | 
+      回撤: <span style="color:${INSTITUTIONAL_PALETTE.red};font-weight:600;">-${dd}%</span>
     `;
   }
 
@@ -382,8 +387,8 @@ class EquityChart {
     ctx.clearRect(0, 0, width, height);
 
     if (!this.records || this.records.length === 0) {
-      ctx.fillStyle = APPLE_PALETTE.axisText;
-      ctx.font = `13px ${APPLE_PALETTE.fontSans}`;
+      ctx.fillStyle = INSTITUTIONAL_PALETTE.axisText;
+      ctx.font = `13px ${INSTITUTIONAL_PALETTE.fontSans}`;
       ctx.textAlign = 'center';
       ctx.fillText('等待回测启动生成净值曲线', width / 2, height / 2);
       return;
@@ -410,10 +415,10 @@ class EquityChart {
     const valToY = (v) => padding.top + (maxVal - v) / (maxVal - minVal) * chartHeight;
 
     // Grid lines
-    ctx.strokeStyle = APPLE_PALETTE.grid;
+    ctx.strokeStyle = INSTITUTIONAL_PALETTE.grid;
     ctx.lineWidth = 1;
-    ctx.fillStyle = APPLE_PALETTE.axisText;
-    ctx.font = `10px ${APPLE_PALETTE.fontMono}`;
+    ctx.fillStyle = INSTITUTIONAL_PALETTE.axisText;
+    ctx.font = `11px ${INSTITUTIONAL_PALETTE.fontMono}`;
     ctx.textAlign = 'left';
 
     const gridSteps = 4;
@@ -425,15 +430,15 @@ class EquityChart {
       ctx.lineTo(width - padding.right, y);
       ctx.stroke();
 
-      ctx.fillText(`$${(v / 1000).toFixed(1)}k`, width - padding.right + 6, y + 3);
+      ctx.fillText(`$${(v / 1000).toFixed(1)}k`, width - padding.right + 8, y + 4);
     }
 
     const n = this.records.length;
     const stepX = chartWidth / (n - 1 || 1);
 
-    // 1. Draw Benchmark Line (Muted Apple Gray)
-    ctx.strokeStyle = 'rgba(142, 142, 147, 0.65)';
-    ctx.lineWidth = 1.5;
+    // 1. Draw Benchmark Line (Muted Institutional Slate)
+    ctx.strokeStyle = INSTITUTIONAL_PALETTE.grayLight;
+    ctx.lineWidth = 1.8;
     ctx.setLineDash([3, 3]);
     ctx.beginPath();
     for (let i = 0; i < n; i++) {
@@ -445,10 +450,10 @@ class EquityChart {
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // 2. Draw Strategy Area Gradient (Apple Blue Soft Fade)
+    // 2. Draw Strategy Area Gradient (Invesco Royal Blue Soft Fade)
     const grad = ctx.createLinearGradient(0, padding.top, 0, height);
-    grad.addColorStop(0, 'rgba(10, 132, 255, 0.22)');
-    grad.addColorStop(1, 'rgba(10, 132, 255, 0.00)');
+    grad.addColorStop(0, 'rgba(0, 82, 204, 0.12)');
+    grad.addColorStop(1, 'rgba(0, 82, 204, 0.00)');
 
     ctx.fillStyle = grad;
     ctx.beginPath();
@@ -462,11 +467,9 @@ class EquityChart {
     ctx.closePath();
     ctx.fill();
 
-    // 3. Draw Strategy Glowing Line (Apple Blue)
-    ctx.strokeStyle = APPLE_PALETTE.blue;
+    // 3. Draw Strategy Solid Line (Institutional Navy-Blue #0052cc)
+    ctx.strokeStyle = INSTITUTIONAL_PALETTE.blue;
     ctx.lineWidth = 2.5;
-    ctx.shadowColor = 'rgba(10, 132, 255, 0.4)';
-    ctx.shadowBlur = 6;
     ctx.beginPath();
     for (let i = 0; i < n; i++) {
       const x = padding.left + i * stepX;
@@ -475,14 +478,13 @@ class EquityChart {
       else ctx.lineTo(x, y);
     }
     ctx.stroke();
-    ctx.shadowBlur = 0;
 
     // 4. Crosshair indicator
     if (this.hoverIdx >= 0 && this.hoverIdx < n) {
       const hx = padding.left + this.hoverIdx * stepX;
       const hy = valToY(this.records[this.hoverIdx].equity);
 
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.strokeStyle = INSTITUTIONAL_PALETTE.crosshair;
       ctx.setLineDash([4, 4]);
       ctx.beginPath();
       ctx.moveTo(hx, padding.top);
@@ -490,7 +492,7 @@ class EquityChart {
       ctx.stroke();
       ctx.setLineDash([]);
 
-      ctx.fillStyle = APPLE_PALETTE.blue;
+      ctx.fillStyle = INSTITUTIONAL_PALETTE.blue;
       ctx.beginPath();
       ctx.arc(hx, hy, 4.5, 0, Math.PI * 2);
       ctx.fill();
@@ -550,10 +552,10 @@ class MultiEquityChart {
     const valToY = (v) => padding.top + (maxVal - v) / (maxVal - minVal) * chartHeight;
 
     // Grid lines
-    ctx.strokeStyle = APPLE_PALETTE.grid;
+    ctx.strokeStyle = INSTITUTIONAL_PALETTE.grid;
     ctx.lineWidth = 1;
-    ctx.fillStyle = APPLE_PALETTE.axisText;
-    ctx.font = `10px ${APPLE_PALETTE.fontMono}`;
+    ctx.fillStyle = INSTITUTIONAL_PALETTE.axisText;
+    ctx.font = `11px ${INSTITUTIONAL_PALETTE.fontMono}`;
     ctx.textAlign = 'left';
 
     const gridSteps = 4;
@@ -565,7 +567,7 @@ class MultiEquityChart {
       ctx.lineTo(width - padding.right, y);
       ctx.stroke();
 
-      ctx.fillText(`$${(v / 1000).toFixed(1)}k`, width - padding.right + 6, y + 3);
+      ctx.fillText(`$${(v / 1000).toFixed(1)}k`, width - padding.right + 8, y + 4);
     }
 
     // Draw each series
@@ -575,7 +577,7 @@ class MultiEquityChart {
       if (n < 2) continue;
       const stepX = chartWidth / (n - 1);
 
-      ctx.strokeStyle = s.color;
+      ctx.strokeStyle = s.color || INSTITUTIONAL_PALETTE.blue;
       ctx.lineWidth = s.lineWidth || 2;
       if (s.dashed) ctx.setLineDash([3, 3]);
       else ctx.setLineDash([]);
@@ -652,8 +654,8 @@ class RollingICChart {
     ctx.clearRect(0, 0, width, height);
 
     if (!this.data || this.data.length === 0) {
-      ctx.fillStyle = APPLE_PALETTE.axisText;
-      ctx.font = `12px ${APPLE_PALETTE.fontSans}`;
+      ctx.fillStyle = INSTITUTIONAL_PALETTE.axisText;
+      ctx.font = `12px ${INSTITUTIONAL_PALETTE.fontSans}`;
       ctx.textAlign = 'center';
       ctx.fillText('暂无滚动 IC 因子诊断数据', width / 2, height / 2);
       return;
@@ -679,10 +681,10 @@ class RollingICChart {
     const zeroY = valToY(0);
 
     // 1. Grid & Y-Axis labels
-    ctx.strokeStyle = APPLE_PALETTE.grid;
+    ctx.strokeStyle = INSTITUTIONAL_PALETTE.grid;
     ctx.lineWidth = 1;
-    ctx.fillStyle = APPLE_PALETTE.axisText;
-    ctx.font = `10px ${APPLE_PALETTE.fontMono}`;
+    ctx.fillStyle = INSTITUTIONAL_PALETTE.axisText;
+    ctx.font = `10px ${INSTITUTIONAL_PALETTE.fontMono}`;
     ctx.textAlign = 'left';
 
     const levels = [minIC, minIC / 2, 0, maxIC / 2, maxIC];
@@ -696,14 +698,14 @@ class RollingICChart {
     }
 
     // 2. Zero baseline highlight
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+    ctx.strokeStyle = INSTITUTIONAL_PALETTE.gridBorder;
     ctx.lineWidth = 1.2;
     ctx.beginPath();
     ctx.moveTo(padding.left, zeroY);
     ctx.lineTo(width - padding.right, zeroY);
     ctx.stroke();
 
-    // 3. Positive / Negative Bars (Apple Green & Red)
+    // 3. Positive / Negative Bars (Institutional Green & Red)
     for (let i = 0; i < n; i++) {
       const x = padding.left + i * stepX;
       const v = this.data[i].ic;
@@ -711,12 +713,12 @@ class RollingICChart {
       const isPos = v >= 0;
 
       const barW = Math.max(2, (chartWidth / n) * 0.7);
-      ctx.fillStyle = isPos ? 'rgba(48, 209, 88, 0.65)' : 'rgba(255, 69, 58, 0.65)';
+      ctx.fillStyle = isPos ? 'rgba(22, 163, 74, 0.65)' : 'rgba(220, 38, 38, 0.65)';
       ctx.fillRect(x - barW / 2, Math.min(y, zeroY), barW, Math.abs(y - zeroY));
     }
 
-    // 4. Smooth trend line (Apple Blue)
-    ctx.strokeStyle = APPLE_PALETTE.blue;
+    // 4. Smooth trend line (Invesco Navy-Blue)
+    ctx.strokeStyle = INSTITUTIONAL_PALETTE.blue;
     ctx.lineWidth = 2;
     ctx.beginPath();
     for (let i = 0; i < n; i++) {
@@ -727,9 +729,9 @@ class RollingICChart {
     }
     ctx.stroke();
 
-    // 5. Mean IC dashed benchmark line (Apple Orange)
+    // 5. Mean IC dashed benchmark line (Warm Amber)
     const meanY = valToY(this.overallIC);
-    ctx.strokeStyle = APPLE_PALETTE.orange;
+    ctx.strokeStyle = INSTITUTIONAL_PALETTE.orange;
     ctx.lineWidth = 1.5;
     ctx.setLineDash([4, 4]);
     ctx.beginPath();
@@ -737,7 +739,7 @@ class RollingICChart {
     ctx.lineTo(width - padding.right, meanY);
     ctx.stroke();
     ctx.setLineDash([]);
-    ctx.fillStyle = APPLE_PALETTE.orange;
+    ctx.fillStyle = INSTITUTIONAL_PALETTE.orange;
     ctx.fillText(`均值: ${this.overallIC >= 0 ? '+' : ''}${this.overallIC.toFixed(3)}`, padding.left + 5, meanY - 4);
 
     // 6. Hover indicator
@@ -746,7 +748,7 @@ class RollingICChart {
       const hx = padding.left + this.hoverIdx * stepX;
       const hy = valToY(item.ic);
 
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+      ctx.strokeStyle = INSTITUTIONAL_PALETTE.crosshair;
       ctx.setLineDash([3, 3]);
       ctx.beginPath();
       ctx.moveTo(hx, padding.top);
@@ -754,23 +756,21 @@ class RollingICChart {
       ctx.stroke();
       ctx.setLineDash([]);
 
-      ctx.fillStyle = item.ic >= 0 ? APPLE_PALETTE.green : APPLE_PALETTE.red;
+      ctx.fillStyle = item.ic >= 0 ? INSTITUTIONAL_PALETTE.green : INSTITUTIONAL_PALETTE.red;
       ctx.beginPath();
       ctx.arc(hx, hy, 4.5, 0, Math.PI * 2);
       ctx.fill();
 
-      // Tooltip box (Apple Frosted Glass style)
+      // Tooltip box (Institutional floating card)
       const text = `${item.date}: IC ${item.ic >= 0 ? '+' : ''}${item.ic.toFixed(3)}`;
-      ctx.font = `10.5px ${APPLE_PALETTE.fontMono}`;
+      ctx.font = `11px ${INSTITUTIONAL_PALETTE.fontMono}`;
       const tw = ctx.measureText(text).width;
       const tx = Math.min(width - padding.right - tw - 10, Math.max(padding.left, hx - tw / 2));
       const ty = Math.max(padding.top + 14, hy - 10);
 
-      ctx.fillStyle = 'rgba(28, 28, 32, 0.92)';
+      ctx.fillStyle = '#0f172a';
       ctx.fillRect(tx - 6, ty - 12, tw + 12, 18);
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-      ctx.strokeRect(tx - 6, ty - 12, tw + 12, 18);
-      ctx.fillStyle = '#fff';
+      ctx.fillStyle = '#ffffff';
       ctx.fillText(text, tx, ty);
     }
   }

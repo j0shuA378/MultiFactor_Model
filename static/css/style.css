@@ -1,76 +1,72 @@
 /* ==========================================================================
-   AlphaQuant Pro - Apple Cupertino Design System (macOS & iOS HIG)
-   Aesthetic: Frosted Glass (Vibrancy), SF Pro Typography, Squircle Geometry,
-              Subtle Inset Bevel Highlights, Pure Pitch Dark Mode & Precision Fintech
+   AlphaQuant Institutional Design System
+   Aesthetic: Pristine Institutional White (Goldman Sachs & Invesco Style)
+   Palette: Pure White (#ffffff), Refined Slate (#f8fafc), Invesco Royal Navy (#0052cc),
+            Wall Street Deep Navy (#0a2540), Forest Green (#16a34a), Crimson Red (#dc2626)
    ========================================================================== */
 
 :root {
-  /* Apple Cupertino Dark Theme Colors */
-  --bg-primary: #000000;
-  --bg-secondary: #0d0d11;
-  --bg-tertiary: #16161c;
-  --bg-elevated: #1e1e26;
+  /* Institutional White Palette */
+  --bg-page: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-header: #ffffff;
+  --bg-ribbon: #ffffff;
+  --bg-sidebar: #ffffff;
+  --bg-subtle: #f8fafc;
+  --bg-elevated: #f1f5f9;
+  --bg-pill: #f1f5f9;
+  --bg-pill-hover: #e2e8f0;
+  --bg-input: #ffffff;
   
-  /* Apple Dynamic Materials (Frosted Acrylic & Vibrancy) */
-  --bg-card: rgba(24, 24, 29, 0.72);
-  --bg-card-hover: rgba(34, 34, 42, 0.82);
-  --bg-header: rgba(13, 13, 17, 0.78);
-  --bg-pill: rgba(120, 120, 128, 0.22);
-  --bg-pill-hover: rgba(120, 120, 128, 0.32);
-  --bg-input: rgba(0, 0, 0, 0.45);
+  /* Borders */
+  --border-subtle: #e2e8f0;
+  --border-card: #e2e8f0;
+  --border-input: #cbd5e1;
+  --border-focus: #0052cc;
+  --border-dark: #94a3b8;
   
-  /* Apple Hairline Borders & Reflections */
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-card: rgba(255, 255, 255, 0.10);
-  --border-bright: rgba(255, 255, 255, 0.18);
-  --border-focus: rgba(10, 132, 255, 0.55);
-  --glass-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  /* Typography Hierarchy */
+  --text-primary: #0f172a;    /* High-contrast Slate 900 */
+  --text-secondary: #334155;  /* Slate 700 */
+  --text-muted: #64748b;      /* Slate 500 */
+  --text-dimmed: #94a3b8;     /* Slate 400 */
   
-  /* Apple Typography Hierarchy */
-  --text-primary: #ffffff;
-  --text-secondary: rgba(235, 235, 245, 0.65);
-  --text-muted: rgba(235, 235, 245, 0.38);
-  --text-dimmed: rgba(235, 235, 245, 0.22);
-  
-  /* Authentic Apple System Accents (iOS 17/18 / macOS Sonoma) */
-  --apple-blue: #0A84FF;
-  --apple-blue-hover: #0071E3;
-  --apple-green: #30D158;
-  --apple-red: #FF453A;
-  --apple-orange: #FF9F0A;
-  --apple-yellow: #FFD60A;
-  --apple-purple: #BF5AF2;
-  --apple-teal: #64D2FF;
-  --apple-indigo: #5E5CE6;
-  --apple-gray: #8E8E93;
+  /* Institutional Brand & Strategy Accents */
+  --accent-blue: #0052cc;     /* Invesco & Goldman Royal Navy */
+  --accent-blue-hover: #0047b3;
+  --accent-blue-light: #eff6ff;
+  --accent-navy: #0a2540;     /* Wall Street Deep Navy */
+  --accent-cyan: #0284c7;     /* Sky Slate */
+  --accent-teal: #0d9488;     /* Institutional Teal */
+  --accent-orange: #d97706;   /* Amber / Factor Orange */
+  --accent-purple: #7c3aed;   /* Allocation Violet */
 
-  /* Aliases for Strategy Engine */
-  --accent-cyan: var(--apple-teal);
-  --accent-indigo: var(--apple-blue);
-  --accent-violet: var(--apple-purple);
-  --accent-emerald: var(--apple-green);
-  --accent-rose: var(--apple-red);
-  --accent-amber: var(--apple-orange);
+  /* Financial Indicators */
+  --color-bull: #16a34a;      /* Forest Green */
+  --color-bull-bg: #dcfce7;
+  --color-bull-text: #15803d;
+  --color-bear: #dc2626;      /* Crimson Red */
+  --color-bear-bg: #fee2e2;
+  --color-bear-text: #b91c1c;
 
-  --color-bull: var(--apple-green);
-  --color-bear: var(--apple-red);
-  
-  /* Apple Typography Stack */
-  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Helvetica Neue", Inter, sans-serif;
-  --font-mono: "SF Mono", "JetBrains Mono", Menlo, Monaco, Consolas, monospace;
-  
-  /* Apple Squircle Radii & Elevation */
-  --radius-xs: 6px;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 18px;
-  --radius-xl: 24px;
+  /* Typography Stack */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', "SF Mono", Menlo, Monaco, Consolas, monospace;
+
+  /* Geometry & Shadows */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
   --radius-full: 9999px;
-  
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-card: 0 12px 36px rgba(0, 0, 0, 0.45);
-  --shadow-pop: 0 20px 60px rgba(0, 0, 0, 0.7);
-  --apple-ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-card: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
+  --shadow-hover: 0 6px 18px -2px rgba(15, 23, 42, 0.09), 0 2px 5px -2px rgba(15, 23, 42, 0.05);
+  --shadow-dropdown: 0 12px 30px -4px rgba(15, 23, 42, 0.14), 0 4px 8px -4px rgba(15, 23, 42, 0.06);
+  --shadow-modal: 0 24px 48px -8px rgba(15, 23, 42, 0.25);
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 * {
@@ -81,21 +77,16 @@
 
 body {
   font-family: var(--font-sans);
-  background-color: var(--bg-primary);
+  background-color: var(--bg-page);
   color: var(--text-primary);
   min-height: 100vh;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  background-image: 
-    radial-gradient(circle at 50% 0%, rgba(10, 132, 255, 0.07) 0%, transparent 55%),
-    radial-gradient(circle at 85% 15%, rgba(94, 92, 230, 0.05) 0%, transparent 45%),
-    radial-gradient(circle at 15% 85%, rgba(191, 90, 242, 0.04) 0%, transparent 50%);
-  background-attachment: fixed;
 }
 
-/* Apple Sleek Scrollbars */
+/* Institutional Clean Scrollbars */
 ::-webkit-scrollbar {
   width: 7px;
   height: 7px;
@@ -104,13 +95,13 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.16);
-  border-radius: 10px;
+  background: #cbd5e1;
+  border-radius: 8px;
   border: 2px solid transparent;
   background-clip: padding-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: #94a3b8;
 }
 
 .app-layout {
@@ -120,14 +111,12 @@ body {
 }
 
 /* ==========================================================================
-   macOS Window Frame / Top Header Navigation
+   Tier 1: Main Institutional Navigation Header
    ========================================================================== */
 
 .app-header {
   height: 64px;
   background: var(--bg-header);
-  -webkit-backdrop-filter: blur(36px) saturate(190%);
-  backdrop-filter: blur(36px) saturate(190%);
   border-bottom: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
@@ -136,36 +125,15 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03);
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 24px;
+  flex-shrink: 0;
 }
-
-/* macOS Window Traffic Lights Indicator */
-.mac-window-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-right: 4px;
-}
-
-.mac-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  display: inline-block;
-  position: relative;
-  transition: opacity 0.2s;
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.35);
-}
-
-.mac-dot-close { background: #FF5F56; border: 0.5px solid #E0443E; }
-.mac-dot-min   { background: #FFBD2E; border: 0.5px solid #DEA123; }
-.mac-dot-max   { background: #27C93F; border: 0.5px solid #1AAB29; }
 
 .brand-logo {
   display: flex;
@@ -173,41 +141,27 @@ body {
   gap: 12px;
   text-decoration: none;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .logo-icon {
   width: 36px;
   height: 36px;
-  border-radius: 10px;
-  background: linear-gradient(145deg, #1f2330 0%, #12141c 100%);
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, #0a2540 0%, #0052cc 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 6px rgba(0, 82, 204, 0.25);
 }
 
 .logo-symbol {
   font-family: var(--font-mono);
-  font-weight: 700;
-  font-size: 13px;
-  color: #fff;
+  font-weight: 800;
+  font-size: 14px;
+  color: #ffffff;
   letter-spacing: -0.5px;
-}
-
-.pulse-ring {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 10px;
-  border: 1px solid rgba(10, 132, 255, 0.5);
-  animation: applePulse 3s infinite cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes applePulse {
-  0% { transform: scale(1); opacity: 0.7; }
-  100% { transform: scale(1.3); opacity: 0; }
 }
 
 .brand-text {
@@ -216,23 +170,24 @@ body {
 }
 
 .brand-title {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   letter-spacing: -0.02em;
   display: flex;
   align-items: center;
   gap: 8px;
   color: var(--text-primary);
+  line-height: 1.2;
 }
 
 .badge-pro {
   font-size: 9.5px;
   font-weight: 700;
-  background: rgba(10, 132, 255, 0.15);
-  color: var(--apple-blue);
-  border: 1px solid rgba(10, 132, 255, 0.35);
+  background: #eff6ff;
+  color: var(--accent-blue);
+  border: 1px solid #bfdbfe;
   padding: 1px 6px;
-  border-radius: 6px;
+  border-radius: var(--radius-xs);
   letter-spacing: 0.5px;
 }
 
@@ -242,174 +197,181 @@ body {
   letter-spacing: -0.01em;
 }
 
-/* ==========================================================================
-   Apple Cupertino Segmented Control (Navigation Bar)
-   ========================================================================== */
-
+/* Institutional Navigation Bar (Segmented Tabs) */
 .nav-pages-bar {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
   background: var(--bg-pill);
   padding: 3px;
-  border-radius: var(--radius-full);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(20px);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
 }
 
 .nav-page-link {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   text-decoration: none;
-  padding: 5px 14px;
-  border-radius: var(--radius-full);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-secondary);
-  transition: all 0.25s var(--apple-ease);
+  transition: all 0.15s ease;
   white-space: nowrap;
 }
 
 .nav-page-link:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.7);
 }
 
 .nav-page-link.active {
-  background: rgba(255, 255, 255, 0.18);
-  color: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35), inset 0 0.5px 0.5px rgba(255, 255, 255, 0.4);
+  background: #ffffff;
+  color: var(--accent-blue);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .nav-page-badge {
   font-size: 9px;
   padding: 1px 5px;
-  border-radius: 4px;
-  font-weight: 600;
+  border-radius: var(--radius-xs);
+  font-weight: 700;
   text-transform: uppercase;
 }
 
-.badge-barra { background: rgba(255, 159, 10, 0.18); color: var(--apple-orange); }
-.badge-ml    { background: rgba(100, 210, 255, 0.18); color: var(--apple-teal); }
-.badge-cta   { background: rgba(48, 209, 88, 0.18); color: var(--apple-green); }
-.badge-alloc { background: rgba(191, 90, 242, 0.18); color: var(--apple-purple); }
-
-/* Ticker Preset Capsules */
-.ticker-presets {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  overflow-x: auto;
-  max-width: 480px;
-  padding: 4px 0;
-}
-
-.ticker-chip {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-full);
-  padding: 4px 12px;
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all 0.2s var(--apple-ease);
-  white-space: nowrap;
-}
-
-.ticker-chip:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
-}
-
-.ticker-chip.active {
-  background: var(--apple-blue);
-  border-color: var(--apple-blue);
-  color: #ffffff;
-  box-shadow: 0 2px 10px rgba(10, 132, 255, 0.45);
-}
+.badge-barra { background: #fef3c7; color: #b45309; }
+.badge-ml    { background: #e0f2fe; color: #0369a1; }
+.badge-cta   { background: #dcfce7; color: #15803d; }
+.badge-alloc { background: #f3e8ff; color: #7e22ce; }
 
 /* Header Right Controls */
 .header-right {
   display: flex;
   align-items: center;
   gap: 14px;
+  flex-shrink: 0;
 }
 
+/* Institutional Search Box */
 .search-box {
   display: flex;
   align-items: center;
-  background: var(--bg-input);
-  border: 1px solid var(--border-subtle);
+  background: #ffffff;
+  border: 1px solid var(--border-input);
   border-radius: var(--radius-sm);
-  padding: 3px 6px 3px 10px;
-  transition: all 0.2s var(--apple-ease);
+  padding: 4px 8px 4px 10px;
+  transition: all 0.2s ease;
   position: relative;
+  width: 290px;
+  min-width: 270px;
+  max-width: 330px;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
 }
 
 .search-box:focus-within {
-  border-color: var(--apple-blue);
-  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.3);
-  background: rgba(0, 0, 0, 0.6);
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.12);
 }
 
-/* Apple Spotlight / Safari Style Search Suggestions Dropdown */
+.search-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--text-muted);
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.search-box input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  flex: 1;
+  min-width: 130px;
+}
+
+.search-box input::placeholder {
+  color: var(--text-muted);
+}
+
+.btn-search {
+  background: #f1f5f9;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  border-radius: var(--radius-xs);
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.btn-search:hover {
+  background: var(--accent-blue);
+  border-color: var(--accent-blue);
+  color: #ffffff;
+}
+
+/* Institutional Search Suggestions Dropdown */
 .search-suggestions-dropdown {
   position: absolute;
-  top: calc(100% + 8px);
+  top: calc(100% + 6px);
   right: 0;
-  width: 400px;
+  width: 390px;
   max-width: 90vw;
-  background: rgba(22, 22, 27, 0.94);
-  -webkit-backdrop-filter: blur(40px) saturate(190%);
-  backdrop-filter: blur(40px) saturate(190%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 14px;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-dropdown);
   padding: 6px;
   z-index: 1000;
   display: flex;
   flex-direction: column;
   gap: 2px;
-  animation: appleDropdownFade 0.18s var(--apple-ease);
+  animation: dropdownFade 0.15s ease;
 }
 
-@keyframes appleDropdownFade {
+@keyframes dropdownFade {
   from {
     opacity: 0;
-    transform: translateY(-6px) scale(0.98);
+    transform: translateY(-4px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 
 .suggestion-header {
   padding: 6px 10px 4px 10px;
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-muted);
   letter-spacing: 0.5px;
   text-transform: uppercase;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--border-subtle);
   margin-bottom: 4px;
+  background: #f8fafc;
+  border-radius: var(--radius-xs);
 }
 
 .suggestion-source-tag {
   font-size: 9.5px;
-  color: var(--apple-blue);
-  background: rgba(10, 132, 255, 0.12);
-  border: 0.5px solid rgba(10, 132, 255, 0.25);
+  color: var(--accent-blue);
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
   padding: 1px 6px;
-  border-radius: 4px;
-  font-weight: 500;
+  border-radius: var(--radius-xs);
+  font-weight: 600;
 }
 
 .suggestion-item {
@@ -417,15 +379,15 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 8px 10px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all 0.15s var(--apple-ease);
+  transition: all 0.15s ease;
   text-decoration: none;
 }
 
 .suggestion-item:hover,
 .suggestion-item.highlighted {
-  background: rgba(255, 255, 255, 0.09);
+  background: #f1f5f9;
 }
 
 .suggestion-left {
@@ -440,13 +402,14 @@ body {
   font-family: var(--font-mono);
   font-size: 11.5px;
   font-weight: 700;
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--accent-blue);
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
   padding: 2px 7px;
-  border-radius: 6px;
-  min-width: 48px;
+  border-radius: var(--radius-xs);
+  min-width: 50px;
   text-align: center;
+  flex-shrink: 0;
 }
 
 .suggestion-info {
@@ -457,7 +420,7 @@ body {
 
 .suggestion-name {
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
@@ -465,7 +428,7 @@ body {
 }
 
 .suggestion-meta {
-  font-size: 10px;
+  font-size: 10.5px;
   color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
@@ -477,19 +440,20 @@ body {
   align-items: center;
   gap: 8px;
   text-align: right;
+  flex-shrink: 0;
 }
 
 .suggestion-price {
   font-family: var(--font-mono);
   font-size: 12px;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .suggestion-chg-pill {
   font-family: var(--font-mono);
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   padding: 2px 8px;
   border-radius: var(--radius-full);
   min-width: 58px;
@@ -498,21 +462,21 @@ body {
 }
 
 .suggestion-chg-pill.pos {
-  background: rgba(48, 209, 88, 0.16);
-  color: var(--apple-green);
-  border: 0.5px solid rgba(48, 209, 88, 0.35);
+  background: var(--color-bull-bg);
+  color: var(--color-bull-text);
+  border: 1px solid #bbf7d0;
 }
 
 .suggestion-chg-pill.neg {
-  background: rgba(255, 69, 58, 0.16);
-  color: var(--apple-red);
-  border: 0.5px solid rgba(255, 69, 58, 0.35);
+  background: var(--color-bear-bg);
+  color: var(--color-bear-text);
+  border: 1px solid #fecaca;
 }
 
 .suggestion-chg-pill.flat {
-  background: rgba(255, 255, 255, 0.08);
+  background: #f1f5f9;
   color: var(--text-muted);
-  border: 0.5px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--border-subtle);
 }
 
 .suggestion-loading,
@@ -528,10 +492,10 @@ body {
 }
 
 .suggestion-spinner {
-  width: 13px;
-  height: 13px;
-  border: 2px solid rgba(10, 132, 255, 0.2);
-  border-top-color: var(--apple-blue);
+  width: 14px;
+  height: 14px;
+  border: 2px solid #cbd5e1;
+  border-top-color: var(--accent-blue);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -540,50 +504,12 @@ body {
   to { transform: rotate(360deg); }
 }
 
-.search-icon {
-  width: 14px;
-  height: 14px;
-  color: var(--text-muted);
-  margin-right: 6px;
-}
-
-.search-box input {
-  background: transparent;
-  border: none;
-  outline: none;
-  color: var(--text-primary);
-  font-family: var(--font-sans);
-  font-size: 12.5px;
-  width: 160px;
-}
-
-.search-box input::placeholder {
-  color: var(--text-muted);
-}
-
-.btn-search {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid var(--border-subtle);
-  color: var(--text-secondary);
-  border-radius: 6px;
-  padding: 4px 10px;
-  font-size: 11.5px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s var(--apple-ease);
-}
-
-.btn-search:hover {
-  background: rgba(255, 255, 255, 0.16);
-  color: #fff;
-}
-
-/* Apple Period Segmented Pill */
+/* Institutional Period Selector */
 .period-selector {
   display: flex;
   background: var(--bg-pill);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: var(--radius-full);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
   padding: 2px;
 }
 
@@ -592,11 +518,11 @@ body {
   border: none;
   color: var(--text-muted);
   font-size: 11.5px;
-  font-weight: 500;
-  padding: 3px 10px;
-  border-radius: var(--radius-full);
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--radius-xs);
   cursor: pointer;
-  transition: all 0.15s var(--apple-ease);
+  transition: all 0.15s ease;
 }
 
 .period-btn:hover {
@@ -604,9 +530,9 @@ body {
 }
 
 .period-btn.active {
-  background: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  background: #ffffff;
+  color: var(--accent-blue);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .system-status {
@@ -614,6 +540,7 @@ body {
   align-items: center;
   gap: 6px;
   font-size: 11px;
+  font-weight: 500;
   color: var(--text-muted);
 }
 
@@ -621,55 +548,169 @@ body {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background-color: var(--apple-green);
-  box-shadow: 0 0 8px rgba(48, 209, 88, 0.6);
+  background-color: var(--color-bull);
+  box-shadow: 0 0 6px rgba(22, 163, 74, 0.5);
 }
 
 /* ==========================================================================
-   Apple Strategy Switcher Bar (Sub-Toolbar)
+   Tier 2: Institutional Market Watch & Benchmarks Ribbon Bar
    ========================================================================== */
 
-.strategy-navbar {
-  background: rgba(18, 18, 24, 0.72);
-  -webkit-backdrop-filter: blur(28px);
-  backdrop-filter: blur(28px);
+.market-ribbon-bar {
+  background: #ffffff;
   border-bottom: 1px solid var(--border-subtle);
-  padding: 8px 24px;
+  padding: 6px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
+  position: sticky;
+  top: 64px;
+  z-index: 90;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.02);
+}
+
+.ribbon-label-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.ribbon-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--accent-blue);
+}
+
+.ribbon-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.ticker-presets {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  flex: 1;
+  padding: 2px 0;
+  scrollbar-width: thin;
+}
+
+.ticker-chip {
+  background: #f8fafc;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.ticker-chip:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: var(--text-primary);
+}
+
+.ticker-chip.active {
+  background: var(--accent-blue);
+  border-color: var(--accent-blue);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 82, 204, 0.25);
+}
+
+.ribbon-asset-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.rai-code {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--accent-blue);
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  padding: 1px 8px;
+  border-radius: var(--radius-xs);
+}
+
+/* ==========================================================================
+   Sub-Header / Strategy Switcher & Title Banner
+   ========================================================================== */
+
+.strategy-navbar {
+  background: #ffffff;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.page-title-banner {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.page-title-banner h2 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.page-title-banner p {
+  font-size: 11.5px;
+  color: var(--text-muted);
 }
 
 .strategy-tabs {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .strat-tab {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: transparent;
-  border: 1px solid transparent;
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
   padding: 8px 14px;
   border-radius: var(--radius-md);
   cursor: pointer;
   text-align: left;
-  transition: all 0.2s var(--apple-ease);
+  transition: all 0.15s ease;
 }
 
 .strat-tab:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: #f8fafc;
+  border-color: #cbd5e1;
 }
 
 .strat-tab.active {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.12);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  box-shadow: 0 1px 3px rgba(0, 82, 204, 0.08);
 }
 
 .tab-icon {
-  font-size: 17px;
+  font-size: 16px;
 }
 
 .tab-content {
@@ -678,13 +719,13 @@ body {
 }
 
 .tab-title {
-  font-size: 12.5px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 700;
   color: var(--text-secondary);
 }
 
 .strat-tab.active .tab-title {
-  color: #ffffff;
+  color: var(--accent-blue);
 }
 
 .tab-desc {
@@ -692,32 +733,33 @@ body {
   color: var(--text-muted);
 }
 
-/* Apple Primary Action Button (Run Backtest) */
+/* Institutional Primary Action Button */
 .btn-primary-action {
-  background: linear-gradient(180deg, var(--apple-blue) 0%, var(--apple-blue-hover) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: linear-gradient(180deg, #0052cc 0%, #0047b3 100%);
+  border: 1px solid #003d99;
   color: #ffffff;
-  padding: 9px 20px;
-  border-radius: var(--radius-full);
+  padding: 8px 18px;
+  border-radius: var(--radius-sm);
   font-weight: 600;
-  font-size: 13px;
+  font-size: 12.5px;
   display: flex;
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(10, 132, 255, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-  transition: all 0.2s var(--apple-ease);
-  letter-spacing: -0.01em;
+  box-shadow: 0 2px 6px rgba(0, 82, 204, 0.3);
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .btn-primary-action:hover {
+  background: linear-gradient(180deg, #005ce6 0%, #0052cc 100%);
+  box-shadow: 0 4px 12px rgba(0, 82, 204, 0.4);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(10, 132, 255, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 .btn-primary-action:active {
-  transform: translateY(0.5px);
-  filter: brightness(0.95);
+  transform: translateY(0);
 }
 
 /* ==========================================================================
@@ -728,20 +770,18 @@ body {
   display: grid;
   grid-template-columns: 310px 1fr;
   flex: 1;
-  min-height: calc(100vh - 128px);
+  min-height: calc(100vh - 120px);
 }
 
-/* Left Sidebar Controls (macOS Inspector Style) */
+/* Left Sidebar Controls */
 .control-sidebar {
-  background: rgba(14, 14, 18, 0.7);
-  -webkit-backdrop-filter: blur(24px);
-  backdrop-filter: blur(24px);
+  background: var(--bg-sidebar);
   border-right: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 128px);
+  height: calc(100vh - 120px);
   position: sticky;
-  top: 128px;
+  top: 120px;
 }
 
 .sidebar-header {
@@ -754,29 +794,29 @@ body {
 
 .sidebar-title {
   font-size: 12.5px;
-  font-weight: 600;
+  font-weight: 700;
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   letter-spacing: -0.01em;
 }
 
 .sidebar-title .icon-svg {
   width: 15px;
   height: 15px;
-  color: var(--apple-blue);
+  color: var(--accent-blue);
 }
 
 .ticker-badge {
   font-family: var(--font-mono);
-  background: rgba(10, 132, 255, 0.12);
-  color: var(--apple-blue);
-  border: 1px solid rgba(10, 132, 255, 0.3);
+  background: #eff6ff;
+  color: var(--accent-blue);
+  border: 1px solid #bfdbfe;
   padding: 2px 8px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-xs);
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .sidebar-scroll {
@@ -787,23 +827,23 @@ body {
   gap: 14px;
 }
 
-/* Parameter Card (Frosted Glass Bevel) */
+/* Parameter Card */
 .param-card {
-  background: var(--bg-card);
+  background: #ffffff;
   border: 1px solid var(--border-card);
   border-radius: var(--radius-md);
   padding: 14px 16px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25), var(--glass-bevel);
-  transition: border-color 0.2s;
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.15s;
 }
 
 .param-card:hover {
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: #cbd5e1;
 }
 
 .param-card-title {
-  font-size: 11.5px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 700;
   color: var(--text-primary);
   margin-bottom: 12px;
   letter-spacing: -0.01em;
@@ -821,7 +861,7 @@ body {
   font-size: 11px;
   color: var(--text-secondary);
   margin-bottom: 5px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .form-row {
@@ -830,27 +870,27 @@ body {
   gap: 10px;
 }
 
-/* Apple Native Inputs */
+/* Form Inputs */
 input[type="number"],
 input[type="text"],
 .custom-select {
   width: 100%;
-  background: var(--bg-input);
-  border: 1px solid var(--border-subtle);
+  background: #ffffff;
+  border: 1px solid var(--border-input);
   border-radius: var(--radius-sm);
   color: var(--text-primary);
   font-family: var(--font-sans);
   font-size: 12px;
   padding: 7px 10px;
   outline: none;
-  transition: all 0.15s var(--apple-ease);
+  transition: all 0.15s ease;
 }
 
 input[type="number"]:focus,
 input[type="text"]:focus,
 .custom-select:focus {
-  border-color: var(--apple-blue);
-  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.3);
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.12);
 }
 
 .input-with-affix {
@@ -883,19 +923,20 @@ input[type="text"]:focus,
   align-items: center;
   gap: 8px;
   font-size: 11.5px;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   cursor: pointer;
+  font-weight: 500;
 }
 
 .checkbox-label input[type="checkbox"] {
-  accent-color: var(--apple-blue);
+  accent-color: var(--accent-blue);
   width: 15px;
   height: 15px;
-  border-radius: 4px;
+  border-radius: 3px;
   cursor: pointer;
 }
 
-/* Apple iOS Native Range Sliders */
+/* Institutional Range Sliders */
 .range-with-val {
   display: flex;
   align-items: center;
@@ -907,7 +948,7 @@ input[type="text"]:focus,
   -webkit-appearance: none;
   appearance: none;
   height: 5px;
-  background: rgba(255, 255, 255, 0.16);
+  background: #e2e8f0;
   border-radius: 3px;
   outline: none;
 }
@@ -915,27 +956,27 @@ input[type="text"]:focus,
 .range-with-val input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   background: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
   cursor: grab;
-  border: 0.5px solid rgba(0, 0, 0, 0.08);
+  border: 2px solid var(--accent-blue);
   transition: transform 0.15s;
 }
 
 .range-with-val input[type="range"]::-webkit-slider-thumb:hover {
-  transform: scale(1.1);
+  transform: scale(1.15);
 }
 
 .range-with-val span {
   font-family: var(--font-mono);
   font-size: 12px;
-  color: var(--apple-blue);
+  color: var(--accent-blue);
   width: 38px;
   text-align: right;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .input-hint {
@@ -947,12 +988,12 @@ input[type="text"]:focus,
 }
 
 .info-alert {
-  background: rgba(10, 132, 255, 0.08);
-  border: 1px solid rgba(10, 132, 255, 0.2);
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
   padding: 10px 12px;
   border-radius: var(--radius-sm);
   font-size: 11px;
-  color: var(--text-secondary);
+  color: #1e40af;
   line-height: 1.5;
   margin-top: 8px;
 }
@@ -965,24 +1006,25 @@ input[type="text"]:focus,
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid var(--border-subtle);
+  background: #ffffff;
+  border: 1px solid var(--border-input);
   color: var(--text-secondary);
   padding: 8px 12px;
   border-radius: var(--radius-sm);
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s var(--apple-ease);
+  transition: all 0.15s ease;
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.12);
-  color: #ffffff;
+  background: #f8fafc;
+  color: var(--text-primary);
+  border-color: #94a3b8;
 }
 
 /* ==========================================================================
-   Center Workspace & Charts (Cupertino Grid)
+   Center Workspace & Charts
    ========================================================================== */
 
 .content-workspace {
@@ -992,7 +1034,7 @@ input[type="text"]:focus,
   gap: 20px;
 }
 
-/* Apple Stocks & Health Style KPI Cards */
+/* Institutional KPI Cards (Invesco & Goldman Sachs Style) */
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -1002,27 +1044,25 @@ input[type="text"]:focus,
 .kpi-card {
   background: var(--bg-card);
   border: 1px solid var(--border-card);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   padding: 18px 20px;
-  box-shadow: var(--shadow-card), var(--glass-bevel);
-  -webkit-backdrop-filter: blur(28px) saturate(190%);
-  backdrop-filter: blur(28px) saturate(190%);
+  box-shadow: var(--shadow-card);
   position: relative;
   overflow: hidden;
-  transition: all 0.25s var(--apple-ease);
+  transition: all 0.2s ease;
 }
 
 .kpi-card:hover {
-  transform: translateY(-2px);
-  border-color: rgba(255, 255, 255, 0.18);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55), var(--glass-bevel);
+  box-shadow: var(--shadow-hover);
+  border-color: #cbd5e1;
 }
 
 .kpi-label {
-  font-size: 11.5px;
+  font-size: 11px;
   color: var(--text-muted);
-  font-weight: 500;
-  letter-spacing: -0.01em;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
   display: block;
 }
 
@@ -1036,7 +1076,7 @@ input[type="text"]:focus,
 .kpi-value {
   font-family: var(--font-sans);
   font-size: 26px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-primary);
   letter-spacing: -0.02em;
 }
@@ -1051,11 +1091,12 @@ input[type="text"]:focus,
 
 .kpi-tag {
   font-family: var(--font-mono);
-  font-size: 10.5px;
+  font-size: 11px;
   padding: 2px 7px;
-  border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-xs);
+  background: #f1f5f9;
   color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
   font-weight: 600;
 }
 
@@ -1066,17 +1107,12 @@ input[type="text"]:focus,
   letter-spacing: -0.01em;
 }
 
-/* ==========================================================================
-   Chart Container Cards (Apple Cupertino Surface)
-   ========================================================================== */
-
+/* Chart Container Cards */
 .chart-container-card {
   background: var(--bg-card);
   border: 1px solid var(--border-card);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card), var(--glass-bevel);
-  -webkit-backdrop-filter: blur(28px) saturate(190%);
-  backdrop-filter: blur(28px) saturate(190%);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
   padding: 18px 22px;
   display: flex;
   flex-direction: column;
@@ -1087,6 +1123,8 @@ input[type="text"]:focus,
   justify-content: space-between;
   align-items: center;
   margin-bottom: 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 12px;
 }
 
 .chart-title-group {
@@ -1097,7 +1135,7 @@ input[type="text"]:focus,
 
 .chart-title {
   font-size: 13.5px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.01em;
 }
@@ -1113,18 +1151,19 @@ input[type="text"]:focus,
   align-items: center;
   gap: 6px;
   font-size: 11px;
+  font-weight: 500;
   color: var(--text-secondary);
 }
 
 .legend-dot {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
 }
 
-.dot-sma20 { background-color: var(--apple-orange); }
-.dot-sma50 { background-color: var(--apple-teal); }
-.dot-bb    { background-color: var(--apple-purple); }
+.dot-sma20 { background-color: var(--accent-orange); }
+.dot-sma50 { background-color: var(--accent-cyan); }
+.dot-bb    { background-color: var(--accent-purple); }
 
 .legend-marker {
   font-size: 10px;
@@ -1141,29 +1180,21 @@ input[type="text"]:focus,
   display: inline-block;
 }
 
-.line-strategy { background-color: var(--apple-blue); }
-.line-benchmark { background-color: var(--apple-gray); }
-.line-momentum { background-color: var(--apple-orange); }
-.line-ml { background-color: var(--apple-teal); }
-.line-turtle { background-color: var(--apple-green); }
-
-.legend-area {
-  width: 12px;
-  height: 10px;
-  background: rgba(255, 69, 58, 0.25);
-  border: 1px solid var(--apple-red);
-  border-radius: 2px;
-  display: inline-block;
-}
+.line-strategy { background-color: var(--accent-blue); }
+.line-benchmark { background-color: var(--text-muted); }
+.line-momentum { background-color: var(--accent-orange); }
+.line-ml { background-color: var(--accent-cyan); }
+.line-turtle { background-color: var(--color-bull); }
 
 .cursor-price-info {
   font-family: var(--font-mono);
   font-size: 11.5px;
-  color: var(--apple-blue);
-  background: rgba(10, 132, 255, 0.08);
-  padding: 3px 10px;
-  border-radius: var(--radius-full);
-  border: 1px solid rgba(10, 132, 255, 0.18);
+  color: var(--accent-blue);
+  background: #eff6ff;
+  padding: 4px 12px;
+  border-radius: var(--radius-xs);
+  border: 1px solid #bfdbfe;
+  font-weight: 600;
 }
 
 .canvas-wrapper {
@@ -1187,17 +1218,15 @@ canvas {
 }
 
 /* ==========================================================================
-   Factor & ML Diagnostics Panel (macOS Pro Inspection)
+   Factor & ML Diagnostics Panel
    ========================================================================== */
 
 .diagnostics-card {
   background: var(--bg-card);
   border: 1px solid var(--border-card);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   padding: 18px 22px;
-  box-shadow: var(--shadow-card), var(--glass-bevel);
-  -webkit-backdrop-filter: blur(28px) saturate(190%);
-  backdrop-filter: blur(28px) saturate(190%);
+  box-shadow: var(--shadow-card);
 }
 
 .card-inner-header {
@@ -1205,19 +1234,22 @@ canvas {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 12px;
 }
 
 .card-inner-title {
   font-size: 13.5px;
-  font-weight: 600;
+  font-weight: 700;
   display: flex;
   align-items: center;
   gap: 8px;
+  color: var(--text-primary);
   letter-spacing: -0.01em;
 }
 
 .ai-sparkle {
-  color: var(--apple-blue);
+  color: var(--accent-blue);
   font-size: 16px;
 }
 
@@ -1227,14 +1259,14 @@ canvas {
 }
 
 .ml-tag {
-  background: rgba(10, 132, 255, 0.12);
-  border: 1px solid rgba(10, 132, 255, 0.25);
-  color: var(--apple-blue);
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: var(--accent-blue);
   font-size: 10.5px;
   padding: 2px 8px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-xs);
   font-family: var(--font-mono);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .ml-diagnostics-grid {
@@ -1261,23 +1293,25 @@ canvas {
   font-size: 11px;
   color: var(--text-secondary);
   font-family: var(--font-mono);
+  font-weight: 600;
 }
 
 .feature-track {
-  height: 5px;
-  background: rgba(255, 255, 255, 0.08);
+  height: 6px;
+  background: #f1f5f9;
   border-radius: 3px;
   overflow: hidden;
+  border: 1px solid var(--border-subtle);
 }
 
 .feature-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--apple-blue), var(--apple-teal));
+  background: linear-gradient(90deg, #0052cc, #0284c7);
   border-radius: 3px;
 }
 
 .ml-explanation-box {
-  background: rgba(0, 0, 0, 0.35);
+  background: #f8fafc;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   padding: 14px 16px;
@@ -1288,13 +1322,14 @@ canvas {
 
 .ml-explanation-box h4 {
   font-size: 12.5px;
-  font-weight: 600;
+  font-weight: 700;
+  color: var(--text-primary);
   margin-bottom: 6px;
 }
 
 .ml-explanation-box p {
-  font-size: 11px;
-  color: var(--text-muted);
+  font-size: 11.5px;
+  color: var(--text-secondary);
   line-height: 1.5;
 }
 
@@ -1306,40 +1341,40 @@ canvas {
 }
 
 .stat-pill {
-  background: rgba(255, 255, 255, 0.04);
+  background: #ffffff;
   padding: 8px;
   border-radius: var(--radius-sm);
   text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
 .stat-pill .p-label {
   display: block;
   font-size: 10px;
   color: var(--text-muted);
+  font-weight: 600;
 }
 
 .stat-pill .p-val {
   display: block;
   font-family: var(--font-mono);
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--apple-blue);
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--accent-blue);
   margin-top: 3px;
 }
 
 /* ==========================================================================
-   Trades Table (macOS Clean List View)
+   Trades Table
    ========================================================================== */
 
 .trades-card {
   background: var(--bg-card);
   border: 1px solid var(--border-card);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   padding: 18px 22px;
-  box-shadow: var(--shadow-card), var(--glass-bevel);
-  -webkit-backdrop-filter: blur(28px) saturate(190%);
-  backdrop-filter: blur(28px) saturate(190%);
+  box-shadow: var(--shadow-card);
 }
 
 .trades-card-header {
@@ -1351,31 +1386,34 @@ canvas {
 
 .trades-card-title {
   font-size: 13.5px;
-  font-weight: 600;
+  font-weight: 700;
+  color: var(--text-primary);
   letter-spacing: -0.01em;
 }
 
 .btn-sm {
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid var(--border-subtle);
+  background: #ffffff;
+  border: 1px solid var(--border-input);
   color: var(--text-secondary);
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 600;
   padding: 4px 12px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-xs);
   cursor: pointer;
-  transition: all 0.15s var(--apple-ease);
+  transition: all 0.15s ease;
 }
 
 .btn-sm:hover {
-  background: var(--apple-blue);
-  border-color: var(--apple-blue);
-  color: #fff;
+  background: var(--accent-blue);
+  border-color: var(--accent-blue);
+  color: #ffffff;
 }
 
 .table-container {
   overflow-x: auto;
   max-height: 340px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
 }
 
 .trades-table {
@@ -1386,28 +1424,29 @@ canvas {
 }
 
 .trades-table th {
-  background: rgba(14, 14, 18, 0.85);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
+  background: #f1f5f9;
   color: var(--text-muted);
-  font-weight: 500;
+  font-weight: 700;
   padding: 9px 12px;
   border-bottom: 1px solid var(--border-subtle);
   position: sticky;
   top: 0;
   z-index: 2;
   font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
 .trades-table td {
-  padding: 10px 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border-subtle);
   font-family: var(--font-mono);
   font-size: 11.5px;
+  color: var(--text-primary);
 }
 
 .trades-table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.035);
+  background: #f8fafc;
 }
 
 .empty-state {
@@ -1420,21 +1459,23 @@ canvas {
 .tag-badge {
   font-size: 10px;
   padding: 2px 7px;
-  border-radius: var(--radius-full);
-  font-weight: 600;
+  border-radius: var(--radius-xs);
+  font-weight: 700;
 }
 
 .tag-badge.long {
-  background: rgba(48, 209, 88, 0.15);
-  color: var(--color-bull);
+  background: var(--color-bull-bg);
+  color: var(--color-bull-text);
+  border: 1px solid #bbf7d0;
 }
 
 .tag-reason {
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--text-muted);
+  background: #f1f5f9;
+  color: var(--text-secondary);
   font-size: 10px;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-subtle);
 }
 
 /* ==========================================================================
@@ -1451,25 +1492,25 @@ canvas {
 .comp-card {
   background: var(--bg-card);
   border: 1px solid var(--border-card);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   padding: 18px;
   display: flex;
   flex-direction: column;
   gap: 12px;
   position: relative;
   overflow: hidden;
-  box-shadow: var(--shadow-card), var(--glass-bevel);
-  transition: all 0.25s var(--apple-ease);
+  box-shadow: var(--shadow-card);
+  transition: all 0.2s ease;
 }
 
 .comp-card:hover {
-  transform: translateY(-2px);
-  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: var(--shadow-hover);
+  border-color: #cbd5e1;
 }
 
 .comp-card.highlight {
-  border-color: rgba(10, 132, 255, 0.45);
-  box-shadow: 0 8px 32px rgba(10, 132, 255, 0.25), var(--glass-bevel);
+  border-color: var(--accent-blue);
+  box-shadow: 0 4px 14px rgba(0, 82, 204, 0.15);
 }
 
 .comp-card-badge {
@@ -1478,15 +1519,17 @@ canvas {
   right: 14px;
   font-size: 9.5px;
   padding: 2px 8px;
-  border-radius: var(--radius-full);
-  font-weight: 600;
-  background: rgba(10, 132, 255, 0.15);
-  color: var(--apple-blue);
+  border-radius: var(--radius-xs);
+  font-weight: 700;
+  background: #eff6ff;
+  color: var(--accent-blue);
+  border: 1px solid #bfdbfe;
 }
 
 .comp-title {
-  font-size: 14.5px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
   letter-spacing: -0.01em;
 }
 
@@ -1497,33 +1540,37 @@ canvas {
 }
 
 .comp-stat-item {
-  background: rgba(0, 0, 0, 0.3);
+  background: #f8fafc;
   padding: 8px 10px;
-  border-radius: var(--radius-sm);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-subtle);
 }
 
 .comp-stat-item .cs-label {
   font-size: 10px;
   color: var(--text-muted);
+  font-weight: 600;
   display: block;
 }
 
 .comp-stat-item .cs-val {
   font-family: var(--font-mono);
   font-size: 13.5px;
-  font-weight: 700;
+  font-weight: 800;
   display: block;
   margin-top: 2px;
+  color: var(--text-primary);
 }
 
-/* Modal Window (macOS Sheet / Alert) */
+/* ==========================================================================
+   Modal Window
+   ========================================================================== */
+
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.65);
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1531,12 +1578,12 @@ canvas {
 }
 
 .modal-box {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-bright);
-  border-radius: var(--radius-xl);
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
   width: 580px;
   max-width: 90vw;
-  box-shadow: var(--shadow-pop), var(--glass-bevel);
+  box-shadow: var(--shadow-modal);
   padding: 24px;
 }
 
@@ -1545,6 +1592,8 @@ canvas {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 12px;
 }
 
 .btn-close {
@@ -1563,8 +1612,8 @@ canvas {
 }
 
 .btn-close:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background: #f1f5f9;
+  color: var(--text-primary);
 }
 
 .modal-body p {
@@ -1575,8 +1624,8 @@ canvas {
 }
 
 .code-snippet-box {
-  background: #000;
-  border: 1px solid var(--border-subtle);
+  background: #f8fafc;
+  border: 1px solid var(--border-input);
   border-radius: var(--radius-sm);
   padding: 10px 14px;
   display: flex;
@@ -1588,39 +1637,46 @@ canvas {
 .code-snippet-box code {
   font-family: var(--font-mono);
   font-size: 12px;
-  color: var(--apple-blue);
+  color: var(--accent-blue);
+  font-weight: 600;
 }
 
 .btn-copy {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid var(--border-subtle);
+  background: #ffffff;
+  border: 1px solid var(--border-input);
   color: var(--text-secondary);
   font-size: 11px;
+  font-weight: 600;
   padding: 4px 10px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-xs);
   cursor: pointer;
+  transition: all 0.15s ease;
 }
 
 .btn-copy:hover {
-  background: var(--apple-blue);
-  color: #fff;
+  background: var(--accent-blue);
+  border-color: var(--accent-blue);
+  color: #ffffff;
 }
 
 .modal-body h4 {
   font-size: 13px;
+  font-weight: 700;
   margin-bottom: 8px;
+  color: var(--text-primary);
 }
 
 .modal-body ul {
   padding-left: 20px;
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   line-height: 1.8;
 }
 
 .modal-body code {
-  color: var(--apple-blue);
+  color: var(--accent-blue);
   font-family: var(--font-mono);
+  font-weight: 600;
 }
 
 .hidden {
@@ -1650,9 +1706,27 @@ canvas {
   }
   .strategy-navbar {
     flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .app-header {
+    height: auto;
+    padding: 12px 16px;
+    flex-wrap: wrap;
     gap: 12px;
   }
   .header-left, .header-right {
-    flex-wrap: wrap;
+    width: 100%;
+    justify-content: space-between;
+  }
+  .market-ribbon-bar {
+    top: auto;
+    position: static;
+  }
+  .ml-diagnostics-grid {
+    grid-template-columns: 1fr;
+  }
+  .comparison-cards-grid {
+    grid-template-columns: 1fr;
   }
 }

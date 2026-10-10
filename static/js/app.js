@@ -428,6 +428,8 @@ async function loadPresets() {
 function updateTickerDisplay() {
   const display = document.getElementById('current-ticker-display');
   if (display) display.textContent = state.ticker;
+  const ribbonDisplay = document.getElementById('ribbon-ticker-display');
+  if (ribbonDisplay) ribbonDisplay.textContent = state.ticker;
   const klineTitle = document.getElementById('kline-chart-title');
   if (klineTitle) klineTitle.textContent = `${state.ticker} 历史行情与交易信号标定 (Candlestick & Signals)`;
   updateActivePresetChip();
@@ -455,21 +457,21 @@ function switchStrategy(strat) {
   const groupTurtle = document.getElementById('params-turtle');
   const heading = document.getElementById('param-card-heading');
 
-  groupMomentum.classList.add('hidden');
-  groupML.classList.add('hidden');
-  groupTurtle.classList.add('hidden');
+  if (groupMomentum) groupMomentum.classList.add('hidden');
+  if (groupML) groupML.classList.add('hidden');
+  if (groupTurtle) groupTurtle.classList.add('hidden');
 
   if (strat === 'momentum') {
-    groupMomentum.classList.remove('hidden');
-    heading.textContent = '多因子动量模型参数';
+    if (groupMomentum) groupMomentum.classList.remove('hidden');
+    if (heading) heading.textContent = '多因子动量模型参数';
   } else if (strat === 'ml') {
-    groupML.classList.remove('hidden');
-    heading.textContent = '机器学习预测模型参数';
+    if (groupML) groupML.classList.remove('hidden');
+    if (heading) heading.textContent = '机器学习预测模型参数';
   } else if (strat === 'turtle') {
-    groupTurtle.classList.remove('hidden');
-    heading.textContent = '海龟法则与网格风控参数';
+    if (groupTurtle) groupTurtle.classList.remove('hidden');
+    if (heading) heading.textContent = '海龟法则与网格风控参数';
   } else if (strat === 'compare') {
-    heading.textContent = '横向对决通用参数设定';
+    if (heading) heading.textContent = '横向对决通用参数设定';
   }
 
   // Switch main views
@@ -478,24 +480,32 @@ function switchStrategy(strat) {
   const mlDiag = document.getElementById('ml-diagnostics-panel');
 
   if (strat === 'compare') {
-    singleView.classList.add('hidden');
-    compareView.classList.remove('hidden');
+    if (singleView) singleView.classList.add('hidden');
+    if (compareView) compareView.classList.remove('hidden');
   } else {
-    singleView.classList.remove('hidden');
-    compareView.classList.add('hidden');
-    if (strat === 'ml') mlDiag.classList.remove('hidden');
-    else mlDiag.classList.add('hidden');
+    if (singleView) singleView.classList.remove('hidden');
+    if (compareView) compareView.classList.add('hidden');
+    if (mlDiag) {
+      if (strat === 'ml') mlDiag.classList.remove('hidden');
+      else mlDiag.classList.add('hidden');
+    }
   }
 
   runAnalysis();
 }
 
 function collectBacktestParams() {
-  const capital = parseFloat(document.getElementById('initial-capital').value) || 100000;
-  const comm = parseFloat(document.getElementById('commission-rate').value) / 100 || 0.0005;
-  const slip = parseFloat(document.getElementById('slippage-rate').value) / 100 || 0.0005;
-  const sl = document.getElementById('stop-loss').value ? parseFloat(document.getElementById('stop-loss').value) : null;
-  const tp = document.getElementById('take-profit').value ? parseFloat(document.getElementById('take-profit').value) : null;
+  const capEl = document.getElementById('initial-capital');
+  const commEl = document.getElementById('commission-rate');
+  const slipEl = document.getElementById('slippage-rate');
+  const slEl = document.getElementById('stop-loss');
+  const tpEl = document.getElementById('take-profit');
+
+  const capital = (capEl && capEl.value) ? parseFloat(capEl.value) : 100000;
+  const comm = (commEl && commEl.value) ? parseFloat(commEl.value) / 100 : 0.0005;
+  const slip = (slipEl && slipEl.value) ? parseFloat(slipEl.value) / 100 : 0.0005;
+  const sl = (slEl && slEl.value) ? parseFloat(slEl.value) : null;
+  const tp = (tpEl && tpEl.value) ? parseFloat(tpEl.value) : null;
 
   const params = {};
   if (state.strategy === 'momentum') {
@@ -632,7 +642,8 @@ async function runSingleBacktest() {
 
 async function runComparison() {
   showStatus(`正在对 ${state.ticker} 同时运行三大策略对比测试...`);
-  const capital = parseFloat(document.getElementById('initial-capital').value) || 100000;
+  const capEl = document.getElementById('initial-capital');
+  const capital = (capEl && capEl.value) ? parseFloat(capEl.value) : 100000;
 
   const res = await fetch('/api/compare', {
     method: 'POST',
