@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>策略模型参数与风控配置中心 | AlphaQuant 机构级多因子量化平台</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="settings">
+  <div class="app-container">
+    <!-- Tier 1: Main Header (Logo, Pages Navigation, Search, Status) -->
+    <header class="main-header">
+      <div class="header-left">
+        <a href="index.html" class="brand-link" style="text-decoration: none; display: flex; align-items: center; gap: 10px;">
+          <div class="logo-mark">
+            <span class="logo-alpha">&alpha;</span>
+          </div>
+          <div class="logo-text">
+            <span class="logo-title">AlphaQuant</span>
+            <span class="logo-subtitle">Institutional Multi-Factor Platform</span>
+          </div>
+        </a>
+
+        <!-- Model Navigation Bar -->
+        <nav class="nav-pages-bar">
+          <a href="factor_model.html" class="nav-page-link">
+            <span>多因子Alpha模型</span>
+            <span class="nav-page-badge badge-barra">BARRA</span>
+          </a>
+          <a href="ml_model.html" class="nav-page-link">
+            <span>机器学习预测</span>
+            <span class="nav-page-badge badge-ml">ML/AI</span>
+          </a>
+          <a href="cta_model.html" class="nav-page-link">
+            <span>CTA波动率平价</span>
+            <span class="nav-page-badge badge-cta">CTA</span>
+          </a>
+          <a href="index.html" class="nav-page-link">
+            <span>多策略组合矩阵</span>
+            <span class="nav-page-badge badge-alloc">ALLOC</span>
+          </a>
+          <a href="settings.html" class="nav-page-link active">
+            <span>⚙️ 策略与风控配置</span>
+            <span class="nav-page-badge badge-cfg">CONFIG</span>
+          </a>
+        </nav>
+      </div>
+
+      <div class="header-right">
+        <!-- Stock Search Input -->
+        <div class="search-box" id="search-box-wrap">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="custom-ticker-input" placeholder="输入代码或名称 (如 Apple, ASX, NVDA)..." autocomplete="off" spellcheck="false">
+          <button id="search-ticker-btn" class="btn-search">切换</button>
+          <div class="search-suggestions-dropdown hidden" id="search-suggestions-dropdown"></div>
+        </div>
+
+        <div class="system-status">
+          <span class="status-dot"></span>
+          <span class="status-text" id="config-sync-status">后端配置已同步</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Sub-Header / Settings Title & Action Ribbon -->
+    <div class="strategy-navbar" style="padding: 12px 24px;">
+      <div class="page-title-banner">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <h2 style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0;">策略模型参数与全局风控配置中心</h2>
+          <span class="nav-page-badge badge-barra" style="font-size: 11px;">Backend Persisted</span>
+        </div>
+        <p style="font-size: 11px; color: var(--text-muted); margin: 2px 0 0 0;">
+          集中管理机构动量 5 大支柱因子权重、动态目标波动率、交易摩擦成本及执行阈值，配置实时持久化至服务器端并对所有回测模块全局生效。
+        </p>
+      </div>
+
+      <div class="action-bar-right" style="display: flex; align-items: center; gap: 10px;">
+        <button id="btn-reset-settings" class="btn-secondary" style="padding: 7px 14px; font-size: 12px; font-weight: 600; border-radius: var(--radius-sm); cursor: pointer; background: #ffffff; border: 1px solid var(--border-subtle); color: var(--text-secondary);">
+          🔄 恢复机构默认
+        </button>
+        <button id="btn-save-settings" class="btn-primary-action" style="padding: 7px 16px; font-size: 12.5px;">
+          <span>💾 保存配置至后端</span>
+        </button>
+        <a href="factor_model.html" class="btn-primary-action" style="background: linear-gradient(180deg, #10b981 0%, #059669 100%); border-color: #047857; text-decoration: none; padding: 7px 16px; font-size: 12.5px;">
+          <span>⚡ 应用并前往多因子回测</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Main Settings Container (Grid Layout) -->
+    <main class="settings-workspace" style="max-width: 1400px; margin: 0 auto; padding: 24px; display: flex; flex-direction: column; gap: 24px;">
+      
+      <!-- Section 1: Institutional Preset Profiles -->
+      <section class="settings-section">
+        <div class="section-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <div>
+            <h3 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary); margin: 0;">🏛️ 投资机构经典动量配置档案 (Presets)</h3>
+            <span style="font-size: 11.5px; color: var(--text-muted);">一键载入各大顶级对冲基金与学术前沿的动量因机构权重模板</span>
+          </div>
+          <span id="active-preset-badge" class="badge-blue" style="font-size: 11.5px; font-weight: 600; padding: 3px 10px; border-radius: 12px; background: #eff6ff; color: #0052cc; border: 1px solid #bfdbfe;">
+            当前使用：AQR 动量优化型
+          </span>
+        </div>
+
+        <div class="presets-grid" id="presets-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px;">
+          <!-- Preset Cards will be rendered dynamically -->
+        </div>
+      </section>
+
+      <!-- Section 2: Split Columns for Weights & Parameters -->
+      <div style="display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 24px;">
+        
+        <!-- Column Left: 5 Pillars Momentum Weights -->
+        <section class="settings-card" style="background: #ffffff; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 20px; box-shadow: var(--shadow-sm);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border-subtle);">
+            <div>
+              <h3 style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin: 0;">机构动量因子体系 (5 大核心支柱权重配比)</h3>
+              <span style="font-size: 11px; color: var(--text-muted);">Jegadeesh & Titman、Barroso Low-Vol、Blitz 残差 Alpha、Frog-in-the-Pan、Lee & Swaminathan 量价协同</span>
+            </div>
+            <button id="btn-normalize-weights" style="background: #f1f5f9; border: 1px solid var(--border-subtle); border-radius: var(--radius-xs); padding: 4px 9px; font-size: 11px; font-weight: 600; color: var(--text-secondary); cursor: pointer;">
+              均权 20%
+            </button>
+          </div>
+
+          <!-- Total Weights Progress Bar -->
+          <div style="margin-bottom: 18px; background: #f8fafc; padding: 12px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+            <div style="display: flex; justify-content: space-between; font-size: 11.5px; font-weight: 600; margin-bottom: 6px;">
+              <span>当前权重合计:</span>
+              <span id="total-weights-display" style="font-family: var(--font-mono); color: #0052cc;">100%</span>
+            </div>
+            <div class="stacked-weights-bar" id="stacked-weights-bar" style="height: 10px; width: 100%; display: flex; border-radius: 5px; overflow: hidden; background: #e2e8f0;">
+              <div id="bar-mom" style="width: 30%; background: #0052cc;" title="12M-1M 经典截面动量: 30%"></div>
+              <div id="bar-vol" style="width: 25%; background: #0ea5e9;" title="特质波动率风险调整: 25%"></div>
+              <div id="bar-res" style="width: 20%; background: #10b981;" title="Beta 中性化残差动量: 20%"></div>
+              <div id="bar-qual" style="width: 15%; background: #f59e0b;" title="动量路径平滑度: 15%"></div>
+              <div id="bar-conf" style="width: 10%; background: #8b5cf6;" title="量价协同动量: 10%"></div>
+            </div>
+          </div>
+
+          <!-- Sliders -->
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <!-- Pillar 1 -->
+            <div class="form-group">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <label for="cfg-w-mom-12-1" style="font-size: 12px; font-weight: 600; color: var(--text-primary);">
+                  <span style="color: #0052cc;">●</span> 12M-1M 经典截面动量 (Jegadeesh & Titman 1993)
+                </label>
+                <span id="cfg-w-mom-12-1-val" style="font-family: var(--font-mono); font-weight: 700; color: #0052cc; font-size: 12px;">30%</span>
+              </div>
+              <input type="range" id="cfg-w-mom-12-1" min="0.00" max="0.80" step="0.05" value="0.30" style="width: 100%;">
+              <span class="input-hint" style="font-size: 11px; color: var(--text-muted); display: block; margin-top: 2px;">
+                剥离近 1 个月反转噪声，纯净捕获中期 2-12 个月持续性行业与个股动量溢价
+              </span>
+            </div>
+
+            <!-- Pillar 2 -->
+            <div class="form-group">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <label for="cfg-w-risk-adj" style="font-size: 12px; font-weight: 600; color: var(--text-primary);">
+                  <span style="color: #0ea5e9;">●</span> 特质波动率风险调整 (Barroso & Santa-Clara 2015)
+                </label>
+                <span id="cfg-w-risk-adj-val" style="font-family: var(--font-mono); font-weight: 700; color: #0ea5e9; font-size: 12px;">25%</span>
+              </div>
+              <input type="range" id="cfg-w-risk-adj" min="0.00" max="0.80" step="0.05" value="0.25" style="width: 100%;">
+              <span class="input-hint" style="font-size: 11px; color: var(--text-muted); display: block; margin-top: 2px;">
+                引入 Garman-Klass 日内高频波动率倒数缩放，防范动量突发崩溃（Momentum Crashes）
+              </span>
+            </div>
+
+            <!-- Pillar 3 -->
+            <div class="form-group">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <label for="cfg-w-residual" style="font-size: 12px; font-weight: 600; color: var(--text-primary);">
+                  <span style="color: #10b981;">●</span> Beta 中性化残差动量 (Blitz, Huij & Martens 2011)
+                </label>
+                <span id="cfg-w-residual-val" style="font-family: var(--font-mono); font-weight: 700; color: #10b981; font-size: 12px;">20%</span>
+              </div>
+              <input type="range" id="cfg-w-residual" min="0.00" max="0.80" step="0.05" value="0.20" style="width: 100%;">
+              <span class="input-hint" style="font-size: 11px; color: var(--text-muted); display: block; margin-top: 2px;">
+                基于单指数模型对标普500基准回归剥离系统性 Beta，提炼纯正个股特质 Alpha
+              </span>
+            </div>
+
+            <!-- Pillar 4 -->
+            <div class="form-group">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <label for="cfg-w-trend-qual" style="font-size: 12px; font-weight: 600; color: var(--text-primary);">
+                  <span style="color: #f59e0b;">●</span> 动量路径平滑度与质量 (Frog-in-the-Pan R² 质量)
+                </label>
+                <span id="cfg-w-trend-qual-val" style="font-family: var(--font-mono); font-weight: 700; color: #f59e0b; font-size: 12px;">15%</span>
+              </div>
+              <input type="range" id="cfg-w-trend-qual" min="0.00" max="0.60" step="0.05" value="0.15" style="width: 100%;">
+              <span class="input-hint" style="font-size: 11px; color: var(--text-muted); display: block; margin-top: 2px;">
+                基于 Da et al. 温水煮青蛙效应：以收益率确定性系数 R² 加权，重奖平稳慢涨、重罚脉冲跳空
+              </span>
+            </div>
+
+            <!-- Pillar 5 -->
+            <div class="form-group">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <label for="cfg-w-vol-confirm" style="font-size: 12px; font-weight: 600; color: var(--text-primary);">
+                  <span style="color: #8b5cf6;">●</span> 量价协同动量 (Volume-Confirmed Momentum)
+                </label>
+                <span id="cfg-w-vol-confirm-val" style="font-family: var(--font-mono); font-weight: 700; color: #8b5cf6; font-size: 12px;">10%</span>
+              </div>
+              <input type="range" id="cfg-w-vol-confirm" min="0.00" max="0.60" step="0.05" value="0.10" style="width: 100%;">
+              <span class="input-hint" style="font-size: 11px; color: var(--text-muted); display: block; margin-top: 2px;">
+                Lee & Swaminathan 机构成交量验证，突破放量动量持续期更长、假突破概率大幅降低
+              </span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Column Right: Capital, Risk & Execution Parameters -->
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+          
+          <!-- Card: Account & Cost -->
+          <section class="settings-card" style="background: #ffffff; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 20px; box-shadow: var(--shadow-sm);">
+            <h3 style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin: 0 0 14px 0; padding-bottom: 10px; border-bottom: 1px solid var(--border-subtle);">
+              💰 账户资金与交易摩擦成本
+            </h3>
+            
+            <div class="form-group" style="margin-bottom: 12px;">
+              <label for="cfg-initial-capital" style="font-size: 11.5px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                初始交易资金 (USD)
+              </label>
+              <div class="input-with-affix">
+                <span class="affix">$</span>
+                <input type="number" id="cfg-initial-capital" value="100000" step="5000" min="1000" style="width: 100%;">
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+              <div class="form-group">
+                <label for="cfg-commission-rate" style="font-size: 11.5px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                  交易手续费率 (%)
+                </label>
+                <input type="number" id="cfg-commission-rate" value="0.05" step="0.01" min="0" style="width: 100%;">
+              </div>
+              <div class="form-group">
+                <label for="cfg-slippage-rate" style="font-size: 11.5px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                  市场滑点冲击 (%)
+                </label>
+                <input type="number" id="cfg-slippage-rate" value="0.05" step="0.01" min="0" style="width: 100%;">
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <div class="form-group">
+                <label for="cfg-stop-loss" style="font-size: 11.5px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                  硬性止损阈值 (%)
+                </label>
+                <input type="number" id="cfg-stop-loss" placeholder="可选 (如 5)" step="0.5" min="0" style="width: 100%;">
+              </div>
+              <div class="form-group">
+                <label for="cfg-take-profit" style="font-size: 11.5px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                  止盈目标阈值 (%)
+                </label>
+                <input type="number" id="cfg-take-profit" placeholder="可选 (如 15)" step="0.5" min="0" style="width: 100%;">
+              </div>
+            </div>
+          </section>
+
+          <!-- Card: Dynamic Volatility Targeting & Alpha Thresholds -->
+          <section class="settings-card" style="background: #ffffff; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 20px; box-shadow: var(--shadow-sm);">
+            <h3 style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin: 0 0 14px 0; padding-bottom: 10px; border-bottom: 1px solid var(--border-subtle);">
+              🛡️ 动态目标波动率与交易执行引擎
+            </h3>
+
+            <div class="checkbox-group" style="margin-bottom: 14px; background: #f8fafc; padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+              <label class="checkbox-label" style="font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" id="cfg-use-vol-target" checked>
+                <span>启用动态波动率目标仓位管理 (Volatility Targeting)</span>
+              </label>
+              <span class="input-hint" style="font-size: 11px; color: var(--text-muted); display: block; margin-top: 4px; margin-left: 24px;">
+                AQR / 桥水全天候风格：高波动剧烈期自动削减头寸，低波动期平稳放大头寸，烫平净值回撤。
+              </span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+              <div class="form-group">
+                <label for="cfg-target-vol" style="font-size: 11.5px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                  目标年化波动率 (%)
+                </label>
+                <input type="number" id="cfg-target-vol" value="15" min="5" max="50" step="1" style="width: 100%;">
+              </div>
+              <div class="form-group">
+                <label for="cfg-z-win" style="font-size: 11.5px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                  滚动 Z-Score 窗口 (日)
+                </label>
+                <input type="number" id="cfg-z-win" value="30" min="10" max="100" style="width: 100%;">
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+              <div class="form-group">
+                <label for="cfg-alpha-th" style="font-size: 11.5px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                  多头开仓 Alpha 阈值
+                </label>
+                <input type="number" id="cfg-alpha-th" value="0.30" min="0.10" max="1.50" step="0.05" style="width: 100%;">
+              </div>
+              <div class="form-group">
+                <label for="cfg-exit-th" style="font-size: 11.5px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                  平仓退出 Alpha 阈值
+                </label>
+                <input type="number" id="cfg-exit-th" value="-0.20" min="-1.50" max="0.0" step="0.05" style="width: 100%;">
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <div class="form-group">
+                <label for="cfg-fast-ma" style="font-size: 11.5px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                  快线均线 EMA (日)
+                </label>
+                <input type="number" id="cfg-fast-ma" value="10" min="2" max="50" style="width: 100%;">
+              </div>
+              <div class="form-group">
+                <label for="cfg-slow-ma" style="font-size: 11.5px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                  慢线均线 EMA (日)
+                </label>
+                <input type="number" id="cfg-slow-ma" value="30" min="10" max="200" style="width: 100%;">
+              </div>
+            </div>
+          </section>
+
+          <!-- Card: ML & CTA Strategy Defaults -->
+          <section class="settings-card" style="background: #ffffff; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 20px; box-shadow: var(--shadow-sm);">
+            <h3 style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin: 0 0 14px 0; padding-bottom: 10px; border-bottom: 1px solid var(--border-subtle);">
+              🤖 机器学习与海龟网格超参数设定
+            </h3>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+              <div class="form-group">
+                <label for="cfg-ml-model" style="font-size: 11.5px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                  ML 分类算法
+                </label>
+                <select id="cfg-ml-model" style="width: 100%; padding: 6px 10px; border: 1px solid var(--border-input); border-radius: var(--radius-xs);">
+                  <option value="rf">随机森林 (Random Forest)</option>
+                  <option value="gbdt">梯度提升树 (GBDT)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="cfg-ml-prob-th" style="font-size: 11.5px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                  概率预测置信阈值
+                </label>
+                <input type="number" id="cfg-ml-prob-th" value="0.55" min="0.50" max="0.80" step="0.05" style="width: 100%;">
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <div class="form-group">
+                <label for="cfg-donchian-entry" style="font-size: 11.5px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                  海龟突破周期 (日)
+                </label>
+                <input type="number" id="cfg-donchian-entry" value="20" min="5" max="60" style="width: 100%;">
+              </div>
+              <div class="form-group">
+                <label for="cfg-stop-loss-n" style="font-size: 11.5px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                  ATR 移动止损 (N 倍数)
+                </label>
+                <input type="number" id="cfg-stop-loss-n" value="2.0" min="1.0" max="5.0" step="0.5" style="width: 100%;">
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </main>
+
+    <!-- Floating Save Feedback Bar -->
+    <div id="settings-floating-bar" class="settings-floating-bar hidden" style="position: fixed; bottom: 20px; right: 24px; background: #1e293b; color: #ffffff; padding: 12px 20px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.25); display: flex; align-items: center; gap: 14px; z-index: 999;">
+      <span id="floating-bar-text" style="font-size: 12.5px; font-weight: 600;">已保存最新参数配置至后端</span>
+      <button id="btn-floating-dismiss" style="background: rgba(255,255,255,0.15); border: none; color: #ffffff; padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer;">知道了</button>
+    </div>
+  </div>
+
+  <script src="js/chart_renderer.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/settings.js"></script>
+</body>
+</html>

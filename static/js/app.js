@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initCharts();
   initEventHandlers();
   loadPresets();
+  loadGlobalConfig();
   runAnalysis();
 });
 
@@ -976,18 +977,133 @@ function switchStrategy(strat) {
   runAnalysis();
 }
 
+async function loadGlobalConfig() {
+  try {
+    const res = await fetch('/api/config');
+    const json = await res.json();
+    if (json.status === 'success' && json.data) {
+      window.activeConfig = json.data;
+      localStorage.setItem('alphaquant_config', JSON.stringify(json.data));
+    }
+  } catch (e) {
+    const local = localStorage.getItem('alphaquant_config');
+    if (local) {
+      try { window.activeConfig = JSON.parse(local); } catch(ex){}
+    }
+  }
+
+  updateSidebarActiveProfile();
+  initSidebarCollapseAndDrawer();
+}
+
+function updateSidebarActiveProfile() {
+  const cfg = window.activeConfig || {};
+  const mom = cfg.momentum || {};
+  const acc = cfg.account || {};
+
+  const tagEl = document.getElementById('sidebar-profile-tag');
+  if (tagEl) {
+    const pNames = {
+      'aqr_momentum': 'AQR 动量优化型',
+      'bridgewater_all_weather': '桥水全天候低波型',
+      'classic_jegadeesh': '经典 JT 截面动量',
+      'goldman_quant': '高盛量化激进型',
+      'balanced_institutional': '标准机构平衡型'
+    };
+    tagEl.textContent = pNames[mom.preset_id] || '当前自定义组合';
+  }
+
+  const setMini = (idVal, idBar, val) => {
+    const vEl = document.getElementById(idVal);
+    const bEl = document.getElementById(idBar);
+    if (vEl) vEl.textContent = `${Math.round(val * 100)}%`;
+    if (bEl) bEl.style.width = `${Math.round(val * 100)}%`;
+  };
+
+  setMini('mini-w-mom-val', 'mini-w-mom-bar', mom.w_mom_12_1 ?? 0.30);
+  setMini('mini-w-vol-val', 'mini-w-vol-bar', mom.w_risk_adj ?? 0.25);
+  setMini('mini-w-res-val', 'mini-w-res-bar', mom.w_residual ?? 0.20);
+  setMini('mini-w-qual-val', 'mini-w-qual-bar', mom.w_trend_qual ?? 0.15);
+  setMini('mini-w-conf-val', 'mini-w-conf-bar', mom.w_vol_confirm ?? 0.10);
+
+  const capEl = document.getElementById('sidebar-capital-val');
+  if (capEl) capEl.textContent = `$${Number(acc.initial_capital || 100000).toLocaleString()}`;
+
+  const fEl = document.getElementById('sidebar-friction-val');
+  if (fEl) fEl.textContent = `${acc.commission_rate ?? 0.05}% / ${acc.slippage_rate ?? 0.05}%`;
+
+  const vEl = document.getElementById('sidebar-vol-val');
+  if (vEl) vEl.textContent = mom.use_vol_target !== false ? `开启 (${mom.target_vol ?? 15}% 年化)` : '关闭 (满仓运行)';
+}
+
+function initSidebarCollapseAndDrawer() {
+  const toggleBtn = document.getElementById('btn-toggle-sidebar');
+  const workspace = document.querySelector('.main-workspace');
+
+  if (toggleBtn && workspace) {
+    const isSavedCollapsed = localStorage.getItem('alphaquant_sidebar_collapsed') === 'true';
+    if (isSavedCollapsed) workspace.classList.add('sidebar-collapsed');
+
+    toggleBtn.addEventListener('click', () => {
+      workspace.classList.toggle('sidebar-collapsed');
+      const collapsed = workspace.classList.contains('sidebar-collapsed');
+      localStorage.setItem('alphaquant_sidebar_collapsed', collapsed ? 'true' : 'false');
+      setTimeout(() => {
+        if (klineChart && typeof klineChart.resize === 'function') klineChart.resize();
+        if (equityChart && typeof equityChart.resize === 'function') equityChart.resize();
+      }, 200);
+    });
+  }
+
+  // Quick Drawer handlers
+  const openDrawerBtn = document.getElementById('btn-open-quick-drawer');
+  const closeDrawerBtn = document.getElementById('btn-close-quick-drawer');
+  const drawerModal = document.getElementById('quick-drawer-modal');
+  const applyDrawerBtn = document.getElementById('btn-drawer-apply-backtest');
+
+  if (openDrawerBtn && drawerModal) {
+    openDrawerBtn.addEventListener('click', () => {
+      drawerModal.classList.remove('hidden');
+    });
+  }
+
+  if (closeDrawerBtn && drawerModal) {
+    closeDrawerBtn.addEventListener('click', () => {
+      drawerModal.classList.add('hidden');
+    });
+  }
+
+  if (drawerModal) {
+    drawerModal.addEventListener('click', (e) => {
+      if (e.target === drawerModal) drawerModal.classList.add('hidden');
+    });
+  }
+
+  if (applyDrawerBtn) {
+    applyDrawerBtn.addEventListener('click', () => {
+      drawerModal?.classList.add('hidden');
+      updateSidebarActiveProfile();
+      runAnalysis();
+    });
+  }
+}
+
 function collectBacktestParams() {
+  const cfg = window.activeConfig || {};
+  const acc = cfg.account || {};
+  const momCfg = cfg.momentum || {};
+
   const capEl = document.getElementById('initial-capital');
   const commEl = document.getElementById('commission-rate');
   const slipEl = document.getElementById('slippage-rate');
   const slEl = document.getElementById('stop-loss');
   const tpEl = document.getElementById('take-profit');
 
-  const capital = (capEl && capEl.value) ? parseFloat(capEl.value) : 100000;
-  const comm = (commEl && commEl.value) ? parseFloat(commEl.value) / 100 : 0.0005;
-  const slip = (slipEl && slipEl.value) ? parseFloat(slipEl.value) / 100 : 0.0005;
-  const sl = (slEl && slEl.value) ? parseFloat(slEl.value) : null;
-  const tp = (tpEl && tpEl.value) ? parseFloat(tpEl.value) : null;
+  const capital = (capEl && capEl.value) ? parseFloat(capEl.value) : (acc.initial_capital || 100000);
+  const comm = (commEl && commEl.value) ? parseFloat(commEl.value) / 100 : (acc.commission_rate ? acc.commission_rate / 100 : 0.0005);
+  const slip = (slipEl && slipEl.value) ? parseFloat(slipEl.value) / 100 : (acc.slippage_rate ? acc.slippage_rate / 100 : 0.0005);
+  const sl = (slEl && slEl.value) ? parseFloat(slEl.value) : (acc.stop_loss_pct || null);
+  const tp = (tpEl && tpEl.value) ? parseFloat(tpEl.value) : (acc.take_profit_pct || null);
 
   const params = {};
   if (state.strategy === 'momentum') {
@@ -1004,18 +1120,18 @@ function collectBacktestParams() {
     const slowMa = document.getElementById('param-slow-ma');
     const zWin = document.getElementById('param-z-win');
 
-    if (w12_1) params.w_mom_12_1 = parseFloat(w12_1.value);
-    if (wRisk) params.w_risk_adj = parseFloat(wRisk.value);
-    if (wRes) params.w_residual = parseFloat(wRes.value);
-    if (wQual) params.w_trend_qual = parseFloat(wQual.value);
-    if (wVol) params.w_vol_confirm = parseFloat(wVol.value);
-    if (useVolTarget) params.use_vol_targeting = useVolTarget.checked;
-    if (targetVol) params.target_vol_annual = parseFloat(targetVol.value) / 100.0;
-    if (alphaTh) params.alpha_threshold = parseFloat(alphaTh.value);
-    if (exitTh) params.exit_threshold = parseFloat(exitTh.value);
-    if (fastMa) params.fast_ma = parseInt(fastMa.value) || 10;
-    if (slowMa) params.slow_ma = parseInt(slowMa.value) || 30;
-    if (zWin) params.zscore_window = parseInt(zWin.value) || 30;
+    params.w_mom_12_1 = w12_1 ? parseFloat(w12_1.value) : (momCfg.w_mom_12_1 ?? 0.30);
+    params.w_risk_adj = wRisk ? parseFloat(wRisk.value) : (momCfg.w_risk_adj ?? 0.25);
+    params.w_residual = wRes ? parseFloat(wRes.value) : (momCfg.w_residual ?? 0.20);
+    params.w_trend_qual = wQual ? parseFloat(wQual.value) : (momCfg.w_trend_qual ?? 0.15);
+    params.w_vol_confirm = wVol ? parseFloat(wVol.value) : (momCfg.w_vol_confirm ?? 0.10);
+    params.use_vol_targeting = useVolTarget ? useVolTarget.checked : (momCfg.use_vol_target !== false);
+    params.target_vol_annual = targetVol ? parseFloat(targetVol.value) / 100.0 : ((momCfg.target_vol || 15) / 100.0);
+    params.alpha_threshold = alphaTh ? parseFloat(alphaTh.value) : (momCfg.alpha_th ?? 0.30);
+    params.exit_threshold = exitTh ? parseFloat(exitTh.value) : (momCfg.exit_th ?? -0.20);
+    params.fast_ma = fastMa ? parseInt(fastMa.value) : (momCfg.fast_ma || 10);
+    params.slow_ma = slowMa ? parseInt(slowMa.value) : (momCfg.slow_ma || 30);
+    params.zscore_window = zWin ? parseInt(zWin.value) : (momCfg.z_win || 30);
 
     // Legacy fallback if elements exist on index.html
     const rsiOverS = document.getElementById('param-rsi-oversold');

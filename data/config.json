@@ -1,0 +1,39 @@
+{
+  "account": {
+    "initial_capital": 100000.0,
+    "commission_rate": 0.05,
+    "slippage_rate": 0.05,
+    "stop_loss_pct": null,
+    "take_profit_pct": null
+  },
+  "momentum": {
+    "preset_id": "bridgewater_all_weather",
+    "w_mom_12_1": 0.2,
+    "w_risk_adj": 0.35,
+    "w_residual": 0.15,
+    "w_trend_qual": 0.2,
+    "w_vol_confirm": 0.1,
+    "use_vol_target": true,
+    "target_vol": 12.0,
+    "z_win": 30,
+    "alpha_th": 0.25,
+    "exit_th": -0.15,
+    "fast_ma": 12,
+    "slow_ma": 36
+  },
+  "ml": {
+    "model_type": "rf",
+    "n_estimators": 100,
+    "max_depth": 5,
+    "prob_threshold": 0.55,
+    "train_split": 0.7
+  },
+  "turtle": {
+    "donchian_entry": 20,
+    "donchian_exit": 10,
+    "atr_period": 20,
+    "risk_pct": 1.0,
+    "stop_loss_n": 2.0
+  },
+  "updated_at": "2026-10-10T15:02:20.062095"
+}

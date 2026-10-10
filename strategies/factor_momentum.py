@@ -58,6 +58,17 @@ class MultiFactorMomentumStrategy(BaseStrategy):
                 params["w_risk_adj"] = float(params["vol_penalty_weight"])
             if "reversion_weight" in params and "w_residual" not in params:
                 params["w_residual"] = float(params["reversion_weight"])
+            if "use_vol_target" in params and "use_vol_targeting" not in params:
+                params["use_vol_targeting"] = bool(params["use_vol_target"])
+            if "target_vol" in params and "target_vol_annual" not in params:
+                tv = float(params["target_vol"])
+                params["target_vol_annual"] = (tv / 100.0) if tv > 1.0 else tv
+            if "z_win" in params and "zscore_window" not in params:
+                params["zscore_window"] = int(params["z_win"])
+            if "alpha_th" in params and "alpha_threshold" not in params:
+                params["alpha_threshold"] = float(params["alpha_th"])
+            if "exit_th" in params and "exit_threshold" not in params:
+                params["exit_threshold"] = float(params["exit_th"])
             default_params.update(params)
 
         super().__init__("Multi-Factor Alpha Momentum", default_params)

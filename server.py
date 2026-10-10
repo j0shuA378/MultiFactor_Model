@@ -8,6 +8,7 @@ from flask_cors import CORS
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from core.data_loader import fetch_stock_data, get_preset_tickers, search_yahoo_tickers, sanitize_ticker
+from core.config_manager import load_config, save_config, apply_preset, reset_to_defaults, INSTITUTIONAL_PRESETS
 from core.indicators import add_all_indicators
 from core.backtest_engine import BacktestEngine
 from strategies.factor_momentum import MultiFactorMomentumStrategy
@@ -64,10 +65,71 @@ def page_cta():
 def page_portfolio():
     return send_from_directory("static", "index.html")
 
+@app.route("/settings")
+@app.route("/settings.html")
+def page_settings():
+    return send_from_directory("static", "settings.html")
+
 @app.route("/api/presets", methods=["GET"])
 def api_presets():
     """Returns preset popular tickers"""
     return jsonify({"status": "success", "data": get_preset_tickers()})
+
+@app.route("/api/config", methods=["GET"])
+def api_get_config():
+    """Returns current saved configuration along with available institutional presets"""
+    cfg = load_config()
+    return jsonify({
+        "status": "success",
+        "data": cfg,
+        "presets": INSTITUTIONAL_PRESETS
+    })
+
+@app.route("/api/config", methods=["POST"])
+def api_save_config():
+    """Saves updated user configuration to backend persistence"""
+    data = request.get_json() or {}
+    updated = save_config(data)
+    return jsonify({
+        "status": "success",
+        "message": "Configuration saved successfully",
+        "data": updated
+    })
+
+@app.route("/api/config/presets", methods=["GET"])
+def api_get_presets():
+    """Returns list of institutional presets"""
+    return jsonify({
+        "status": "success",
+        "data": INSTITUTIONAL_PRESETS
+    })
+
+@app.route("/api/config/preset/apply", methods=["POST"])
+def api_apply_preset():
+    """Applies an institutional preset to the configuration"""
+    data = request.get_json() or {}
+    preset_id = data.get("preset_id")
+    if not preset_id:
+        return jsonify({"status": "error", "message": "Missing preset_id"}), 400
+    try:
+        updated = apply_preset(preset_id)
+        return jsonify({
+            "status": "success",
+            "message": f"Preset '{preset_id}' applied successfully",
+            "data": updated
+        })
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
+
+@app.route("/api/config/reset", methods=["POST"])
+def api_reset_config():
+    """Resets configuration to factory defaults"""
+    cfg = reset_to_defaults()
+    return jsonify({
+        "status": "success",
+        "message": "Configuration reset to factory defaults",
+        "data": cfg
+    })
 
 @app.route("/api/search", methods=["GET"])
 def api_search():
@@ -155,15 +217,25 @@ def api_backtest():
     ticker = sanitize_ticker(data.get("ticker", "AAPL"))
     period = data.get("period", "1y").lower().strip()
     strategy_key = data.get("strategy", "momentum").lower().strip()
-    capital = float(data.get("capital", 100000.0))
-    commission_rate = float(data.get("commission_rate", 0.0005))
-    slippage_rate = float(data.get("slippage_rate", 0.0005))
-    stop_loss_pct = float(data["stop_loss_pct"]) / 100.0 if data.get("stop_loss_pct") else None
-    take_profit_pct = float(data["take_profit_pct"]) / 100.0 if data.get("take_profit_pct") else None
-    strategy_params = data.get("params", {})
-
+    
     if strategy_key not in STRATEGY_MAP:
         return jsonify({"status": "error", "message": f"Unknown strategy: {strategy_key}"}), 400
+
+    cfg = load_config()
+    account_cfg = cfg.get("account", {})
+    saved_strat_cfg = cfg.get(strategy_key, {})
+
+    capital = float(data.get("capital", account_cfg.get("initial_capital", 100000.0)))
+    raw_comm = data.get("commission_rate")
+    commission_rate = float(raw_comm) if raw_comm is not None else (float(account_cfg.get("commission_rate", 0.05)) / 100.0)
+    raw_slip = data.get("slippage_rate")
+    slippage_rate = float(raw_slip) if raw_slip is not None else (float(account_cfg.get("slippage_rate", 0.05)) / 100.0)
+    
+    stop_loss_pct = float(data["stop_loss_pct"]) / 100.0 if data.get("stop_loss_pct") else (float(account_cfg["stop_loss_pct"]) / 100.0 if account_cfg.get("stop_loss_pct") else None)
+    take_profit_pct = float(data["take_profit_pct"]) / 100.0 if data.get("take_profit_pct") else (float(account_cfg["take_profit_pct"]) / 100.0 if account_cfg.get("take_profit_pct") else None)
+    
+    strategy_params = dict(saved_strat_cfg)
+    strategy_params.update(data.get("params", {}))
 
     try:
         df = fetch_stock_data(ticker, period)
