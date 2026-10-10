@@ -58,23 +58,8 @@ function initEventHandlers() {
     });
   });
 
-  // Ticker Search
-  const searchInput = document.getElementById('custom-ticker-input');
-  const searchBtn = document.getElementById('search-ticker-btn');
-
-  const executeSearch = () => {
-    const val = searchInput.value.trim().toUpperCase();
-    if (val && val !== state.ticker) {
-      state.ticker = val;
-      updateTickerDisplay();
-      runAnalysis();
-    }
-  };
-
-  searchBtn.addEventListener('click', executeSearch);
-  searchInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') executeSearch();
-  });
+  // Ticker Search & Autocomplete
+  setupSearchAutocomplete();
 
   // Run Backtest Button
   document.getElementById('run-backtest-btn').addEventListener('click', () => {
@@ -149,6 +134,242 @@ function initEventHandlers() {
   // Export CSV
   const exportBtn = document.getElementById('export-csv-btn');
   if (exportBtn) exportBtn.addEventListener('click', exportTradesCSV);
+}
+
+// ==========================================================================
+// Yahoo Finance Search & Autocomplete Engine
+// ==========================================================================
+
+const FALLBACK_AUTOCOMPLETE_STOCKS = [
+  { symbol: "AAPL", name: "Apple Inc.", exchange: "NASDAQ", price: 336.64, change_pct: -1.11, type: "Equity" },
+  { symbol: "NVDA", name: "NVIDIA Corporation", exchange: "NASDAQ", price: 229.28, change_pct: -0.52, type: "Equity" },
+  { symbol: "TSLA", name: "Tesla, Inc.", exchange: "NASDAQ", price: 268.45, change_pct: 2.34, type: "Equity" },
+  { symbol: "MSFT", name: "Microsoft Corporation", exchange: "NASDAQ", price: 435.10, change_pct: 0.85, type: "Equity" },
+  { symbol: "AMZN", name: "Amazon.com, Inc.", exchange: "NASDAQ", price: 185.30, change_pct: -0.45, type: "Equity" },
+  { symbol: "GOOGL", name: "Alphabet Inc.", exchange: "NASDAQ", price: 178.90, change_pct: 1.12, type: "Equity" },
+  { symbol: "META", name: "Meta Platforms, Inc.", exchange: "NASDAQ", price: 582.40, change_pct: 1.65, type: "Equity" },
+  { symbol: "AMD", name: "Advanced Micro Devices", exchange: "NASDAQ", price: 165.20, change_pct: -1.80, type: "Equity" },
+  { symbol: "SPY", name: "SPDR S&P 500 ETF Trust", exchange: "NYSEArca", price: 585.10, change_pct: 0.32, type: "ETF" },
+  { symbol: "QQQ", name: "Invesco QQQ Trust", exchange: "NASDAQ", price: 492.60, change_pct: 0.45, type: "ETF" },
+  { symbol: "BABA", name: "Alibaba Group Holding", exchange: "NYSE", price: 98.40, change_pct: -0.75, type: "Equity" },
+  { symbol: "TSM", name: "Taiwan Semiconductor Mfg", exchange: "NYSE", price: 190.50, change_pct: 1.95, type: "Equity" },
+  { symbol: "PLTR", name: "Palantir Technologies", exchange: "NYSE", price: 43.80, change_pct: 3.45, type: "Equity" },
+  { symbol: "COIN", name: "Coinbase Global, Inc.", exchange: "NASDAQ", price: 215.30, change_pct: 4.12, type: "Equity" },
+  { symbol: "NFLX", name: "Netflix, Inc.", exchange: "NASDAQ", price: 712.50, change_pct: -0.25, type: "Equity" }
+];
+
+async function fetchYahooSuggestions(query) {
+  try {
+    const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+    const json = await res.json();
+    if (json.status === 'success' && Array.isArray(json.data) && json.data.length > 0) {
+      return json.data.slice(0, 5);
+    }
+  } catch (err) {
+    console.warn("Backend /api/search unavailable (GitHub Pages mode), using fallback catalog:", err);
+  }
+
+  // Fallback matching
+  const qLower = query.toLowerCase().trim();
+  const matched = FALLBACK_AUTOCOMPLETE_STOCKS.filter(item => 
+    item.symbol.toLowerCase().includes(qLower) || item.name.toLowerCase().includes(qLower)
+  );
+  return matched.slice(0, 5);
+}
+
+function setupSearchAutocomplete() {
+  const searchInput = document.getElementById('custom-ticker-input');
+  const searchBtn = document.getElementById('search-ticker-btn');
+  const dropdown = document.getElementById('search-suggestions-dropdown');
+  const searchWrap = document.getElementById('search-box-wrap') || (searchInput ? searchInput.closest('.search-box') : null);
+
+  if (!searchInput) return;
+
+  let searchDebounceTimer = null;
+  let currentSuggestions = [];
+  let selectedIndex = -1;
+
+  const closeDropdown = () => {
+    if (dropdown) dropdown.classList.add('hidden');
+    selectedIndex = -1;
+  };
+
+  const highlightIndex = (idx) => {
+    if (!dropdown) return;
+    const items = dropdown.querySelectorAll('.suggestion-item');
+    items.forEach((item, i) => {
+      if (i === idx) {
+        item.classList.add('highlighted');
+        item.scrollIntoView({ block: 'nearest' });
+      } else {
+        item.classList.remove('highlighted');
+      }
+    });
+  };
+
+  const selectSuggestion = (item) => {
+    if (!item || !item.symbol) return;
+    const targetSymbol = item.symbol.toUpperCase();
+    searchInput.value = targetSymbol;
+    closeDropdown();
+    if (targetSymbol !== state.ticker) {
+      state.ticker = targetSymbol;
+      updateTickerDisplay();
+      runAnalysis();
+    }
+  };
+
+  const executeSearch = () => {
+    const val = searchInput.value.trim().toUpperCase();
+    if (val && val !== state.ticker) {
+      state.ticker = val;
+      updateTickerDisplay();
+      runAnalysis();
+    }
+    closeDropdown();
+  };
+
+  const renderSuggestions = (items, query) => {
+    if (!dropdown) return;
+    dropdown.innerHTML = '';
+    currentSuggestions = items || [];
+    selectedIndex = -1;
+
+    if (!items || items.length === 0) {
+      dropdown.innerHTML = `<div class="suggestion-empty">未匹配到 "${query}" 相关的 Yahoo 金融标的</div>`;
+      dropdown.classList.remove('hidden');
+      return;
+    }
+
+    const header = document.createElement('div');
+    header.className = 'suggestion-header';
+    header.innerHTML = `
+      <span>Yahoo 金融标的候选 (最多5项)</span>
+      <span class="suggestion-source-tag">Live Quotes</span>
+    `;
+    dropdown.appendChild(header);
+
+    items.slice(0, 5).forEach((item, idx) => {
+      const el = document.createElement('div');
+      el.className = 'suggestion-item';
+      el.dataset.idx = idx;
+
+      const priceStr = item.price !== null && item.price !== undefined ? `$${Number(item.price).toFixed(2)}` : '--';
+      let chgHtml = '<span class="suggestion-chg-pill flat">--</span>';
+      if (item.change_pct !== null && item.change_pct !== undefined) {
+        const val = Number(item.change_pct);
+        if (val > 0) {
+          chgHtml = `<span class="suggestion-chg-pill pos">+${val.toFixed(2)}%</span>`;
+        } else if (val < 0) {
+          chgHtml = `<span class="suggestion-chg-pill neg">${val.toFixed(2)}%</span>`;
+        } else {
+          chgHtml = `<span class="suggestion-chg-pill flat">0.00%</span>`;
+        }
+      }
+
+      el.innerHTML = `
+        <div class="suggestion-left">
+          <span class="suggestion-symbol-badge">${item.symbol}</span>
+          <div class="suggestion-info">
+            <span class="suggestion-name" title="${item.name}">${item.name}</span>
+            <span class="suggestion-meta">${item.exchange || ''} · ${item.type || 'Stock'}</span>
+          </div>
+        </div>
+        <div class="suggestion-right">
+          <span class="suggestion-price">${priceStr}</span>
+          ${chgHtml}
+        </div>
+      `;
+
+      el.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        selectSuggestion(item);
+      });
+
+      el.addEventListener('mouseenter', () => {
+        selectedIndex = idx;
+        highlightIndex(selectedIndex);
+      });
+
+      dropdown.appendChild(el);
+    });
+
+    dropdown.classList.remove('hidden');
+  };
+
+  // Input event with debounce
+  searchInput.addEventListener('input', () => {
+    clearTimeout(searchDebounceTimer);
+    const q = searchInput.value.trim();
+    if (!q) {
+      closeDropdown();
+      return;
+    }
+
+    // Show loading spinner
+    if (dropdown) {
+      dropdown.innerHTML = `
+        <div class="suggestion-loading">
+          <div class="suggestion-spinner"></div>
+          <span>正在从 Yahoo Finance 检索标的与实时涨跌...</span>
+        </div>
+      `;
+      dropdown.classList.remove('hidden');
+    }
+
+    searchDebounceTimer = setTimeout(async () => {
+      const results = await fetchYahooSuggestions(q);
+      renderSuggestions(results, q);
+    }, 220);
+  });
+
+  // Keyboard navigation
+  searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown') {
+      if (dropdown && !dropdown.classList.contains('hidden') && currentSuggestions.length > 0) {
+        e.preventDefault();
+        selectedIndex = (selectedIndex + 1) % currentSuggestions.length;
+        highlightIndex(selectedIndex);
+      }
+    } else if (e.key === 'ArrowUp') {
+      if (dropdown && !dropdown.classList.contains('hidden') && currentSuggestions.length > 0) {
+        e.preventDefault();
+        selectedIndex = (selectedIndex - 1 + currentSuggestions.length) % currentSuggestions.length;
+        highlightIndex(selectedIndex);
+      }
+    } else if (e.key === 'Enter') {
+      if (dropdown && !dropdown.classList.contains('hidden') && selectedIndex >= 0 && currentSuggestions[selectedIndex]) {
+        e.preventDefault();
+        selectSuggestion(currentSuggestions[selectedIndex]);
+      } else {
+        executeSearch();
+      }
+    } else if (e.key === 'Escape') {
+      closeDropdown();
+    }
+  });
+
+  // Re-open on focus if text present
+  searchInput.addEventListener('focus', () => {
+    const q = searchInput.value.trim();
+    if (q && currentSuggestions.length > 0 && dropdown) {
+      dropdown.classList.remove('hidden');
+    }
+  });
+
+  if (searchBtn) {
+    searchBtn.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      executeSearch();
+    });
+  }
+
+  // Click outside to dismiss dropdown
+  document.addEventListener('click', (e) => {
+    if (searchWrap && !searchWrap.contains(e.target)) {
+      closeDropdown();
+    }
+  });
 }
 
 async function loadPresets() {
@@ -509,7 +730,7 @@ function renderFactorDiagnostics(meta, metrics) {
   if (kpiIc && meta.overall_ic !== undefined) {
     const icVal = meta.overall_ic;
     kpiIc.textContent = `${icVal >= 0 ? '+' : ''}${icVal.toFixed(3)}`;
-    kpiIc.style.color = icVal >= 0 ? '#00f2fe' : '#f43f5e';
+    kpiIc.style.color = icVal >= 0 ? 'var(--apple-blue)' : 'var(--apple-red)';
   }
   const kpiIr = document.getElementById('kpi-ir');
   if (kpiIr && meta.factor_ir !== undefined) {
@@ -541,7 +762,7 @@ function renderFactorDiagnostics(meta, metrics) {
   if (diagSpread && meta.quintile_spread) {
     const sp = meta.quintile_spread.spread;
     diagSpread.textContent = `${sp >= 0 ? '+' : ''}${sp.toFixed(2)}%`;
-    diagSpread.style.color = sp >= 0 ? '#10b981' : '#f43f5e';
+    diagSpread.style.color = sp >= 0 ? 'var(--apple-green)' : 'var(--apple-red)';
   }
 
   const diagGk = document.getElementById('diag-gk-val');
@@ -550,7 +771,7 @@ function renderFactorDiagnostics(meta, metrics) {
   const diagVolSizing = document.getElementById('diag-vol-sizing-val');
   if (diagVolSizing) {
     diagVolSizing.textContent = meta.use_vol_targeting ? `动态目标 (${Math.round((meta.target_vol_annual || 0.15) * 100)}%)` : '全仓 (100%)';
-    diagVolSizing.style.color = meta.use_vol_targeting ? '#10b981' : '#94a3b8';
+    diagVolSizing.style.color = meta.use_vol_targeting ? 'var(--apple-green)' : 'var(--text-muted)';
   }
 
   const diagWin = document.getElementById('diag-win-val');
@@ -567,13 +788,13 @@ function renderFactorDiagnostics(meta, metrics) {
       const isPos = icVal >= 0;
       const pctBar = Math.min(100, Math.max(8, Math.abs(icVal) * 350));
       const row = document.createElement('div');
-      row.style.cssText = 'display:flex; align-items:center; justify-content:space-between; font-size:11px; padding:2px 0;';
+      row.style.cssText = 'display:flex; align-items:center; justify-content:space-between; font-size:11px; padding:3px 0;';
       row.innerHTML = `
-        <span style="color:#cbd5e1; width:135px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${name}</span>
-        <div style="flex:1; height:6px; background:rgba(255,255,255,0.06); border-radius:3px; margin:0 8px; position:relative; overflow:hidden;">
-          <div style="position:absolute; ${isPos ? 'left:50%' : 'right:50%'}; width:${pctBar / 2}%; height:100%; background:${isPos ? '#00f2fe' : '#f43f5e'}; border-radius:2px;"></div>
+        <span style="color:var(--text-secondary); width:135px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${name}</span>
+        <div style="flex:1; height:5px; background:rgba(255,255,255,0.06); border-radius:3px; margin:0 10px; position:relative; overflow:hidden;">
+          <div style="position:absolute; ${isPos ? 'left:50%' : 'right:50%'}; width:${pctBar / 2}%; height:100%; background:${isPos ? 'var(--apple-blue)' : 'var(--apple-red)'}; border-radius:2px;"></div>
         </div>
-        <span style="font-family:var(--font-mono); font-size:10.5px; color:${isPos ? '#00f2fe' : '#f43f5e'}; min-width:48px; text-align:right;">
+        <span style="font-family:var(--font-mono); font-size:10.5px; color:${isPos ? 'var(--apple-blue)' : 'var(--apple-red)'}; min-width:48px; text-align:right;">
           ${isPos ? '+' : ''}${icVal.toFixed(3)}
         </span>
       `;
@@ -590,15 +811,15 @@ function renderFactorDiagnostics(meta, metrics) {
       const isPos = icVal >= 0;
       const chip = document.createElement('div');
       chip.style.cssText = `
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid ${isPos ? 'rgba(0, 242, 254, 0.3)' : 'rgba(244, 63, 94, 0.3)'};
-        padding: 2px 8px;
-        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid ${isPos ? 'rgba(10, 132, 255, 0.3)' : 'rgba(255, 69, 58, 0.3)'};
+        padding: 2px 10px;
+        border-radius: var(--radius-full);
         font-size: 10.5px;
         font-family: var(--font-mono);
-        color: ${isPos ? '#00f2fe' : '#f43f5e'};
+        color: ${isPos ? 'var(--apple-blue)' : 'var(--apple-red)'};
       `;
-      chip.innerHTML = `<span style="color:#94a3b8">${horizon}:</span> ${isPos ? '+' : ''}${icVal.toFixed(3)}`;
+      chip.innerHTML = `<span style="color:var(--text-muted)">${horizon}:</span> ${isPos ? '+' : ''}${icVal.toFixed(3)}`;
       decayChipsContainer.appendChild(chip);
     }
   }

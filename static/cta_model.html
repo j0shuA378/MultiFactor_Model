@@ -14,6 +14,13 @@
   <div class="app-layout">
     <header class="app-header">
       <div class="header-left">
+        <!-- macOS Window Traffic Lights -->
+        <div class="mac-window-controls">
+          <span class="mac-dot mac-dot-close"></span>
+          <span class="mac-dot mac-dot-min"></span>
+          <span class="mac-dot mac-dot-max"></span>
+        </div>
+
         <a href="factor_model.html" class="brand-logo">
           <div class="logo-icon">
             <span class="pulse-ring"></span>
@@ -49,13 +56,14 @@
       </div>
 
       <div class="header-right">
-        <div class="search-box">
+        <div class="search-box" id="search-box-wrap">
           <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
-          <input type="text" id="custom-ticker-input" placeholder="输入股票代码..." autocomplete="off">
+          <input type="text" id="custom-ticker-input" placeholder="输入代码或名称 (如 Apple, NVDA)..." autocomplete="off" spellcheck="false">
           <button id="search-ticker-btn" class="btn-search">切换标的</button>
+          <div class="search-suggestions-dropdown hidden" id="search-suggestions-dropdown"></div>
         </div>
 
         <div class="period-selector" id="period-selector">

@@ -1,12 +1,29 @@
 /**
- * AlphaQuant High-Performance Canvas Financial Chart Renderer
- * Features: High-DPI Retina support, Candlesticks, MA overlays, Bollinger Bands,
- * Trade Signal Markers, Volume bars, Equity curves, Underwater Drawdown areas, and Interactive Crosshair.
+ * AlphaQuant Apple Cupertino Financial Canvas Chart Renderer
+ * Features: High-DPI Retina support, SF Pro typography, Apple System Financial Palette,
+ * Soft-glow equity curves, Candlesticks with iOS Green/Red, Bollinger Bands,
+ * Interactive Crosshair with macOS blur tooltips, and Rolling IC Factor Diagnostics.
  */
+
+// Apple System Financial Palette
+const APPLE_PALETTE = {
+  blue: '#0A84FF',
+  green: '#30D158',
+  red: '#FF453A',
+  orange: '#FF9F0A',
+  teal: '#64D2FF',
+  purple: '#BF5AF2',
+  gray: '#8E8E93',
+  grid: 'rgba(255, 255, 255, 0.04)',
+  axisText: 'rgba(235, 235, 245, 0.45)',
+  fontSans: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif',
+  fontMono: '"SF Mono", "JetBrains Mono", Menlo, Consolas, monospace'
+};
 
 class CandlestickChart {
   constructor(canvasId, tooltipId) {
     this.canvas = document.getElementById(canvasId);
+    if (!this.canvas) return;
     this.ctx = this.canvas.getContext('2d');
     this.tooltipEl = document.getElementById(tooltipId);
     this.data = [];
@@ -23,6 +40,7 @@ class CandlestickChart {
   }
 
   setupListeners() {
+    if (!this.canvas) return;
     window.addEventListener('resize', () => this.render());
 
     this.canvas.addEventListener('mousemove', (e) => {
@@ -56,7 +74,7 @@ class CandlestickChart {
   updateTooltip(candle) {
     if (!this.tooltipEl || !candle) return;
     const isUp = candle.close >= candle.open;
-    const color = isUp ? '#10b981' : '#f43f5e';
+    const color = isUp ? APPLE_PALETTE.green : APPLE_PALETTE.red;
     const chg = (((candle.close - candle.open) / candle.open) * 100).toFixed(2);
     
     // Check if signal exists on this date
@@ -71,8 +89,8 @@ class CandlestickChart {
       开: <span style="color:#fff">$${candle.open.toFixed(2)}</span> | 
       高: <span style="color:#fff">$${candle.high.toFixed(2)}</span> | 
       低: <span style="color:#fff">$${candle.low.toFixed(2)}</span> | 
-      收: <span style="color:${color}">$${candle.close.toFixed(2)} (${chg > 0 ? '+' : ''}${chg}%)</span> | 
-      量: <span style="color:#94a3b8">${(candle.volume / 1e6).toFixed(2)}M</span>${sigText}
+      收: <span style="color:${color};font-weight:600;">$${candle.close.toFixed(2)} (${chg > 0 ? '+' : ''}${chg}%)</span> | 
+      量: <span style="color:${APPLE_PALETTE.axisText}">${(candle.volume / 1e6).toFixed(2)}M</span>${sigText}
     `;
   }
 
@@ -91,8 +109,8 @@ class CandlestickChart {
     ctx.clearRect(0, 0, width, height);
 
     if (!this.data || this.data.length === 0) {
-      ctx.fillStyle = '#64748b';
-      ctx.font = '13px Inter';
+      ctx.fillStyle = APPLE_PALETTE.axisText;
+      ctx.font = `13px ${APPLE_PALETTE.fontSans}`;
       ctx.textAlign = 'center';
       ctx.fillText('暂无行情数据', width / 2, height / 2);
       return;
@@ -125,11 +143,11 @@ class CandlestickChart {
     const volToY = (v) => volTop + volHeight - (v / (maxVol || 1)) * volHeight;
 
     // Draw horizontal grid lines
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+    ctx.strokeStyle = APPLE_PALETTE.grid;
     ctx.lineWidth = 1;
     const gridSteps = 5;
-    ctx.fillStyle = '#64748b';
-    ctx.font = '10px JetBrains Mono';
+    ctx.fillStyle = APPLE_PALETTE.axisText;
+    ctx.font = `10px ${APPLE_PALETTE.fontMono}`;
     ctx.textAlign = 'left';
 
     for (let i = 0; i <= gridSteps; i++) {
@@ -154,7 +172,7 @@ class CandlestickChart {
     }
 
     // 1. Draw Bollinger Bands Area
-    ctx.fillStyle = 'rgba(139, 92, 246, 0.06)';
+    ctx.fillStyle = 'rgba(191, 90, 242, 0.07)';
     ctx.beginPath();
     let hasBB = false;
     for (let i = 0; i < n; i++) {
@@ -181,15 +199,15 @@ class CandlestickChart {
     ctx.closePath();
     ctx.fill();
 
-    // 2. Draw Candlesticks & Volume Bars
+    // 2. Draw Candlesticks & Volume Bars (Apple Green & Red)
     for (let i = 0; i < n; i++) {
       const c = this.data[i];
       const x = padding.left + i * barWidth + barWidth / 2;
       const isUp = c.close >= c.open;
-      const color = isUp ? '#10b981' : '#f43f5e';
+      const color = isUp ? APPLE_PALETTE.green : APPLE_PALETTE.red;
 
       // Volume bar
-      ctx.fillStyle = isUp ? 'rgba(16, 185, 129, 0.35)' : 'rgba(244, 63, 94, 0.35)';
+      ctx.fillStyle = isUp ? 'rgba(48, 209, 88, 0.35)' : 'rgba(255, 69, 58, 0.35)';
       const vy = volToY(c.volume);
       ctx.fillRect(x - candleWidth / 2, vy, candleWidth, volTop + volHeight - vy);
 
@@ -214,9 +232,8 @@ class CandlestickChart {
       const sig = signalMap[c.date];
       if (sig) {
         if (sig.type === 'BUY') {
-          // Green upward triangle below candle
           const markerY = priceToY(c.low) + 14;
-          ctx.fillStyle = '#10b981';
+          ctx.fillStyle = APPLE_PALETTE.green;
           ctx.beginPath();
           ctx.moveTo(x, markerY - 6);
           ctx.lineTo(x - 5, markerY + 4);
@@ -224,9 +241,8 @@ class CandlestickChart {
           ctx.closePath();
           ctx.fill();
         } else if (sig.type === 'SELL') {
-          // Red downward triangle above candle
           const markerY = priceToY(c.high) - 14;
-          ctx.fillStyle = '#f43f5e';
+          ctx.fillStyle = APPLE_PALETTE.red;
           ctx.beginPath();
           ctx.moveTo(x, markerY + 6);
           ctx.lineTo(x - 5, markerY - 4);
@@ -237,17 +253,17 @@ class CandlestickChart {
       }
     }
 
-    // 4. Draw SMA 20 (Amber)
+    // 4. Draw EMA Fast (Apple Orange)
     this.drawLineSeries(ctx, this.data.map((c, i) => ({
       x: padding.left + i * barWidth + barWidth / 2,
       y: c.sma_20 ? priceToY(c.sma_20) : null
-    })), '#f59e0b', 1.5);
+    })), APPLE_PALETTE.orange, 1.5);
 
-    // 5. Draw SMA 50 (Cyan)
+    // 5. Draw EMA Slow (Apple Teal)
     this.drawLineSeries(ctx, this.data.map((c, i) => ({
       x: padding.left + i * barWidth + barWidth / 2,
       y: c.sma_50 ? priceToY(c.sma_50) : null
-    })), '#00f2fe', 1.5);
+    })), APPLE_PALETTE.teal, 1.5);
 
     // 6. Crosshair if hovered
     if (this.hoverIdx >= 0 && this.hoverIdx < n) {
@@ -255,7 +271,7 @@ class CandlestickChart {
       const hc = this.data[this.hoverIdx];
       const hy = priceToY(hc.close);
 
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
       ctx.setLineDash([4, 4]);
       ctx.beginPath();
       ctx.moveTo(hx, padding.top);
@@ -291,6 +307,7 @@ class CandlestickChart {
 class EquityChart {
   constructor(canvasId, tooltipId) {
     this.canvas = document.getElementById(canvasId);
+    if (!this.canvas) return;
     this.ctx = this.canvas.getContext('2d');
     this.tooltipEl = document.getElementById(tooltipId);
     this.records = [];
@@ -305,6 +322,7 @@ class EquityChart {
   }
 
   setupListeners() {
+    if (!this.canvas) return;
     window.addEventListener('resize', () => this.render());
 
     this.canvas.addEventListener('mousemove', (e) => {
@@ -343,9 +361,9 @@ class EquityChart {
 
     this.tooltipEl.innerHTML = `
       日期: <span style="color:#fff">${rec.date}</span> | 
-      策略净值: <span style="color:#00f2fe">$${rec.equity.toLocaleString()} (${stratRet > 0 ? '+' : ''}${stratRet}%)</span> | 
-      基准净值: <span style="color:#94a3b8">$${rec.benchmark.toLocaleString()} (${benchRet > 0 ? '+' : ''}${benchRet}%)</span> | 
-      回撤: <span style="color:#f43f5e">-${dd}%</span>
+      策略净值: <span style="color:${APPLE_PALETTE.blue};font-weight:600;">$${rec.equity.toLocaleString()} (${stratRet > 0 ? '+' : ''}${stratRet}%)</span> | 
+      基准净值: <span style="color:${APPLE_PALETTE.axisText}">$${rec.benchmark.toLocaleString()} (${benchRet > 0 ? '+' : ''}${benchRet}%)</span> | 
+      回撤: <span style="color:${APPLE_PALETTE.red}">-${dd}%</span>
     `;
   }
 
@@ -364,8 +382,8 @@ class EquityChart {
     ctx.clearRect(0, 0, width, height);
 
     if (!this.records || this.records.length === 0) {
-      ctx.fillStyle = '#64748b';
-      ctx.font = '13px Inter';
+      ctx.fillStyle = APPLE_PALETTE.axisText;
+      ctx.font = `13px ${APPLE_PALETTE.fontSans}`;
       ctx.textAlign = 'center';
       ctx.fillText('等待回测启动生成净值曲线', width / 2, height / 2);
       return;
@@ -392,10 +410,10 @@ class EquityChart {
     const valToY = (v) => padding.top + (maxVal - v) / (maxVal - minVal) * chartHeight;
 
     // Grid lines
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+    ctx.strokeStyle = APPLE_PALETTE.grid;
     ctx.lineWidth = 1;
-    ctx.fillStyle = '#64748b';
-    ctx.font = '10px JetBrains Mono';
+    ctx.fillStyle = APPLE_PALETTE.axisText;
+    ctx.font = `10px ${APPLE_PALETTE.fontMono}`;
     ctx.textAlign = 'left';
 
     const gridSteps = 4;
@@ -413,8 +431,8 @@ class EquityChart {
     const n = this.records.length;
     const stepX = chartWidth / (n - 1 || 1);
 
-    // 1. Draw Benchmark Line (Muted Grey)
-    ctx.strokeStyle = '#64748b';
+    // 1. Draw Benchmark Line (Muted Apple Gray)
+    ctx.strokeStyle = 'rgba(142, 142, 147, 0.65)';
     ctx.lineWidth = 1.5;
     ctx.setLineDash([3, 3]);
     ctx.beginPath();
@@ -427,10 +445,10 @@ class EquityChart {
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // 2. Draw Strategy Area Gradient
+    // 2. Draw Strategy Area Gradient (Apple Blue Soft Fade)
     const grad = ctx.createLinearGradient(0, padding.top, 0, height);
-    grad.addColorStop(0, 'rgba(0, 242, 254, 0.25)');
-    grad.addColorStop(1, 'rgba(0, 242, 254, 0.0)');
+    grad.addColorStop(0, 'rgba(10, 132, 255, 0.22)');
+    grad.addColorStop(1, 'rgba(10, 132, 255, 0.00)');
 
     ctx.fillStyle = grad;
     ctx.beginPath();
@@ -444,11 +462,11 @@ class EquityChart {
     ctx.closePath();
     ctx.fill();
 
-    // 3. Draw Strategy Glowing Line
-    ctx.strokeStyle = '#00f2fe';
+    // 3. Draw Strategy Glowing Line (Apple Blue)
+    ctx.strokeStyle = APPLE_PALETTE.blue;
     ctx.lineWidth = 2.5;
-    ctx.shadowColor = 'rgba(0, 242, 254, 0.5)';
-    ctx.shadowBlur = 8;
+    ctx.shadowColor = 'rgba(10, 132, 255, 0.4)';
+    ctx.shadowBlur = 6;
     ctx.beginPath();
     for (let i = 0; i < n; i++) {
       const x = padding.left + i * stepX;
@@ -472,9 +490,9 @@ class EquityChart {
       ctx.stroke();
       ctx.setLineDash([]);
 
-      ctx.fillStyle = '#00f2fe';
+      ctx.fillStyle = APPLE_PALETTE.blue;
       ctx.beginPath();
-      ctx.arc(hx, hy, 4, 0, Math.PI * 2);
+      ctx.arc(hx, hy, 4.5, 0, Math.PI * 2);
       ctx.fill();
     }
   }
@@ -484,6 +502,7 @@ class EquityChart {
 class MultiEquityChart {
   constructor(canvasId) {
     this.canvas = document.getElementById(canvasId);
+    if (!this.canvas) return;
     this.ctx = this.canvas.getContext('2d');
     this.seriesList = [];
     window.addEventListener('resize', () => this.render());
@@ -531,10 +550,10 @@ class MultiEquityChart {
     const valToY = (v) => padding.top + (maxVal - v) / (maxVal - minVal) * chartHeight;
 
     // Grid lines
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+    ctx.strokeStyle = APPLE_PALETTE.grid;
     ctx.lineWidth = 1;
-    ctx.fillStyle = '#64748b';
-    ctx.font = '10px JetBrains Mono';
+    ctx.fillStyle = APPLE_PALETTE.axisText;
+    ctx.font = `10px ${APPLE_PALETTE.fontMono}`;
     ctx.textAlign = 'left';
 
     const gridSteps = 4;
@@ -633,8 +652,8 @@ class RollingICChart {
     ctx.clearRect(0, 0, width, height);
 
     if (!this.data || this.data.length === 0) {
-      ctx.fillStyle = '#64748b';
-      ctx.font = '12px Inter';
+      ctx.fillStyle = APPLE_PALETTE.axisText;
+      ctx.font = `12px ${APPLE_PALETTE.fontSans}`;
       ctx.textAlign = 'center';
       ctx.fillText('暂无滚动 IC 因子诊断数据', width / 2, height / 2);
       return;
@@ -660,10 +679,10 @@ class RollingICChart {
     const zeroY = valToY(0);
 
     // 1. Grid & Y-Axis labels
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
+    ctx.strokeStyle = APPLE_PALETTE.grid;
     ctx.lineWidth = 1;
-    ctx.fillStyle = '#64748b';
-    ctx.font = '10px JetBrains Mono';
+    ctx.fillStyle = APPLE_PALETTE.axisText;
+    ctx.font = `10px ${APPLE_PALETTE.fontMono}`;
     ctx.textAlign = 'left';
 
     const levels = [minIC, minIC / 2, 0, maxIC / 2, maxIC];
@@ -677,14 +696,14 @@ class RollingICChart {
     }
 
     // 2. Zero baseline highlight
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
     ctx.lineWidth = 1.2;
     ctx.beginPath();
     ctx.moveTo(padding.left, zeroY);
     ctx.lineTo(width - padding.right, zeroY);
     ctx.stroke();
 
-    // 3. Positive / Negative Bars
+    // 3. Positive / Negative Bars (Apple Green & Red)
     for (let i = 0; i < n; i++) {
       const x = padding.left + i * stepX;
       const v = this.data[i].ic;
@@ -692,12 +711,12 @@ class RollingICChart {
       const isPos = v >= 0;
 
       const barW = Math.max(2, (chartWidth / n) * 0.7);
-      ctx.fillStyle = isPos ? 'rgba(0, 242, 254, 0.65)' : 'rgba(244, 63, 94, 0.65)';
+      ctx.fillStyle = isPos ? 'rgba(48, 209, 88, 0.65)' : 'rgba(255, 69, 58, 0.65)';
       ctx.fillRect(x - barW / 2, Math.min(y, zeroY), barW, Math.abs(y - zeroY));
     }
 
-    // 4. Smooth trend line
-    ctx.strokeStyle = '#00f2fe';
+    // 4. Smooth trend line (Apple Blue)
+    ctx.strokeStyle = APPLE_PALETTE.blue;
     ctx.lineWidth = 2;
     ctx.beginPath();
     for (let i = 0; i < n; i++) {
@@ -708,9 +727,9 @@ class RollingICChart {
     }
     ctx.stroke();
 
-    // 5. Mean IC dashed benchmark line
+    // 5. Mean IC dashed benchmark line (Apple Orange)
     const meanY = valToY(this.overallIC);
-    ctx.strokeStyle = '#f59e0b';
+    ctx.strokeStyle = APPLE_PALETTE.orange;
     ctx.lineWidth = 1.5;
     ctx.setLineDash([4, 4]);
     ctx.beginPath();
@@ -718,7 +737,7 @@ class RollingICChart {
     ctx.lineTo(width - padding.right, meanY);
     ctx.stroke();
     ctx.setLineDash([]);
-    ctx.fillStyle = '#f59e0b';
+    ctx.fillStyle = APPLE_PALETTE.orange;
     ctx.fillText(`均值: ${this.overallIC >= 0 ? '+' : ''}${this.overallIC.toFixed(3)}`, padding.left + 5, meanY - 4);
 
     // 6. Hover indicator
@@ -735,21 +754,21 @@ class RollingICChart {
       ctx.stroke();
       ctx.setLineDash([]);
 
-      ctx.fillStyle = item.ic >= 0 ? '#00f2fe' : '#f43f5e';
+      ctx.fillStyle = item.ic >= 0 ? APPLE_PALETTE.green : APPLE_PALETTE.red;
       ctx.beginPath();
       ctx.arc(hx, hy, 4.5, 0, Math.PI * 2);
       ctx.fill();
 
-      // Tooltip box
+      // Tooltip box (Apple Frosted Glass style)
       const text = `${item.date}: IC ${item.ic >= 0 ? '+' : ''}${item.ic.toFixed(3)}`;
-      ctx.font = '10.5px JetBrains Mono';
+      ctx.font = `10.5px ${APPLE_PALETTE.fontMono}`;
       const tw = ctx.measureText(text).width;
       const tx = Math.min(width - padding.right - tw - 10, Math.max(padding.left, hx - tw / 2));
       const ty = Math.max(padding.top + 14, hy - 10);
 
-      ctx.fillStyle = 'rgba(12, 18, 34, 0.9)';
+      ctx.fillStyle = 'rgba(28, 28, 32, 0.92)';
       ctx.fillRect(tx - 6, ty - 12, tw + 12, 18);
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
       ctx.strokeRect(tx - 6, ty - 12, tw + 12, 18);
       ctx.fillStyle = '#fff';
       ctx.fillText(text, tx, ty);

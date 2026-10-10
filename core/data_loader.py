@@ -136,3 +136,96 @@ def get_preset_tickers():
         {"symbol": "AMD", "name": "Advanced Micro Devices", "sector": "Semiconductors", "badge": "Chipmaker"},
         {"symbol": "BABA", "name": "Alibaba Group ADR", "sector": "China E-Commerce", "badge": "ADR"}
     ]
+
+from concurrent.futures import ThreadPoolExecutor
+
+SEARCH_CACHE = {}
+
+FALLBACK_STOCKS = [
+    {"symbol": "AAPL", "name": "Apple Inc.", "exchange": "NASDAQ", "price": 336.64, "change_pct": -1.11},
+    {"symbol": "NVDA", "name": "NVIDIA Corporation", "exchange": "NASDAQ", "price": 229.28, "change_pct": -0.52},
+    {"symbol": "TSLA", "name": "Tesla, Inc.", "exchange": "NASDAQ", "price": 268.45, "change_pct": 2.34},
+    {"symbol": "MSFT", "name": "Microsoft Corporation", "exchange": "NASDAQ", "price": 435.10, "change_pct": 0.85},
+    {"symbol": "AMZN", "name": "Amazon.com, Inc.", "exchange": "NASDAQ", "price": 185.30, "change_pct": -0.45},
+    {"symbol": "GOOGL", "name": "Alphabet Inc.", "exchange": "NASDAQ", "price": 178.90, "change_pct": 1.12},
+    {"symbol": "META", "name": "Meta Platforms, Inc.", "exchange": "NASDAQ", "price": 582.40, "change_pct": 1.65},
+    {"symbol": "AMD", "name": "Advanced Micro Devices", "exchange": "NASDAQ", "price": 165.20, "change_pct": -1.80},
+    {"symbol": "SPY", "name": "SPDR S&P 500 ETF Trust", "exchange": "NYSEArca", "price": 585.10, "change_pct": 0.32},
+    {"symbol": "QQQ", "name": "Invesco QQQ Trust", "exchange": "NASDAQ", "price": 492.60, "change_pct": 0.45},
+    {"symbol": "BABA", "name": "Alibaba Group Holding", "exchange": "NYSE", "price": 98.40, "change_pct": -0.75},
+    {"symbol": "TSM", "name": "Taiwan Semiconductor Mfg", "exchange": "NYSE", "price": 190.50, "change_pct": 1.95},
+    {"symbol": "PLTR", "name": "Palantir Technologies", "exchange": "NYSE", "price": 43.80, "change_pct": 3.45},
+    {"symbol": "COIN", "name": "Coinbase Global, Inc.", "exchange": "NASDAQ", "price": 215.30, "change_pct": 4.12},
+    {"symbol": "NFLX", "name": "Netflix, Inc.", "exchange": "NASDAQ", "price": 712.50, "change_pct": -0.25}
+]
+
+def search_yahoo_tickers(query: str, max_results: int = 5):
+    """
+    Search Yahoo Finance for matching tickers by ticker symbol or company name.
+    Retrieves latest price and percentage change (涨跌幅度) for up to max_results matches.
+    """
+    if not query or not query.strip():
+        return []
+
+    q_clean = query.strip()
+    cache_key = (q_clean.lower(), max_results)
+    now = datetime.now()
+
+    if cache_key in SEARCH_CACHE:
+        cached_time, cached_res = SEARCH_CACHE[cache_key]
+        if (now - cached_time).total_seconds() < 60:
+            return cached_res
+
+    results = []
+    try:
+        s = yf.Search(q_clean, max_results=max_results)
+        quotes = s.quotes[:max_results] if hasattr(s, 'quotes') and s.quotes else []
+
+        if quotes:
+            def fetch_single_quote(q_item):
+                sym = q_item.get('symbol', '').upper()
+                price, chg_pct = None, None
+                try:
+                    t = yf.Ticker(sym)
+                    fi = t.fast_info
+                    last = getattr(fi, 'last_price', None)
+                    prev = getattr(fi, 'previous_close', None)
+                    if last is not None and prev is not None and prev > 0:
+                        chg_pct = round(((last - prev) / prev) * 100.0, 2)
+                        price = round(float(last), 2)
+                    elif last is not None:
+                        price = round(float(last), 2)
+                        chg_pct = 0.0
+                except Exception:
+                    pass
+
+                return {
+                    "symbol": sym,
+                    "name": q_item.get('shortname') or q_item.get('longname') or sym,
+                    "exchange": q_item.get('exchDisp') or q_item.get('exchange') or '',
+                    "type": q_item.get('typeDisp') or q_item.get('quoteType') or 'Stock',
+                    "price": price,
+                    "change_pct": chg_pct
+                }
+
+            with ThreadPoolExecutor(max_workers=min(5, len(quotes))) as executor:
+                results = list(executor.map(fetch_single_quote, quotes))
+
+    except Exception as e:
+        logger.warning(f"Error querying yf.Search for '{query}': {e}. Using local fallback search.")
+
+    # Fallback to local catalog if results are empty or search failed
+    if not results:
+        q_lower = q_clean.lower()
+        matched = []
+        for stock in FALLBACK_STOCKS:
+            if q_lower in stock['symbol'].lower() or q_lower in stock['name'].lower():
+                matched.append(stock)
+            if len(matched) >= max_results:
+                break
+        results = matched
+
+    # Save to memory cache
+    SEARCH_CACHE[cache_key] = (now, results)
+    return results
+

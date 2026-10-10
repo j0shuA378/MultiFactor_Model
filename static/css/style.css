@@ -1,37 +1,76 @@
 /* ==========================================================================
-   AlphaQuant Pro - Luxury Fintech Design System
+   AlphaQuant Pro - Apple Cupertino Design System (macOS & iOS HIG)
+   Aesthetic: Frosted Glass (Vibrancy), SF Pro Typography, Squircle Geometry,
+              Subtle Inset Bevel Highlights, Pure Pitch Dark Mode & Precision Fintech
    ========================================================================== */
 
 :root {
-  --bg-primary: #070b14;
-  --bg-secondary: #0c1222;
-  --bg-tertiary: #131c33;
-  --bg-card: rgba(18, 27, 49, 0.75);
-  --bg-card-hover: rgba(24, 36, 64, 0.85);
-  --border-subtle: rgba(255, 255, 255, 0.07);
-  --border-bright: rgba(255, 255, 255, 0.15);
+  /* Apple Cupertino Dark Theme Colors */
+  --bg-primary: #000000;
+  --bg-secondary: #0d0d11;
+  --bg-tertiary: #16161c;
+  --bg-elevated: #1e1e26;
   
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  /* Apple Dynamic Materials (Frosted Acrylic & Vibrancy) */
+  --bg-card: rgba(24, 24, 29, 0.72);
+  --bg-card-hover: rgba(34, 34, 42, 0.82);
+  --bg-header: rgba(13, 13, 17, 0.78);
+  --bg-pill: rgba(120, 120, 128, 0.22);
+  --bg-pill-hover: rgba(120, 120, 128, 0.32);
+  --bg-input: rgba(0, 0, 0, 0.45);
   
-  --accent-cyan: #00f2fe;
-  --accent-indigo: #6366f1;
-  --accent-violet: #8b5cf6;
-  --accent-emerald: #10b981;
-  --accent-rose: #f43f5e;
-  --accent-amber: #f59e0b;
+  /* Apple Hairline Borders & Reflections */
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-card: rgba(255, 255, 255, 0.10);
+  --border-bright: rgba(255, 255, 255, 0.18);
+  --border-focus: rgba(10, 132, 255, 0.55);
+  --glass-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  
+  /* Apple Typography Hierarchy */
+  --text-primary: #ffffff;
+  --text-secondary: rgba(235, 235, 245, 0.65);
+  --text-muted: rgba(235, 235, 245, 0.38);
+  --text-dimmed: rgba(235, 235, 245, 0.22);
+  
+  /* Authentic Apple System Accents (iOS 17/18 / macOS Sonoma) */
+  --apple-blue: #0A84FF;
+  --apple-blue-hover: #0071E3;
+  --apple-green: #30D158;
+  --apple-red: #FF453A;
+  --apple-orange: #FF9F0A;
+  --apple-yellow: #FFD60A;
+  --apple-purple: #BF5AF2;
+  --apple-teal: #64D2FF;
+  --apple-indigo: #5E5CE6;
+  --apple-gray: #8E8E93;
 
-  --color-bull: #10b981;
-  --color-bear: #f43f5e;
+  /* Aliases for Strategy Engine */
+  --accent-cyan: var(--apple-teal);
+  --accent-indigo: var(--apple-blue);
+  --accent-violet: var(--apple-purple);
+  --accent-emerald: var(--apple-green);
+  --accent-rose: var(--apple-red);
+  --accent-amber: var(--apple-orange);
+
+  --color-bull: var(--apple-green);
+  --color-bear: var(--apple-red);
   
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  /* Apple Typography Stack */
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Helvetica Neue", Inter, sans-serif;
+  --font-mono: "SF Mono", "JetBrains Mono", Menlo, Monaco, Consolas, monospace;
   
-  --shadow-card: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
+  /* Apple Squircle Radii & Elevation */
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+  
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-card: 0 12px 36px rgba(0, 0, 0, 0.45);
+  --shadow-pop: 0 20px 60px rgba(0, 0, 0, 0.7);
+  --apple-ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 * {
@@ -46,27 +85,32 @@ body {
   color: var(--text-primary);
   min-height: 100vh;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
   background-image: 
-    radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
-    radial-gradient(circle at 85% 25%, rgba(0, 242, 254, 0.06) 0%, transparent 45%),
-    radial-gradient(circle at 50% 85%, rgba(139, 92, 246, 0.05) 0%, transparent 50%);
+    radial-gradient(circle at 50% 0%, rgba(10, 132, 255, 0.07) 0%, transparent 55%),
+    radial-gradient(circle at 85% 15%, rgba(94, 92, 230, 0.05) 0%, transparent 45%),
+    radial-gradient(circle at 15% 85%, rgba(191, 90, 242, 0.04) 0%, transparent 50%);
   background-attachment: fixed;
 }
 
-/* Custom Scrollbars */
+/* Apple Sleek Scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--bg-primary);
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--bg-tertiary);
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--border-bright);
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .app-layout {
@@ -76,13 +120,14 @@ body {
 }
 
 /* ==========================================================================
-   Top Header Navigation
+   macOS Window Frame / Top Header Navigation
    ========================================================================== */
 
 .app-header {
   height: 64px;
-  background: rgba(12, 18, 34, 0.85);
-  backdrop-filter: blur(20px);
+  background: var(--bg-header);
+  -webkit-backdrop-filter: blur(36px) saturate(190%);
+  backdrop-filter: blur(36px) saturate(190%);
   border-bottom: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
@@ -91,87 +136,62 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 20px;
 }
 
-/* Institutional Navigation Page Links */
-.nav-pages-bar {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(0, 0, 0, 0.3);
-  padding: 4px 6px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-subtle);
-}
-
-.nav-page-link {
+/* macOS Window Traffic Lights Indicator */
+.mac-window-controls {
   display: flex;
   align-items: center;
   gap: 8px;
-  text-decoration: none;
-  padding: 6px 14px;
-  border-radius: var(--radius-sm);
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  white-space: nowrap;
+  margin-right: 4px;
 }
 
-.nav-page-link:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.05);
+.mac-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  position: relative;
+  transition: opacity 0.2s;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.35);
 }
 
-.nav-page-link.active {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(0, 242, 254, 0.15));
-  color: var(--accent-cyan);
-  border: 1px solid rgba(0, 242, 254, 0.35);
-  box-shadow: 0 0 12px rgba(0, 242, 254, 0.2);
-}
-
-.nav-page-badge {
-  font-size: 9.5px;
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.badge-barra { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
-.badge-ml { background: rgba(0, 242, 254, 0.2); color: #00f2fe; }
-.badge-cta { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-.badge-alloc { background: rgba(168, 85, 247, 0.2); color: #a855f7; }
+.mac-dot-close { background: #FF5F56; border: 0.5px solid #E0443E; }
+.mac-dot-min   { background: #FFBD2E; border: 0.5px solid #DEA123; }
+.mac-dot-max   { background: #27C93F; border: 0.5px solid #1AAB29; }
 
 .brand-logo {
   display: flex;
   align-items: center;
   gap: 12px;
   text-decoration: none;
+  cursor: pointer;
 }
 
 .logo-icon {
   width: 36px;
   height: 36px;
-  border-radius: var(--radius-md);
-  background: linear-gradient(135deg, #6366f1, #00f2fe);
+  border-radius: 10px;
+  background: linear-gradient(145deg, #1f2330 0%, #12141c 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  box-shadow: 0 0 16px rgba(99, 102, 241, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .logo-symbol {
   font-family: var(--font-mono);
-  font-weight: 800;
-  font-size: 14px;
+  font-weight: 700;
+  font-size: 13px;
   color: #fff;
   letter-spacing: -0.5px;
 }
@@ -180,14 +200,14 @@ body {
   position: absolute;
   width: 100%;
   height: 100%;
-  border-radius: var(--radius-md);
-  border: 1px solid rgba(0, 242, 254, 0.6);
-  animation: pulse 2.5s infinite;
+  border-radius: 10px;
+  border: 1px solid rgba(10, 132, 255, 0.5);
+  animation: applePulse 3s infinite cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes pulse {
-  0% { transform: scale(1); opacity: 0.8; }
-  100% { transform: scale(1.35); opacity: 0; }
+@keyframes applePulse {
+  0% { transform: scale(1); opacity: 0.7; }
+  100% { transform: scale(1.3); opacity: 0; }
 }
 
 .brand-text {
@@ -196,89 +216,333 @@ body {
 }
 
 .brand-title {
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: -0.3px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  color: var(--text-primary);
 }
 
 .badge-pro {
-  font-size: 10px;
-  font-weight: 800;
-  background: linear-gradient(90deg, #6366f1, #a855f7);
-  padding: 2px 6px;
-  border-radius: 4px;
+  font-size: 9.5px;
+  font-weight: 700;
+  background: rgba(10, 132, 255, 0.15);
+  color: var(--apple-blue);
+  border: 1px solid rgba(10, 132, 255, 0.35);
+  padding: 1px 6px;
+  border-radius: 6px;
   letter-spacing: 0.5px;
 }
 
 .brand-subtitle {
   font-size: 11px;
   color: var(--text-muted);
+  letter-spacing: -0.01em;
 }
 
+/* ==========================================================================
+   Apple Cupertino Segmented Control (Navigation Bar)
+   ========================================================================== */
+
+.nav-pages-bar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--bg-pill);
+  padding: 3px;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(20px);
+}
+
+.nav-page-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  padding: 5px 14px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: all 0.25s var(--apple-ease);
+  white-space: nowrap;
+}
+
+.nav-page-link:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.nav-page-link.active {
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35), inset 0 0.5px 0.5px rgba(255, 255, 255, 0.4);
+}
+
+.nav-page-badge {
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge-barra { background: rgba(255, 159, 10, 0.18); color: var(--apple-orange); }
+.badge-ml    { background: rgba(100, 210, 255, 0.18); color: var(--apple-teal); }
+.badge-cta   { background: rgba(48, 209, 88, 0.18); color: var(--apple-green); }
+.badge-alloc { background: rgba(191, 90, 242, 0.18); color: var(--apple-purple); }
+
+/* Ticker Preset Capsules */
 .ticker-presets {
   display: flex;
   align-items: center;
   gap: 6px;
   overflow-x: auto;
-  max-width: 520px;
+  max-width: 480px;
   padding: 4px 0;
 }
 
 .ticker-chip {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--border-subtle);
-  border-radius: 20px;
+  border-radius: var(--radius-full);
   padding: 4px 12px;
   font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 11.5px;
+  font-weight: 500;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s var(--apple-ease);
   white-space: nowrap;
 }
 
 .ticker-chip:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: var(--accent-cyan);
-  color: var(--text-primary);
-  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
 }
 
 .ticker-chip.active {
-  background: rgba(99, 102, 241, 0.2);
-  border-color: var(--accent-indigo);
-  color: var(--accent-cyan);
-  box-shadow: 0 0 10px rgba(99, 102, 241, 0.25);
+  background: var(--apple-blue);
+  border-color: var(--apple-blue);
+  color: #ffffff;
+  box-shadow: 0 2px 10px rgba(10, 132, 255, 0.45);
 }
 
+/* Header Right Controls */
 .header-right {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
 }
 
 .search-box {
   display: flex;
   align-items: center;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--bg-input);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  padding: 2px 4px 2px 10px;
-  transition: border-color 0.2s;
+  border-radius: var(--radius-sm);
+  padding: 3px 6px 3px 10px;
+  transition: all 0.2s var(--apple-ease);
+  position: relative;
 }
 
 .search-box:focus-within {
-  border-color: var(--accent-indigo);
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+  border-color: var(--apple-blue);
+  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.3);
+  background: rgba(0, 0, 0, 0.6);
+}
+
+/* Apple Spotlight / Safari Style Search Suggestions Dropdown */
+.search-suggestions-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 400px;
+  max-width: 90vw;
+  background: rgba(22, 22, 27, 0.94);
+  -webkit-backdrop-filter: blur(40px) saturate(190%);
+  backdrop-filter: blur(40px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  padding: 6px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  animation: appleDropdownFade 0.18s var(--apple-ease);
+}
+
+@keyframes appleDropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.suggestion-header {
+  padding: 6px 10px 4px 10px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 4px;
+}
+
+.suggestion-source-tag {
+  font-size: 9.5px;
+  color: var(--apple-blue);
+  background: rgba(10, 132, 255, 0.12);
+  border: 0.5px solid rgba(10, 132, 255, 0.25);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.suggestion-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s var(--apple-ease);
+  text-decoration: none;
+}
+
+.suggestion-item:hover,
+.suggestion-item.highlighted {
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.suggestion-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+  max-width: 65%;
+}
+
+.suggestion-symbol-badge {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 2px 7px;
+  border-radius: 6px;
+  min-width: 48px;
+  text-align: center;
+}
+
+.suggestion-info {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.suggestion-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.suggestion-meta {
+  font-size: 10px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.suggestion-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: right;
+}
+
+.suggestion-price {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.suggestion-chg-pill {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  min-width: 58px;
+  text-align: center;
+  display: inline-block;
+}
+
+.suggestion-chg-pill.pos {
+  background: rgba(48, 209, 88, 0.16);
+  color: var(--apple-green);
+  border: 0.5px solid rgba(48, 209, 88, 0.35);
+}
+
+.suggestion-chg-pill.neg {
+  background: rgba(255, 69, 58, 0.16);
+  color: var(--apple-red);
+  border: 0.5px solid rgba(255, 69, 58, 0.35);
+}
+
+.suggestion-chg-pill.flat {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+  border: 0.5px solid rgba(255, 255, 255, 0.12);
+}
+
+.suggestion-loading,
+.suggestion-empty {
+  padding: 16px 12px;
+  text-align: center;
+  font-size: 11.5px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.suggestion-spinner {
+  width: 13px;
+  height: 13px;
+  border: 2px solid rgba(10, 132, 255, 0.2);
+  border-top-color: var(--apple-blue);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 .search-icon {
-  width: 15px;
-  height: 15px;
+  width: 14px;
+  height: 14px;
   color: var(--text-muted);
   margin-right: 6px;
 }
@@ -288,33 +552,38 @@ body {
   border: none;
   outline: none;
   color: var(--text-primary);
-  font-family: var(--font-mono);
-  font-size: 13px;
-  width: 170px;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  width: 160px;
+}
+
+.search-box input::placeholder {
+  color: var(--text-muted);
 }
 
 .btn-search {
-  background: var(--bg-tertiary);
+  background: rgba(255, 255, 255, 0.08);
   border: 1px solid var(--border-subtle);
   color: var(--text-secondary);
-  border-radius: var(--radius-sm);
-  padding: 5px 10px;
-  font-size: 12px;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11.5px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s var(--apple-ease);
 }
 
 .btn-search:hover {
-  background: var(--accent-indigo);
+  background: rgba(255, 255, 255, 0.16);
   color: #fff;
 }
 
+/* Apple Period Segmented Pill */
 .period-selector {
   display: flex;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
+  background: var(--bg-pill);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-full);
   padding: 2px;
 }
 
@@ -322,12 +591,12 @@ body {
   background: transparent;
   border: none;
   color: var(--text-muted);
-  font-size: 12px;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 4px;
+  font-size: 11.5px;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.15s var(--apple-ease);
 }
 
 .period-btn:hover {
@@ -335,9 +604,9 @@ body {
 }
 
 .period-btn.active {
-  background: var(--bg-tertiary);
-  color: var(--accent-cyan);
-  border: 1px solid rgba(0, 242, 254, 0.3);
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
 }
 
 .system-status {
@@ -352,17 +621,18 @@ body {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background-color: var(--accent-emerald);
-  box-shadow: 0 0 8px var(--accent-emerald);
+  background-color: var(--apple-green);
+  box-shadow: 0 0 8px rgba(48, 209, 88, 0.6);
 }
 
 /* ==========================================================================
-   Strategy Navigation Bar
+   Apple Strategy Switcher Bar (Sub-Toolbar)
    ========================================================================== */
 
 .strategy-navbar {
-  background: rgba(15, 23, 42, 0.7);
-  backdrop-filter: blur(16px);
+  background: rgba(18, 18, 24, 0.72);
+  -webkit-backdrop-filter: blur(28px);
+  backdrop-filter: blur(28px);
   border-bottom: 1px solid var(--border-subtle);
   padding: 8px 24px;
   display: flex;
@@ -372,7 +642,7 @@ body {
 
 .strategy-tabs {
   display: flex;
-  gap: 12px;
+  gap: 8px;
 }
 
 .strat-tab {
@@ -385,22 +655,21 @@ body {
   border-radius: var(--radius-md);
   cursor: pointer;
   text-align: left;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s var(--apple-ease);
 }
 
 .strat-tab:hover {
-  background: rgba(255, 255, 255, 0.03);
-  border-color: var(--border-subtle);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .strat-tab.active {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(0, 242, 254, 0.08));
-  border-color: rgba(99, 102, 241, 0.4);
-  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.15);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .tab-icon {
-  font-size: 18px;
+  font-size: 17px;
 }
 
 .tab-content {
@@ -409,13 +678,13 @@ body {
 }
 
 .tab-title {
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
   color: var(--text-secondary);
 }
 
 .strat-tab.active .tab-title {
-  color: #fff;
+  color: #ffffff;
 }
 
 .tab-desc {
@@ -423,29 +692,32 @@ body {
   color: var(--text-muted);
 }
 
+/* Apple Primary Action Button (Run Backtest) */
 .btn-primary-action {
-  background: linear-gradient(135deg, #6366f1, #00f2fe);
-  border: none;
-  color: #fff;
-  padding: 10px 22px;
-  border-radius: var(--radius-md);
-  font-weight: 700;
+  background: linear-gradient(180deg, var(--apple-blue) 0%, var(--apple-blue-hover) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  padding: 9px 20px;
+  border-radius: var(--radius-full);
+  font-weight: 600;
   font-size: 13px;
   display: flex;
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 14px rgba(10, 132, 255, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transition: all 0.2s var(--apple-ease);
+  letter-spacing: -0.01em;
 }
 
 .btn-primary-action:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 24px rgba(0, 242, 254, 0.5);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(10, 132, 255, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 .btn-primary-action:active {
-  transform: translateY(0);
+  transform: translateY(0.5px);
+  filter: brightness(0.95);
 }
 
 /* ==========================================================================
@@ -459,9 +731,11 @@ body {
   min-height: calc(100vh - 128px);
 }
 
-/* Left Sidebar Controls */
+/* Left Sidebar Controls (macOS Inspector Style) */
 .control-sidebar {
-  background: var(--bg-secondary);
+  background: rgba(14, 14, 18, 0.7);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
   border-right: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
@@ -471,7 +745,7 @@ body {
 }
 
 .sidebar-header {
-  padding: 16px 20px;
+  padding: 14px 18px;
   border-bottom: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
@@ -479,53 +753,63 @@ body {
 }
 
 .sidebar-title {
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
   display: flex;
   align-items: center;
   gap: 8px;
   color: var(--text-secondary);
+  letter-spacing: -0.01em;
 }
 
 .sidebar-title .icon-svg {
-  width: 16px;
-  height: 16px;
-  color: var(--accent-indigo);
+  width: 15px;
+  height: 15px;
+  color: var(--apple-blue);
 }
 
 .ticker-badge {
   font-family: var(--font-mono);
-  background: rgba(0, 242, 254, 0.1);
-  color: var(--accent-cyan);
-  border: 1px solid rgba(0, 242, 254, 0.3);
+  background: rgba(10, 132, 255, 0.12);
+  color: var(--apple-blue);
+  border: 1px solid rgba(10, 132, 255, 0.3);
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-full);
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .sidebar-scroll {
-  padding: 16px 20px;
+  padding: 16px 18px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
+/* Parameter Card (Frosted Glass Bevel) */
 .param-card {
   background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-card);
   border-radius: var(--radius-md);
-  padding: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25), var(--glass-bevel);
+  transition: border-color 0.2s;
+}
+
+.param-card:hover {
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .param-card-title {
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 11.5px;
+  font-weight: 600;
   color: var(--text-primary);
   margin-bottom: 12px;
-  letter-spacing: 0.3px;
-  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .form-group {
@@ -534,9 +818,10 @@ body {
 
 .form-group label {
   display: block;
-  font-size: 11.5px;
+  font-size: 11px;
   color: var(--text-secondary);
   margin-bottom: 5px;
+  font-weight: 500;
 }
 
 .form-row {
@@ -545,25 +830,27 @@ body {
   gap: 10px;
 }
 
+/* Apple Native Inputs */
 input[type="number"],
 input[type="text"],
 .custom-select {
   width: 100%;
-  background: rgba(0, 0, 0, 0.25);
+  background: var(--bg-input);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
   color: var(--text-primary);
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: 12px;
   padding: 7px 10px;
   outline: none;
-  transition: border-color 0.15s;
+  transition: all 0.15s var(--apple-ease);
 }
 
 input[type="number"]:focus,
 input[type="text"]:focus,
 .custom-select:focus {
-  border-color: var(--accent-indigo);
+  border-color: var(--apple-blue);
+  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.3);
 }
 
 .input-with-affix {
@@ -588,7 +875,7 @@ input[type="text"]:focus,
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-top: 8px;
+  margin-top: 6px;
 }
 
 .checkbox-label {
@@ -601,9 +888,14 @@ input[type="text"]:focus,
 }
 
 .checkbox-label input[type="checkbox"] {
-  accent-color: var(--accent-indigo);
+  accent-color: var(--apple-blue);
+  width: 15px;
+  height: 15px;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
+/* Apple iOS Native Range Sliders */
 .range-with-val {
   display: flex;
   align-items: center;
@@ -612,14 +904,38 @@ input[type="text"]:focus,
 
 .range-with-val input[type="range"] {
   flex: 1;
-  accent-color: var(--accent-indigo);
+  -webkit-appearance: none;
+  appearance: none;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 3px;
+  outline: none;
+}
+
+.range-with-val input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+  cursor: grab;
+  border: 0.5px solid rgba(0, 0, 0, 0.08);
+  transition: transform 0.15s;
+}
+
+.range-with-val input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
 }
 
 .range-with-val span {
   font-family: var(--font-mono);
   font-size: 12px;
-  color: var(--accent-cyan);
+  color: var(--apple-blue);
   width: 38px;
+  text-align: right;
+  font-weight: 600;
 }
 
 .input-hint {
@@ -627,13 +943,14 @@ input[type="text"]:focus,
   font-size: 10px;
   color: var(--text-muted);
   margin-top: 4px;
+  line-height: 1.4;
 }
 
 .info-alert {
-  background: rgba(99, 102, 241, 0.08);
-  border-left: 3px solid var(--accent-indigo);
-  padding: 10px;
-  border-radius: 4px;
+  background: rgba(10, 132, 255, 0.08);
+  border: 1px solid rgba(10, 132, 255, 0.2);
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
   font-size: 11px;
   color: var(--text-secondary);
   line-height: 1.5;
@@ -648,60 +965,64 @@ input[type="text"]:focus,
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.06);
   border: 1px solid var(--border-subtle);
   color: var(--text-secondary);
   padding: 8px 12px;
   border-radius: var(--radius-sm);
   font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.15s var(--apple-ease);
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
 }
 
 /* ==========================================================================
-   Center Workspace & Charts
+   Center Workspace & Charts (Cupertino Grid)
    ========================================================================== */
 
 .content-workspace {
-  padding: 20px 24px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-/* KPI Banner */
+/* Apple Stocks & Health Style KPI Cards */
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
+  gap: 16px;
 }
 
 .kpi-card {
   background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  padding: 14px 18px;
-  box-shadow: var(--shadow-card);
-  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  box-shadow: var(--shadow-card), var(--glass-bevel);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  backdrop-filter: blur(28px) saturate(190%);
   position: relative;
   overflow: hidden;
-  transition: transform 0.2s;
+  transition: all 0.25s var(--apple-ease);
 }
 
 .kpi-card:hover {
   transform: translateY(-2px);
-  border-color: var(--border-bright);
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55), var(--glass-bevel);
 }
 
 .kpi-label {
   font-size: 11.5px;
   color: var(--text-muted);
   font-weight: 500;
+  letter-spacing: -0.01em;
   display: block;
 }
 
@@ -709,14 +1030,15 @@ input[type="text"]:focus,
   display: flex;
   align-items: baseline;
   gap: 10px;
-  margin: 6px 0 4px 0;
+  margin: 8px 0 6px 0;
 }
 
 .kpi-value {
-  font-family: var(--font-mono);
-  font-size: 22px;
+  font-family: var(--font-sans);
+  font-size: 26px;
   font-weight: 700;
   color: var(--text-primary);
+  letter-spacing: -0.02em;
 }
 
 .kpi-value.positive {
@@ -729,26 +1051,33 @@ input[type="text"]:focus,
 
 .kpi-tag {
   font-family: var(--font-mono);
-  font-size: 11px;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.05);
+  font-size: 10.5px;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.08);
   color: var(--text-secondary);
+  font-weight: 600;
 }
 
 .kpi-subtext {
   font-size: 11px;
   color: var(--text-muted);
   display: block;
+  letter-spacing: -0.01em;
 }
 
-/* Chart Container Cards */
+/* ==========================================================================
+   Chart Container Cards (Apple Cupertino Surface)
+   ========================================================================== */
+
 .chart-container-card {
   background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-card);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
-  padding: 16px 20px;
+  box-shadow: var(--shadow-card), var(--glass-bevel);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  backdrop-filter: blur(28px) saturate(190%);
+  padding: 18px 22px;
   display: flex;
   flex-direction: column;
 }
@@ -757,7 +1086,7 @@ input[type="text"]:focus,
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .chart-title-group {
@@ -767,9 +1096,10 @@ input[type="text"]:focus,
 }
 
 .chart-title {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 13.5px;
+  font-weight: 600;
   color: var(--text-primary);
+  letter-spacing: -0.01em;
 }
 
 .legend-row {
@@ -787,14 +1117,14 @@ input[type="text"]:focus,
 }
 
 .legend-dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
 }
 
-.dot-sma20 { background-color: #f59e0b; }
-.dot-sma50 { background-color: #00f2fe; }
-.dot-bb { background-color: #8b5cf6; }
+.dot-sma20 { background-color: var(--apple-orange); }
+.dot-sma50 { background-color: var(--apple-teal); }
+.dot-bb    { background-color: var(--apple-purple); }
 
 .legend-marker {
   font-size: 10px;
@@ -806,21 +1136,22 @@ input[type="text"]:focus,
 
 .legend-line {
   width: 14px;
-  height: 2px;
+  height: 2.5px;
+  border-radius: 2px;
   display: inline-block;
 }
 
-.line-strategy { background-color: var(--accent-cyan); }
-.line-benchmark { background-color: #64748b; }
-.line-momentum { background-color: #f59e0b; }
-.line-ml { background-color: #00f2fe; }
-.line-turtle { background-color: #10b981; }
+.line-strategy { background-color: var(--apple-blue); }
+.line-benchmark { background-color: var(--apple-gray); }
+.line-momentum { background-color: var(--apple-orange); }
+.line-ml { background-color: var(--apple-teal); }
+.line-turtle { background-color: var(--apple-green); }
 
 .legend-area {
   width: 12px;
   height: 10px;
-  background: rgba(244, 63, 94, 0.35);
-  border: 1px solid var(--accent-rose);
+  background: rgba(255, 69, 58, 0.25);
+  border: 1px solid var(--apple-red);
   border-radius: 2px;
   display: inline-block;
 }
@@ -828,7 +1159,11 @@ input[type="text"]:focus,
 .cursor-price-info {
   font-family: var(--font-mono);
   font-size: 11.5px;
-  color: var(--accent-cyan);
+  color: var(--apple-blue);
+  background: rgba(10, 132, 255, 0.08);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(10, 132, 255, 0.18);
 }
 
 .canvas-wrapper {
@@ -851,13 +1186,18 @@ canvas {
   display: block;
 }
 
-/* ML Diagnostics Panel */
+/* ==========================================================================
+   Factor & ML Diagnostics Panel (macOS Pro Inspection)
+   ========================================================================== */
+
 .diagnostics-card {
   background: var(--bg-card);
-  border: 1px solid rgba(99, 102, 241, 0.25);
+  border: 1px solid var(--border-card);
   border-radius: var(--radius-lg);
-  padding: 18px 20px;
-  box-shadow: 0 0 24px rgba(99, 102, 241, 0.1);
+  padding: 18px 22px;
+  box-shadow: var(--shadow-card), var(--glass-bevel);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  backdrop-filter: blur(28px) saturate(190%);
 }
 
 .card-inner-header {
@@ -868,15 +1208,16 @@ canvas {
 }
 
 .card-inner-title {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 13.5px;
+  font-weight: 600;
   display: flex;
   align-items: center;
   gap: 8px;
+  letter-spacing: -0.01em;
 }
 
 .ai-sparkle {
-  color: var(--accent-cyan);
+  color: var(--apple-blue);
   font-size: 16px;
 }
 
@@ -886,13 +1227,14 @@ canvas {
 }
 
 .ml-tag {
-  background: rgba(99, 102, 241, 0.15);
-  border: 1px solid rgba(99, 102, 241, 0.3);
-  color: var(--text-primary);
-  font-size: 11px;
-  padding: 3px 8px;
-  border-radius: 4px;
+  background: rgba(10, 132, 255, 0.12);
+  border: 1px solid rgba(10, 132, 255, 0.25);
+  color: var(--apple-blue);
+  font-size: 10.5px;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
   font-family: var(--font-mono);
+  font-weight: 500;
 }
 
 .ml-diagnostics-grid {
@@ -922,23 +1264,23 @@ canvas {
 }
 
 .feature-track {
-  height: 6px;
-  background: rgba(255, 255, 255, 0.05);
+  height: 5px;
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 3px;
   overflow: hidden;
 }
 
 .feature-fill {
   height: 100%;
-  background: linear-gradient(90deg, #6366f1, #00f2fe);
+  background: linear-gradient(90deg, var(--apple-blue), var(--apple-teal));
   border-radius: 3px;
 }
 
 .ml-explanation-box {
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.35);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  padding: 14px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -968,6 +1310,7 @@ canvas {
   padding: 8px;
   border-radius: var(--radius-sm);
   text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .stat-pill .p-label {
@@ -979,19 +1322,24 @@ canvas {
 .stat-pill .p-val {
   display: block;
   font-family: var(--font-mono);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
-  color: var(--accent-cyan);
+  color: var(--apple-blue);
   margin-top: 3px;
 }
 
-/* Trades Table */
+/* ==========================================================================
+   Trades Table (macOS Clean List View)
+   ========================================================================== */
+
 .trades-card {
   background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-card);
   border-radius: var(--radius-lg);
-  padding: 16px 20px;
-  box-shadow: var(--shadow-card);
+  padding: 18px 22px;
+  box-shadow: var(--shadow-card), var(--glass-bevel);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  backdrop-filter: blur(28px) saturate(190%);
 }
 
 .trades-card-header {
@@ -1002,22 +1350,26 @@ canvas {
 }
 
 .trades-card-title {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .btn-sm {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.07);
   border: 1px solid var(--border-subtle);
   color: var(--text-secondary);
   font-size: 11px;
-  padding: 5px 12px;
-  border-radius: 4px;
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
   cursor: pointer;
+  transition: all 0.15s var(--apple-ease);
 }
 
 .btn-sm:hover {
-  background: var(--accent-indigo);
+  background: var(--apple-blue);
+  border-color: var(--apple-blue);
   color: #fff;
 }
 
@@ -1034,50 +1386,55 @@ canvas {
 }
 
 .trades-table th {
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(14, 14, 18, 0.85);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
   color: var(--text-muted);
-  font-weight: 600;
-  padding: 8px 12px;
+  font-weight: 500;
+  padding: 9px 12px;
   border-bottom: 1px solid var(--border-subtle);
   position: sticky;
   top: 0;
   z-index: 2;
+  font-size: 11px;
 }
 
 .trades-table td {
-  padding: 9px 12px;
+  padding: 10px 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   font-family: var(--font-mono);
+  font-size: 11.5px;
 }
 
 .trades-table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.035);
 }
 
 .empty-state {
   text-align: center;
   color: var(--text-muted);
-  padding: 30px !important;
+  padding: 36px !important;
+  font-family: var(--font-sans);
 }
 
 .tag-badge {
   font-size: 10px;
-  padding: 2px 6px;
-  border-radius: 3px;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
   font-weight: 600;
 }
 
 .tag-badge.long {
-  background: rgba(16, 185, 129, 0.15);
+  background: rgba(48, 209, 88, 0.15);
   color: var(--color-bull);
 }
 
 .tag-reason {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.06);
   color: var(--text-muted);
   font-size: 10px;
   padding: 2px 6px;
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
 /* ==========================================================================
@@ -1093,36 +1450,44 @@ canvas {
 
 .comp-card {
   background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-card);
   border-radius: var(--radius-lg);
-  padding: 16px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
   gap: 12px;
   position: relative;
   overflow: hidden;
+  box-shadow: var(--shadow-card), var(--glass-bevel);
+  transition: all 0.25s var(--apple-ease);
+}
+
+.comp-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
 .comp-card.highlight {
-  border-color: rgba(0, 242, 254, 0.4);
-  box-shadow: 0 0 20px rgba(0, 242, 254, 0.15);
+  border-color: rgba(10, 132, 255, 0.45);
+  box-shadow: 0 8px 32px rgba(10, 132, 255, 0.25), var(--glass-bevel);
 }
 
 .comp-card-badge {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  font-size: 10px;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-weight: 700;
-  background: rgba(0, 242, 254, 0.15);
-  color: var(--accent-cyan);
+  top: 14px;
+  right: 14px;
+  font-size: 9.5px;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  background: rgba(10, 132, 255, 0.15);
+  color: var(--apple-blue);
 }
 
 .comp-title {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 14.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .comp-stat-grid {
@@ -1132,9 +1497,10 @@ canvas {
 }
 
 .comp-stat-item {
-  background: rgba(0, 0, 0, 0.2);
-  padding: 8px;
-  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .comp-stat-item .cs-label {
@@ -1145,18 +1511,19 @@ canvas {
 
 .comp-stat-item .cs-val {
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 700;
   display: block;
   margin-top: 2px;
 }
 
-/* Modal Helper */
+/* Modal Window (macOS Sheet / Alert) */
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.65);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1166,10 +1533,10 @@ canvas {
 .modal-box {
   background: var(--bg-secondary);
   border: 1px solid var(--border-bright);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   width: 580px;
   max-width: 90vw;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+  box-shadow: var(--shadow-pop), var(--glass-bevel);
   padding: 24px;
 }
 
@@ -1184,11 +1551,21 @@ canvas {
   background: none;
   border: none;
   color: var(--text-muted);
-  font-size: 24px;
+  font-size: 22px;
   cursor: pointer;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
 }
 
-.btn-close:hover { color: #fff; }
+.btn-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
 
 .modal-body p {
   font-size: 13px;
@@ -1210,22 +1587,22 @@ canvas {
 
 .code-snippet-box code {
   font-family: var(--font-mono);
-  font-size: 12.5px;
-  color: var(--accent-cyan);
+  font-size: 12px;
+  color: var(--apple-blue);
 }
 
 .btn-copy {
-  background: var(--bg-tertiary);
+  background: rgba(255, 255, 255, 0.08);
   border: 1px solid var(--border-subtle);
   color: var(--text-secondary);
   font-size: 11px;
   padding: 4px 10px;
-  border-radius: 4px;
+  border-radius: var(--radius-full);
   cursor: pointer;
 }
 
 .btn-copy:hover {
-  background: var(--accent-indigo);
+  background: var(--apple-blue);
   color: #fff;
 }
 
@@ -1242,7 +1619,7 @@ canvas {
 }
 
 .modal-body code {
-  color: var(--accent-indigo);
+  color: var(--apple-blue);
   font-family: var(--font-mono);
 }
 

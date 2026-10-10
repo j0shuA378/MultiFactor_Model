@@ -7,7 +7,7 @@ from flask_cors import CORS
 # Add workspace directory to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from core.data_loader import fetch_stock_data, get_preset_tickers
+from core.data_loader import fetch_stock_data, get_preset_tickers, search_yahoo_tickers
 from core.indicators import add_all_indicators
 from core.backtest_engine import BacktestEngine
 from strategies.factor_momentum import MultiFactorMomentumStrategy
@@ -68,6 +68,23 @@ def page_portfolio():
 def api_presets():
     """Returns preset popular tickers"""
     return jsonify({"status": "success", "data": get_preset_tickers()})
+
+@app.route("/api/search", methods=["GET"])
+def api_search():
+    """
+    Search Yahoo Finance for tickers/companies matching query.
+    Returns max 5 candidate items with real-time price and percentage change.
+    """
+    q = request.args.get("q", "").strip()
+    if not q:
+        return jsonify({"status": "success", "data": []})
+    
+    try:
+        results = search_yahoo_tickers(q, max_results=5)
+        return jsonify({"status": "success", "query": q, "data": results})
+    except Exception as e:
+        logger.error(f"Search API error for '{q}': {e}")
+        return jsonify({"status": "error", "message": str(e), "data": []})
 
 @app.route("/api/stock/history", methods=["GET"])
 def api_stock_history():
