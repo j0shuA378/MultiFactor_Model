@@ -62,10 +62,10 @@ def blend_multi_strategy_portfolio(
     blended_curve_records = [
         {
             "date": str(d),
-            "equity": round(float(blended_equity.loc[d]), 2),
-            "benchmark": round(float(bench_series.loc[d]), 2)
+            "equity": round(float(eq), 2),
+            "benchmark": round(float(bn), 2)
         }
-        for d in blended_equity.index
+        for d, eq, bn in zip(blended_equity.index, blended_equity.values, bench_series.values)
     ]
 
     return {

@@ -34,7 +34,7 @@ def compute_performance_metrics(
     bench_daily_ret = benchmark_series.pct_change().dropna()
 
     total_days = len(equity_series)
-    years = total_days / 252.0 if total_days >= 252 else total_days / 252.0
+    years = max(total_days / 252.0, 1.0 / 252.0)
 
     # CAGR (Compound Annual Growth Rate)
     if years > 0 and final_equity > 0:
@@ -74,9 +74,12 @@ def compute_performance_metrics(
     # Calmar Ratio
     calmar = float(cagr / max_drawdown_pct) if max_drawdown_pct > 0.001 else 0.0
 
-    # Alpha & Beta
-    if len(strat_daily_ret) > 10 and len(bench_daily_ret) > 10:
-        cov_matrix = np.cov(strat_daily_ret, bench_daily_ret)
+    # Alpha & Beta (strictly aligned by index to prevent length mismatch)
+    aligned_rets = pd.concat([strat_daily_ret, bench_daily_ret], axis=1).dropna()
+    if len(aligned_rets) > 10:
+        s_arr = aligned_rets.iloc[:, 0].values
+        b_arr = aligned_rets.iloc[:, 1].values
+        cov_matrix = np.cov(s_arr, b_arr)
         bench_var = cov_matrix[1, 1]
         cov_strat_bench = cov_matrix[0, 1]
         beta = float(cov_strat_bench / bench_var) if bench_var > 1e-8 else 1.0
@@ -85,24 +88,30 @@ def compute_performance_metrics(
         alpha = 0.0
         beta = 1.0
 
-    # Trade statistics
+    # Trade statistics (single-pass accumulation)
     total_trades = len(trades)
-    winning_trades = [t for t in trades if t.get('pnl', 0) > 0]
-    losing_trades = [t for t in trades if t.get('pnl', 0) < 0]
-    
-    num_wins = len(winning_trades)
-    num_losses = len(losing_trades)
+    num_wins = 0
+    num_losses = 0
+    gross_profit = 0.0
+    gross_loss = 0.0
+    total_holding_days = 0.0
+
+    for t in trades:
+        pnl = float(t.get('pnl', 0.0))
+        if pnl > 0:
+            num_wins += 1
+            gross_profit += pnl
+        elif pnl < 0:
+            num_losses += 1
+            gross_loss += abs(pnl)
+        total_holding_days += float(t.get('holding_days', 1))
+
     win_rate = float(num_wins / total_trades * 100.0) if total_trades > 0 else 0.0
-
-    gross_profit = sum(t['pnl'] for t in winning_trades)
-    gross_loss = abs(sum(t['pnl'] for t in losing_trades))
     profit_factor = float(gross_profit / gross_loss) if gross_loss > 0 else (99.0 if gross_profit > 0 else 0.0)
-
     avg_win = float(gross_profit / num_wins) if num_wins > 0 else 0.0
     avg_loss = float(gross_loss / num_losses) if num_losses > 0 else 0.0
     win_loss_payoff = float(avg_win / avg_loss) if avg_loss > 0 else 0.0
-
-    avg_holding_days = float(np.mean([t.get('holding_days', 1) for t in trades])) if total_trades > 0 else 0.0
+    avg_holding_days = float(total_holding_days / total_trades) if total_trades > 0 else 0.0
 
     # Institutional Risk Measures (VaR, CVaR, Skewness, Kurtosis)
     var_95 = 0.0

@@ -34,7 +34,7 @@ class CandlestickChart {
     this.signals = [];
     this.predictionLevels = null;
     this.showProjectionLines = true;
-    this.padding = { top: 22, right: 96, bottom: 25, left: 15 };
+    this.padding = { top: 22, right: 86, bottom: 25, left: 15 };
     this.hoverIdx = -1;
 
     this.setupListeners();
@@ -86,9 +86,9 @@ class CandlestickChart {
         this.hoverIdx = -1;
         this.render();
         if (this.tooltipEl) {
-          const buyP = Number(this.predictionLevels.expectedBuy || 0).toFixed(2);
-          const tpP = Number(this.predictionLevels.targetProfit || 0).toFixed(2);
-          const slP = Number(this.predictionLevels.stopLoss || 0).toFixed(2);
+          const buyP = Number(this.predictionLevels.expectedBuy ?? this.predictionLevels.expected_buy ?? 0).toFixed(2);
+          const tpP = Number(this.predictionLevels.targetProfit ?? this.predictionLevels.target_profit ?? 0).toFixed(2);
+          const slP = Number(this.predictionLevels.stopLoss ?? this.predictionLevels.stop_loss ?? 0).toFixed(2);
           this.tooltipEl.innerHTML = `
             <span style="color:#0052cc;font-weight:700;">✦ 前瞻预测:</span> 
             核心买点: <span style="color:#16a34a;font-weight:700;">$${buyP}</span> | 
@@ -138,6 +138,7 @@ class CandlestickChart {
     const dpr = window.devicePixelRatio || 1;
     const width = this.canvas.clientWidth;
     const height = this.canvas.clientHeight;
+    if (width <= 0 || height <= 0) return;
 
     this.canvas.width = width * dpr;
     this.canvas.height = height * dpr;
@@ -177,15 +178,18 @@ class CandlestickChart {
     // Include prediction levels in visible y-scale
     if (this.predictionLevels && this.showProjectionLines) {
       const pred = this.predictionLevels;
-      if (pred.expectedBuy && !isNaN(pred.expectedBuy)) {
-        minPrice = Math.min(minPrice, Number(pred.expectedBuy));
-        maxPrice = Math.max(maxPrice, Number(pred.expectedBuy));
+      const buyP = Number(pred.expectedBuy ?? pred.expected_buy);
+      const tpP = Number(pred.targetProfit ?? pred.target_profit);
+      const slP = Number(pred.stopLoss ?? pred.stop_loss);
+      if (!isNaN(buyP) && buyP > 0) {
+        minPrice = Math.min(minPrice, buyP);
+        maxPrice = Math.max(maxPrice, buyP);
       }
-      if (pred.targetProfit && !isNaN(pred.targetProfit)) {
-        maxPrice = Math.max(maxPrice, Number(pred.targetProfit));
+      if (!isNaN(tpP) && tpP > 0) {
+        maxPrice = Math.max(maxPrice, tpP);
       }
-      if (pred.stopLoss && !isNaN(pred.stopLoss)) {
-        minPrice = Math.min(minPrice, Number(pred.stopLoss));
+      if (!isNaN(slP) && slP > 0) {
+        minPrice = Math.min(minPrice, slP);
       }
     }
 
@@ -204,6 +208,17 @@ class CandlestickChart {
     ctx.font = `11px ${INSTITUTIONAL_PALETTE.fontMono}`;
     ctx.textAlign = 'left';
 
+    const activeBadgeYs = [];
+    if (this.predictionLevels && this.showProjectionLines) {
+      const pred = this.predictionLevels;
+      const bP = Number(pred.expectedBuy ?? pred.expected_buy);
+      const tP = Number(pred.targetProfit ?? pred.target_profit);
+      const sP = Number(pred.stopLoss ?? pred.stop_loss);
+      if (!isNaN(bP)) activeBadgeYs.push(priceToY(bP));
+      if (!isNaN(tP)) activeBadgeYs.push(priceToY(tP));
+      if (!isNaN(sP)) activeBadgeYs.push(priceToY(sP));
+    }
+
     for (let i = 0; i <= gridSteps; i++) {
       const p = minPrice + (maxPrice - minPrice) * (i / gridSteps);
       const y = priceToY(p);
@@ -212,7 +227,10 @@ class CandlestickChart {
       ctx.lineTo(width - padding.right, y);
       ctx.stroke();
 
-      ctx.fillText(`$${p.toFixed(2)}`, width - padding.right + 8, y + 4);
+      const collides = activeBadgeYs.some(by => Math.abs(by - y) < 14);
+      if (!collides) {
+        ctx.fillText(`$${p.toFixed(2)}`, width - padding.right + 6, y + 4);
+      }
     }
 
     const n = this.data.length;
@@ -351,9 +369,9 @@ class CandlestickChart {
     const rightEdge = width - padding.right;
     const zoneLeft = Math.max(padding.left, xLast - barWidth * 12);
 
-    const buyPrice = Number(pred.expectedBuy);
-    const tpPrice = Number(pred.targetProfit);
-    const slPrice = Number(pred.stopLoss);
+    const buyPrice = Number(pred.expectedBuy ?? pred.expected_buy);
+    const tpPrice = Number(pred.targetProfit ?? pred.target_profit);
+    const slPrice = Number(pred.stopLoss ?? pred.stop_loss);
     const buyMin = Number(pred.buy_range_min || buyPrice * 0.992);
     const buyMax = Number(pred.buy_range_max || buyPrice * 1.008);
 
@@ -455,7 +473,7 @@ class CandlestickChart {
   }
 
   drawAxisBadge(ctx, x, y, text, bgColor) {
-    const w = 84;
+    const w = 78;
     const h = 18;
     const radius = 3;
     const top = y - h / 2;
@@ -569,6 +587,7 @@ class EquityChart {
     const dpr = window.devicePixelRatio || 1;
     const width = this.canvas.clientWidth;
     const height = this.canvas.clientHeight;
+    if (width <= 0 || height <= 0) return;
 
     this.canvas.width = width * dpr;
     this.canvas.height = height * dpr;
@@ -594,10 +613,21 @@ class EquityChart {
     let maxVal = -Infinity;
 
     for (const r of this.records) {
-      if (r.equity < minVal) minVal = r.equity;
-      if (r.equity > maxVal) maxVal = r.equity;
-      if (r.benchmark < minVal) minVal = r.benchmark;
-      if (r.benchmark > maxVal) maxVal = r.benchmark;
+      const eq = Number(r.equity);
+      const bn = Number(r.benchmark);
+      if (!isNaN(eq)) {
+        if (eq < minVal) minVal = eq;
+        if (eq > maxVal) maxVal = eq;
+      }
+      if (!isNaN(bn)) {
+        if (bn < minVal) minVal = bn;
+        if (bn > maxVal) maxVal = bn;
+      }
+    }
+
+    if (!isFinite(minVal) || !isFinite(maxVal) || minVal >= maxVal) {
+      minVal = 95000;
+      maxVal = 105000;
     }
 
     const margin = (maxVal - minVal) * 0.1 || 1000;
@@ -712,6 +742,7 @@ class MultiEquityChart {
     const dpr = window.devicePixelRatio || 1;
     const width = this.canvas.clientWidth;
     const height = this.canvas.clientHeight;
+    if (width <= 0 || height <= 0) return;
 
     this.canvas.width = width * dpr;
     this.canvas.height = height * dpr;
@@ -731,10 +762,18 @@ class MultiEquityChart {
     let maxVal = -Infinity;
 
     for (const s of this.seriesList) {
-      for (const pt of s.data) {
-        if (pt.val < minVal) minVal = pt.val;
-        if (pt.val > maxVal) maxVal = pt.val;
+      for (const pt of (s.data || [])) {
+        const v = Number(pt.val);
+        if (!isNaN(v)) {
+          if (v < minVal) minVal = v;
+          if (v > maxVal) maxVal = v;
+        }
       }
+    }
+
+    if (!isFinite(minVal) || !isFinite(maxVal) || minVal >= maxVal) {
+      minVal = 95000;
+      maxVal = 105000;
     }
 
     const margin = (maxVal - minVal) * 0.1 || 1000;
@@ -836,6 +875,7 @@ class RollingICChart {
     const dpr = window.devicePixelRatio || 1;
     const width = this.canvas.clientWidth;
     const height = this.canvas.clientHeight;
+    if (width <= 0 || height <= 0) return;
 
     this.canvas.width = width * dpr;
     this.canvas.height = height * dpr;

@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 from typing import Dict, Any, List, Optional
 
+from core.indicators import calculate_atr
+
 def generate_trade_prediction(
     df: pd.DataFrame,
     signals: pd.Series,
@@ -52,28 +54,14 @@ def generate_trade_prediction(
     bb_lower = round(sma20 - 2.0 * std20, 2)
     bb_middle = round(sma20, 2)
 
-    # Calculate recent ATR for volatility buffer
-    high = df["High"]
-    low = df["Low"]
-    tr = pd.concat([
-        high - low,
-        (high - close.shift(1)).abs(),
-        (low - close.shift(1)).abs()
-    ], axis=1).max(axis=1)
-    atr = float(tr.rolling(14, min_periods=3).mean().iloc[-1]) if len(tr) >= 3 else (last_close * 0.02)
+    # Calculate recent ATR for volatility buffer using unified indicators module
+    atr_series = calculate_atr(df["High"], df["Low"], df["Close"], period=14)
+    atr = float(atr_series.iloc[-1]) if (len(atr_series) > 0 and not pd.isna(atr_series.iloc[-1])) else (last_close * 0.02)
 
     # 1. Determine Current Holding & Signal State
-    # Check whether the backtest ended in an open position
-    recent_sigs = signals.iloc[-15:] if len(signals) >= 15 else signals
-    buy_indices = recent_sigs[recent_sigs == 1].index
-    sell_indices = recent_sigs[recent_sigs == -1].index
-
-    is_holding = False
-    last_entry_price = last_close
-    if len(buy_indices) > 0:
-        if len(sell_indices) == 0 or buy_indices[-1] > sell_indices[-1]:
-            is_holding = True
-            last_entry_price = float(close.loc[buy_indices[-1]])
+    # Accurately verify whether backtest actually held an open position into the end of period
+    is_holding = bool(trades and trades[-1].get("exit_reason") == "END_OF_PERIOD")
+    last_entry_price = float(trades[-1].get("entry_price", last_close)) if is_holding else last_close
 
     last_sig = int(signals.iloc[-1]) if len(signals) > 0 else 0
     prev_sig = int(signals.iloc[-2]) if len(signals) > 1 else 0
@@ -142,8 +130,13 @@ def generate_trade_prediction(
                 alpha_score_str = f"Z-Score {'+' if last_z > 0 else ''}{last_z:.2f} ({strength})"
                 confidence = min(95, max(65, int(65 + abs(last_z) * 18)))
         avg_gk = meta_dict.get("avg_gk_vol")
-        if avg_gk:
-            suggested_size_str = f"{min(120, max(50, int(1500 / max(avg_gk, 10))))}% (目标波动率控仓)"
+        if avg_gk is not None:
+            try:
+                avg_gk_f = float(str(avg_gk).replace("%", "").strip())
+                if avg_gk_f > 0:
+                    suggested_size_str = f"{min(120, max(50, int(1500 / max(avg_gk_f, 10.0))))}% (目标波动率控仓)"
+            except Exception:
+                pass
     elif strategy_key == "ml":
         pred_probs = meta_dict.get("prediction_probs", {})
         if pred_probs:
@@ -184,12 +177,15 @@ def generate_trade_prediction(
         "status_desc": status_desc,
         "current_price": last_close,
         "expected_buy": expected_buy,
+        "expectedBuy": expected_buy,
         "expected_buy_diff": diff_str,
         "buy_range_min": buy_range_min,
         "buy_range_max": buy_range_max,
         "target_profit": target_profit,
+        "targetProfit": target_profit,
         "target_gain_pct": f"+{tp_diff_pct:.1f}%",
         "stop_loss": stop_loss,
+        "stopLoss": stop_loss,
         "stop_loss_pct": f"{sl_diff_pct:.1f}%",
         "risk_reward_ratio": risk_reward_ratio,
         "forecast_direction": "UP" if (last_close >= sma20 or is_holding or last_sig == 1) else "NEUTRAL",

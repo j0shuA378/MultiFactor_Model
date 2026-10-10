@@ -1,13 +1,15 @@
 import os
 import sys
+import math
 import logging
+import numpy as np
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 
 # Add workspace directory to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from core.data_loader import fetch_stock_data, get_preset_tickers, search_yahoo_tickers, sanitize_ticker
+from core.data_loader import fetch_stock_data, fetch_realtime_quote, get_preset_tickers, search_yahoo_tickers, sanitize_ticker
 from core.config_manager import load_config, save_config, apply_preset, reset_to_defaults, INSTITUTIONAL_PRESETS
 from core.indicators import add_all_indicators
 from core.backtest_engine import BacktestEngine
@@ -16,6 +18,7 @@ from strategies.factor_momentum import MultiFactorMomentumStrategy
 from strategies.ml_predictor import MLPredictorStrategy
 from strategies.turtle_grid import TurtleGridStrategy
 from strategies.portfolio_allocator import blend_multi_strategy_portfolio
+from core.paper_trading_engine import paper_engine, is_us_market_open
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("QuantServer")
@@ -70,6 +73,11 @@ def page_portfolio():
 @app.route("/settings.html")
 def page_settings():
     return send_from_directory("static", "settings.html")
+
+@app.route("/paper")
+@app.route("/paper_trading.html")
+def page_paper():
+    return send_from_directory("static", "paper_trading.html")
 
 @app.route("/api/presets", methods=["GET"])
 def api_presets():
@@ -162,24 +170,28 @@ def api_stock_history():
         df = fetch_stock_data(ticker, period)
         df_ind = add_all_indicators(df)
         
-        # Prepare candlestick list
+        # Prepare candlestick list with high-performance itertuples
         candles = []
-        for date, row in df_ind.iterrows():
+        def _val(x):
+            return round(float(x), 2) if (x is not None and not np.isnan(x)) else None
+
+        for row in df_ind.itertuples():
+
             candles.append({
-                "date": str(date),
-                "open": round(float(row['Open']), 2),
-                "high": round(float(row['High']), 2),
-                "low": round(float(row['Low']), 2),
-                "close": round(float(row['Close']), 2),
-                "volume": int(row['Volume']),
-                "sma_20": round(float(row['SMA_20']), 2) if 'SMA_20' in row and not row.isna()['SMA_20'] else None,
-                "sma_50": round(float(row['SMA_50']), 2) if 'SMA_50' in row and not row.isna()['SMA_50'] else None,
-                "rsi_14": round(float(row['RSI_14']), 2) if 'RSI_14' in row and not row.isna()['RSI_14'] else None,
-                "bb_upper": round(float(row['BB_UPPER']), 2) if 'BB_UPPER' in row and not row.isna()['BB_UPPER'] else None,
-                "bb_lower": round(float(row['BB_LOWER']), 2) if 'BB_LOWER' in row and not row.isna()['BB_LOWER'] else None,
-                "macd_dif": round(float(row['MACD_DIF']), 2) if 'MACD_DIF' in row and not row.isna()['MACD_DIF'] else None,
-                "macd_dea": round(float(row['MACD_DEA']), 2) if 'MACD_DEA' in row and not row.isna()['MACD_DEA'] else None,
-                "macd_hist": round(float(row['MACD_HIST']), 2) if 'MACD_HIST' in row and not row.isna()['MACD_HIST'] else None,
+                "date": str(row.Index),
+                "open": round(float(row.Open), 2),
+                "high": round(float(row.High), 2),
+                "low": round(float(row.Low), 2),
+                "close": round(float(row.Close), 2),
+                "volume": int(row.Volume),
+                "sma_20": _val(getattr(row, 'SMA_20', None)),
+                "sma_50": _val(getattr(row, 'SMA_50', None)),
+                "rsi_14": _val(getattr(row, 'RSI_14', None)),
+                "bb_upper": _val(getattr(row, 'BB_UPPER', None)),
+                "bb_lower": _val(getattr(row, 'BB_LOWER', None)),
+                "macd_dif": _val(getattr(row, 'MACD_DIF', None)),
+                "macd_dea": _val(getattr(row, 'MACD_DEA', None)),
+                "macd_hist": _val(getattr(row, 'MACD_HIST', None)),
             })
 
         latest_price = candles[-1]['close'] if candles else 0.0
@@ -198,6 +210,20 @@ def api_stock_history():
     except Exception as e:
         logger.error(f"Error fetching history for {ticker}: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route("/api/stock/quote", methods=["GET"])
+def api_stock_quote():
+    """
+    Returns real-time live market quote directly from finance.yahoo.com
+    Query params: ticker
+    """
+    ticker = sanitize_ticker(request.args.get("ticker", "AAPL"))
+    try:
+        quote = fetch_realtime_quote(ticker)
+        return jsonify(quote)
+    except Exception as e:
+        logger.error(f"Error fetching quote for {ticker}: {e}")
+        return jsonify({"status": "error", "message": str(e), "ticker": ticker}), 500
 
 @app.route("/api/backtest", methods=["POST"])
 def api_backtest():
@@ -232,8 +258,25 @@ def api_backtest():
     raw_slip = data.get("slippage_rate")
     slippage_rate = float(raw_slip) if raw_slip is not None else (float(account_cfg.get("slippage_rate", 0.05)) / 100.0)
     
-    stop_loss_pct = float(data["stop_loss_pct"]) / 100.0 if data.get("stop_loss_pct") else (float(account_cfg["stop_loss_pct"]) / 100.0 if account_cfg.get("stop_loss_pct") else None)
-    take_profit_pct = float(data["take_profit_pct"]) / 100.0 if data.get("take_profit_pct") else (float(account_cfg["take_profit_pct"]) / 100.0 if account_cfg.get("take_profit_pct") else None)
+    def _parse_pct(val, fallback=None):
+        if val is not None and str(val).strip() != "":
+            try:
+                v = float(val)
+                if v > 0:
+                    return v / 100.0
+            except (ValueError, TypeError):
+                pass
+        if fallback is not None and str(fallback).strip() != "":
+            try:
+                fb = float(fallback)
+                if fb > 0:
+                    return fb / 100.0
+            except (ValueError, TypeError):
+                pass
+        return None
+
+    stop_loss_pct = _parse_pct(data.get("stop_loss_pct"), account_cfg.get("stop_loss_pct"))
+    take_profit_pct = _parse_pct(data.get("take_profit_pct"), account_cfg.get("take_profit_pct"))
     
     strategy_params = dict(saved_strat_cfg)
     strategy_params.update(data.get("params", {}))
@@ -386,6 +429,137 @@ def api_portfolio_blend():
         return jsonify(sanitize_json(payload))
     except Exception as e:
         logger.error(f"Error blending portfolio: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+# =========================================================================
+# Paper Trading (模拟对盘交易与模型性能记录) API Endpoints
+# =========================================================================
+
+@app.route("/api/paper/status", methods=["GET"])
+def api_paper_status():
+    """
+    Returns full paper trading account summary, live PnL, positions,
+    execution blotter, round-trip trades, equity history, and market session info.
+    """
+    try:
+        summary = paper_engine.get_summary()
+        return jsonify(sanitize_json(summary))
+    except Exception as e:
+        logger.error(f"Error getting paper trading summary: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route("/api/paper/step", methods=["POST"])
+def api_paper_step():
+    """
+    Executes one matching cycle:
+    1. Checks if regular market hours or if force_step is requested.
+    2. Runs quantitative model signals across configured stock universe.
+    3. Triggers simulated order matching, risk checks (stop loss/take profit), and updates ledger.
+    """
+    try:
+        data = request.get_json() or {}
+        force_step = bool(data.get("force_step", False))
+        result = paper_engine.step_market_matching(force_step=force_step)
+        return jsonify(sanitize_json(result))
+    except Exception as e:
+        logger.error(f"Error stepping paper trading matching: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route("/api/paper/order", methods=["POST"])
+def api_paper_order():
+    """
+    Executes a manual or algorithmic paper order.
+    Payload: { "ticker": "AAPL", "action": "BUY"|"SELL", "shares": 10, "price": Optional[float], "reason": str }
+    """
+    try:
+        data = request.get_json() or {}
+        ticker = data.get("ticker", "").upper().strip()
+        action = data.get("action", "BUY").upper().strip()
+        shares = int(data.get("shares", 0))
+        price = data.get("price")
+        price = float(price) if price is not None and str(price).strip() != "" else None
+        reason = data.get("reason", "交易员人工委托")
+        strategy = data.get("strategy", "Manual")
+
+        if not ticker or shares <= 0:
+            return jsonify({"status": "error", "message": "标的代码不能为空且委托股数必须大于0"}), 400
+
+        res = paper_engine.execute_order(
+            ticker=ticker,
+            action=action,
+            shares=shares,
+            price=price,
+            reason=reason,
+            strategy=strategy
+        )
+        return jsonify(sanitize_json(res))
+    except Exception as e:
+        logger.error(f"Error executing paper order: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route("/api/paper/close_position", methods=["POST"])
+def api_paper_close_position():
+    """
+    Closes an active position for a given symbol at market price.
+    Payload: { "ticker": "AAPL", "reason": Optional[str] }
+    """
+    try:
+        data = request.get_json() or {}
+        ticker = data.get("ticker", "").upper().strip()
+        reason = data.get("reason", "一键市价平仓")
+        if not ticker:
+            return jsonify({"status": "error", "message": "标的代码不能为空"}), 400
+
+        res = paper_engine.close_position(ticker=ticker, reason=reason)
+        return jsonify(sanitize_json(res))
+    except Exception as e:
+        logger.error(f"Error closing paper position: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route("/api/paper/reset", methods=["POST"])
+def api_paper_reset():
+    """
+    Resets the paper trading account, wiping existing positions and blotters,
+    and restoring initial simulated capital.
+    Payload: { "initial_capital": 100000.0 }
+    """
+    try:
+        data = request.get_json() or {}
+        initial_capital = float(data.get("initial_capital", 100000.0))
+        res = paper_engine.reset_account(initial_capital=initial_capital)
+        return jsonify(sanitize_json(res))
+    except Exception as e:
+        logger.error(f"Error resetting paper trading account: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route("/api/paper/config", methods=["POST"])
+def api_paper_config():
+    """
+    Updates paper trading engine parameters (universe, strategy, risk controls, auto matching).
+    """
+    try:
+        data = request.get_json() or {}
+        updated_cfg = paper_engine.update_config(data)
+        return jsonify({"status": "success", "config": sanitize_json(updated_cfg)})
+    except Exception as e:
+        logger.error(f"Error updating paper trading config: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route("/api/paper/market_hours", methods=["GET"])
+def api_paper_market_hours():
+    """
+    Returns US stock market open/closed status with Eastern Time details.
+    """
+    try:
+        is_open, status_text, detail = is_us_market_open()
+        return jsonify({
+            "status": "success",
+            "is_open": is_open,
+            "status_text": status_text,
+            "detail": detail
+        })
+    except Exception as e:
+        logger.error(f"Error getting market hours: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
 if __name__ == "__main__":

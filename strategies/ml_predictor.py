@@ -118,8 +118,19 @@ class MLPredictorStrategy(BaseStrategy):
 
         clf.fit(X_train, y_train)
 
+        def _get_pos_probs(classifier, dataset):
+            if len(dataset) == 0:
+                return np.array([], dtype=np.float64)
+            proba = classifier.predict_proba(dataset)
+            if proba.shape[1] > 1:
+                return proba[:, 1]
+            elif len(classifier.classes_) == 1 and classifier.classes_[0] == 1:
+                return np.ones(len(dataset), dtype=np.float64)
+            else:
+                return np.zeros(len(dataset), dtype=np.float64)
+
         # Diagnostics on Out-Of-Sample Test Set
-        test_probs = clf.predict_proba(X_test)[:, 1] if len(X_test) > 0 else np.array([])
+        test_probs = _get_pos_probs(clf, X_test)
         test_preds = (test_probs > 0.5).astype(int) if len(test_probs) > 0 else np.array([])
 
         accuracy = float(accuracy_score(y_test, test_preds)) if len(y_test) > 0 else 0.0
@@ -146,18 +157,13 @@ class MLPredictorStrategy(BaseStrategy):
         ]
 
         # Probability prediction across full series
-        all_probs = clf.predict_proba(X)[:, 1]
+        all_probs = _get_pos_probs(clf, X)
         prob_series = pd.Series(all_probs, index=valid_indices)
 
         prob_cutoff = float(self.params.get("prob_threshold", 0.54))
         signals = pd.Series(0, index=df.index, dtype=int)
-
-        for d in valid_indices:
-            p = prob_series[d]
-            if p >= prob_cutoff:
-                signals[d] = 1
-            elif p < 0.47:
-                signals[d] = -1
+        raw_sigs = np.select([all_probs >= prob_cutoff, all_probs < 0.47], [1, -1], default=0)
+        signals.loc[valid_indices] = raw_sigs
 
         meta = {
             "model_type": "Random Forest" if model_type == "rf" else "Gradient Boosting",

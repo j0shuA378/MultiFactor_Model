@@ -1,0 +1,232 @@
+{
+  "account": {
+    "initial_capital": 100000.0,
+    "cash": 80129.32,
+    "total_equity": 99926.91,
+    "positions_market_val": 19797.59,
+    "unrealized_pnl": -9.99,
+    "realized_pnl": -39.87,
+    "total_pnl": -73.09,
+    "total_return_pct": -0.07,
+    "daily_pnl": 0.0,
+    "commission_paid": 36.54,
+    "updated_at": "2026-10-10 21:06:32"
+  },
+  "config": {
+    "strategy": "blend",
+    "tickers": [
+      "AAPL",
+      "NVDA",
+      "TSLA",
+      "MSFT",
+      "TSM"
+    ],
+    "max_positions": 5,
+    "position_size_pct": 0.2,
+    "commission_rate": 0.0005,
+    "slippage_rate": 0.0005,
+    "stop_loss_pct": 0.05,
+    "take_profit_pct": 0.1,
+    "auto_matching": false,
+    "allow_after_hours": true
+  },
+  "positions": {
+    "MSFT": {
+      "ticker": "MSFT",
+      "name": "Microsoft Corporation",
+      "company_name": "Microsoft Corporation",
+      "shares": 37,
+      "avg_entry_price": 535.34,
+      "entry_price": 535.34,
+      "current_price": 535.0700073242188,
+      "market_value": 19797.59,
+      "unrealized_pnl": -9.99,
+      "unrealized_pnl_pct": -0.05,
+      "pnl_pct": -0.05,
+      "entry_time": "2026-10-10 21:06:25",
+      "strategy": "多因子Alpha",
+      "stop_loss_price": 513.93,
+      "take_profit_price": 578.17
+    }
+  },
+  "orders": [
+    {
+      "order_id": "ORD-1005",
+      "timestamp": "2026-10-10 21:06:31",
+      "ticker": "TSLA",
+      "name": "Tesla, Inc.",
+      "action": "SELL",
+      "shares": 52,
+      "price": 382.51,
+      "total_value": 19890.52,
+      "commission": 9.95,
+      "status": "FILLED",
+      "reason": "测试一键平仓",
+      "strategy": "多因子Alpha"
+    },
+    {
+      "order_id": "ORD-1004",
+      "timestamp": "2026-10-10 21:06:25",
+      "ticker": "MSFT",
+      "name": "Microsoft Corporation",
+      "action": "BUY",
+      "shares": 37,
+      "price": 535.34,
+      "total_value": 19807.58,
+      "commission": 9.9,
+      "status": "FILLED",
+      "reason": "多因子Alpha 共振突破自动撮合买入",
+      "strategy": "多因子Alpha"
+    },
+    {
+      "order_id": "ORD-1003",
+      "timestamp": "2026-10-10 21:06:23",
+      "ticker": "TSLA",
+      "name": "Tesla, Inc.",
+      "action": "BUY",
+      "shares": 52,
+      "price": 382.89,
+      "total_value": 19910.28,
+      "commission": 9.96,
+      "status": "FILLED",
+      "reason": "多因子Alpha 共振突破自动撮合买入",
+      "strategy": "多因子Alpha"
+    },
+    {
+      "order_id": "ORD-1002",
+      "timestamp": "2026-10-10 21:06:21",
+      "ticker": "AAPL",
+      "name": "Apple Inc.",
+      "action": "SELL",
+      "shares": 20,
+      "price": 336.47,
+      "total_value": 6729.4,
+      "commission": 3.36,
+      "status": "FILLED",
+      "reason": "多因子Alpha 触发卖出离场信号",
+      "strategy": "多因子Alpha"
+    },
+    {
+      "order_id": "ORD-1001",
+      "timestamp": "2026-10-10 21:06:18",
+      "ticker": "AAPL",
+      "name": "Apple Inc.",
+      "action": "BUY",
+      "shares": 20,
+      "price": 336.81,
+      "total_value": 6736.2,
+      "commission": 3.37,
+      "status": "FILLED",
+      "reason": "人工建仓测试",
+      "strategy": "Manual"
+    }
+  ],
+  "trades_history": [
+    {
+      "trade_id": 2,
+      "ticker": "TSLA",
+      "name": "Tesla, Inc.",
+      "entry_time": "2026-10-10 21:06:23",
+      "exit_time": "2026-10-10 21:06:31",
+      "entry_price": 382.89,
+      "exit_price": 382.51,
+      "shares": 52,
+      "pnl": -29.71,
+      "pnl_pct": -0.1,
+      "commission": 9.95,
+      "exit_reason": "测试一键平仓",
+      "strategy": "多因子Alpha"
+    },
+    {
+      "trade_id": 1,
+      "ticker": "AAPL",
+      "name": "Apple Inc.",
+      "entry_time": "2026-10-10 21:06:18",
+      "exit_time": "2026-10-10 21:06:21",
+      "entry_price": 336.81,
+      "exit_price": 336.47,
+      "shares": 20,
+      "pnl": -10.16,
+      "pnl_pct": -0.1,
+      "commission": 3.36,
+      "exit_reason": "多因子Alpha 触发卖出离场信号",
+      "strategy": "多因子Alpha"
+    }
+  ],
+  "equity_history": [
+    {
+      "timestamp": "2026-10-10 21:06:16",
+      "date": "2026-10-10",
+      "equity": 99966.63,
+      "cash": 80066.23,
+      "benchmark": 100000.0,
+      "drawdown_pct": 0.0
+    },
+    {
+      "timestamp": "2026-10-10 21:06:26",
+      "date": "2026-10-10",
+      "equity": 99926.91,
+      "cash": 80129.32,
+      "benchmark": 100000.0,
+      "spy_ref_price": 778.5700073242188,
+      "drawdown_pct": 0.02
+    }
+  ],
+  "signal_radar": [
+    {
+      "ticker": "AAPL",
+      "name": "Apple Inc.",
+      "price": 336.6400146484375,
+      "signal": -1,
+      "state": "EXIT_MATCHED",
+      "strategy": "多因子Alpha",
+      "confidence": 78,
+      "status_desc": "已撮合平仓卖出 ($336.64)",
+      "updated_at": "21:06:21"
+    },
+    {
+      "ticker": "NVDA",
+      "name": "NVIDIA Corporation",
+      "price": 229.27999877929688,
+      "signal": 0,
+      "state": "WATCH",
+      "strategy": "多因子Alpha",
+      "confidence": 78,
+      "status_desc": "均线通道内震荡，逢低观望",
+      "updated_at": "21:06:22"
+    },
+    {
+      "ticker": "TSLA",
+      "name": "Tesla, Inc.",
+      "price": 382.70001220703125,
+      "signal": 1,
+      "state": "BOUGHT",
+      "strategy": "多因子Alpha",
+      "confidence": 78,
+      "status_desc": "已撮合成交建仓 52 股",
+      "updated_at": "21:06:24"
+    },
+    {
+      "ticker": "MSFT",
+      "name": "Microsoft Corporation",
+      "price": 535.0700073242188,
+      "signal": 1,
+      "state": "BOUGHT",
+      "strategy": "多因子Alpha",
+      "confidence": 78,
+      "status_desc": "已撮合成交建仓 37 股",
+      "updated_at": "21:06:26"
+    },
+    {
+      "ticker": "TSM",
+      "name": "Taiwan Semiconductor Manufacturing Co.",
+      "price": 453.30999755859375,
+      "signal": -1,
+      "state": "WATCH",
+      "strategy": "多因子Alpha",
+      "confidence": 78,
+      "status_desc": "均线通道内震荡，逢低观望",
+      "updated_at": "21:06:27"
+    }
+  ]
+}

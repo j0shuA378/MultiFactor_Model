@@ -50,11 +50,11 @@ def calculate_bollinger_bands(series: pd.Series, period: int = 20, std_mult: flo
 def calculate_atr(high: pd.Series, low: pd.Series, close: pd.Series, period: int = 14) -> pd.Series:
     """Average True Range (ATR)"""
     prev_close = close.shift(1)
-    tr1 = high - low
-    tr2 = (high - prev_close).abs()
-    tr3 = (low - prev_close).abs()
-    true_range = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
-    atr = true_range.ewm(alpha=1/period, min_periods=period, adjust=False).mean()
+    tr1 = (high - low).values
+    tr2 = np.abs(high.values - prev_close.values)
+    tr3 = np.abs(low.values - prev_close.values)
+    true_range = pd.Series(np.maximum(tr1, np.maximum(tr2, tr3)), index=close.index)
+    atr = true_range.ewm(alpha=1.0 / period, min_periods=period, adjust=False).mean()
     return atr
 
 def calculate_donchian_channel(high: pd.Series, low: pd.Series, period: int = 20):

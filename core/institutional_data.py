@@ -11,11 +11,11 @@ def calculate_garman_klass_volatility(
     8x more statistically efficient than standard close-to-close volatility.
     Formula: 0.5 * ln(H/L)^2 - (2*ln(2) - 1) * ln(C/O)^2
     """
-    log_hl = (high / low).apply(np.log)
-    log_co = (close / open_p).apply(np.log)
-    gk_var = 0.5 * (log_hl ** 2) - (2 * np.log(2) - 1) * (log_co ** 2)
+    log_hl = np.log(high / low)
+    log_co = np.log(close / open_p)
+    gk_var = 0.5 * (log_hl ** 2) - (2.0 * np.log(2.0) - 1.0) * (log_co ** 2)
     rolling_gk = gk_var.rolling(window=window).mean()
-    ann_gk_vol = np.sqrt(rolling_gk * 252) * 100.0
+    ann_gk_vol = np.sqrt(rolling_gk * 252.0) * 100.0
     return ann_gk_vol.bfill()
 
 def calculate_parkinson_volatility(high: pd.Series, low: pd.Series, window: int = 20) -> pd.Series:
@@ -24,9 +24,9 @@ def calculate_parkinson_volatility(high: pd.Series, low: pd.Series, window: int 
     Institutional estimator based on high-low range.
     Formula: sqrt( (1 / (4*ln(2)*n)) * sum(ln(H/L)^2) ) * sqrt(252)
     """
-    log_hl = (high / low).apply(np.log)
-    rolling_var = (log_hl ** 2).rolling(window=window).mean() / (4 * np.log(2))
-    ann_park_vol = np.sqrt(rolling_var * 252) * 100.0
+    log_hl = np.log(high / low)
+    rolling_var = (log_hl ** 2).rolling(window=window).mean() / (4.0 * np.log(2.0))
+    ann_park_vol = np.sqrt(rolling_var * 252.0) * 100.0
     return ann_park_vol.bfill()
 
 def winsorize_series(series: pd.Series, method: str = 'mad', n_sigmas: float = 3.0) -> pd.Series:
@@ -145,27 +145,28 @@ def calculate_trend_quality_momentum(close: pd.Series, window: int = 40) -> pd.S
     Smooth persistent drift scores high; sporadic jump spikes score low.
     """
     eff_w = min(window, max(15, len(close) // 4))
-    log_p = np.log(close)
+    log_p = np.log(close.values)
     n = len(log_p)
-    out = pd.Series(0.0, index=close.index)
+    out_vals = np.zeros(n, dtype=np.float64)
 
-    y_vals = log_p.values
-    x = np.arange(eff_w)
+    x = np.arange(eff_w, dtype=np.float64)
     x_mean = x.mean()
-    ss_x = np.sum((x - x_mean) ** 2)
+    x_dev = x - x_mean
+    ss_x = np.dot(x_dev, x_dev)
 
     for i in range(eff_w, n):
-        sub_y = y_vals[i - eff_w : i]
+        sub_y = log_p[i - eff_w : i]
         y_mean = sub_y.mean()
-        ss_y = np.sum((sub_y - y_mean) ** 2)
+        y_dev = sub_y - y_mean
+        ss_y = np.dot(y_dev, y_dev)
         if ss_y <= 1e-8:
             continue
-        ss_xy = np.sum((x - x_mean) * (sub_y - y_mean))
+        ss_xy = np.dot(x_dev, y_dev)
         slope = ss_xy / ss_x
-        r2 = (ss_xy ** 2) / (ss_x * ss_y)
-        out.iloc[i] = slope * r2
+        r2 = (ss_xy * ss_xy) / (ss_x * ss_y)
+        out_vals[i] = slope * r2
 
-    return out.bfill()
+    return pd.Series(out_vals, index=close.index).bfill()
 
 def calculate_volume_confirmed_momentum(close: pd.Series, volume: pd.Series, window: int = 20) -> pd.Series:
     """

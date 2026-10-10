@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>实盘模拟对盘交易终端 - AlphaQuant 机构终端</title>
+  <meta name="description" content="基于开盘连续竞价与多因子量化模型的全功能实盘模拟对盘交易系统，记录跟踪模型性能">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="paper">
+  <div class="app-layout">
+    <!-- Tier 1: Main Institutional Navigation Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <a href="paper_trading.html" class="brand-logo">
+          <div class="logo-icon">
+            <span class="logo-symbol">AQ</span>
+          </div>
+          <div class="brand-text">
+            <h1 class="brand-title">AlphaQuant <span class="badge-pro">INSTITUTIONAL</span></h1>
+            <span class="brand-subtitle">Paper Trading Desk & Model Ledger</span>
+          </div>
+        </a>
+
+        <!-- Dedicated Page Switcher -->
+        <nav class="nav-pages-bar">
+          <a href="factor_model.html" class="nav-page-link">
+            <span>多因子Alpha模型</span>
+            <span class="nav-page-badge badge-barra">BARRA</span>
+          </a>
+          <a href="ml_model.html" class="nav-page-link">
+            <span>机器学习预测</span>
+            <span class="nav-page-badge badge-ml">ML/AI</span>
+          </a>
+          <a href="cta_model.html" class="nav-page-link">
+            <span>CTA波动率平价</span>
+            <span class="nav-page-badge badge-cta">CTA</span>
+          </a>
+          <a href="index.html" class="nav-page-link">
+            <span>多策略组合矩阵</span>
+            <span class="nav-page-badge badge-alloc">ALLOC</span>
+          </a>
+          <a href="settings.html" class="nav-page-link">
+            <span>⚙️ 策略与风控配置</span>
+            <span class="nav-page-badge badge-cfg">CONFIG</span>
+          </a>
+          <a href="paper_trading.html" class="nav-page-link active">
+            <span>实盘模拟交易</span>
+            <span class="nav-page-badge badge-paper">SIM/LIVE</span>
+          </a>
+        </nav>
+      </div>
+
+      <div class="header-right">
+        <!-- Quick Search Box -->
+        <div class="search-box" id="search-box-wrap">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="custom-ticker-input" placeholder="输入代码快速对盘 (如 AAPL, NVDA)..." autocomplete="off" spellcheck="false">
+          <div class="search-dropdown-menu" id="search-dropdown-menu"></div>
+        </div>
+
+        <div class="server-status-pill">
+          <span class="status-indicator-dot" id="server-ping-dot"></span>
+          <span class="status-text" id="server-ping-text">撮合引擎已就绪</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Paper Trading Content Area -->
+    <main class="paper-trading-container">
+      <!-- Market Open & Auto-Matching Control Bar -->
+      <section class="paper-market-status-bar">
+        <div class="market-status-left">
+          <div class="market-pulse-pill" id="market-pulse-pill">
+            <span class="pulse-indicator-dot"></span>
+            <span id="market-status-text">检测美股交易时段中...</span>
+          </div>
+          <div class="market-time-badge" id="market-et-time">
+            🕒 美东时间: --:--:-- EDT
+          </div>
+          <span class="market-session-msg" id="market-session-msg">
+            策略对盘撮合引擎支持开盘连续实时对盘与盘后测试回放。
+          </span>
+        </div>
+
+        <div class="market-status-actions">
+          <div class="toggle-switch-wrap" title="开启后将根据轮询周期自动执行策略对盘撮合">
+            <label class="switch">
+              <input type="checkbox" id="auto-matching-toggle">
+              <span class="slider"></span>
+            </label>
+            <span style="font-size: 12.5px; font-weight: 600; color: var(--text-primary);">自动撮合</span>
+          </div>
+
+          <button class="btn-paper-action primary" id="btn-force-step" title="立即让量化策略扫描当前股票池并执行撮合">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            单步对盘撮合
+          </button>
+
+          <button class="btn-paper-action" id="btn-refresh-status" title="刷新账户与持仓最新市价">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+            </svg>
+            刷新数据
+          </button>
+
+          <button class="btn-paper-action danger" id="btn-reset-account" title="重置模拟交易账户资金与持仓">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+            重置账户
+          </button>
+        </div>
+      </section>
+
+      <!-- Account Performance KPI Cards -->
+      <section class="paper-kpi-grid">
+        <div class="paper-kpi-card">
+          <span class="kpi-title">总资产 (Total Equity)</span>
+          <span class="kpi-number" id="kpi-total-equity">$100,000.00</span>
+          <span class="kpi-subtext" id="kpi-initial-cap">初始本金: $100,000.00</span>
+        </div>
+
+        <div class="paper-kpi-card">
+          <span class="kpi-title">累计收益率 (Total Return)</span>
+          <span class="kpi-number pos" id="kpi-total-return">+0.00%</span>
+          <span class="kpi-subtext" id="kpi-total-pnl">总盈亏: +$0.00</span>
+        </div>
+
+        <div class="paper-kpi-card">
+          <span class="kpi-title">可用现金 (Cash)</span>
+          <span class="kpi-number" id="kpi-cash">$100,000.00</span>
+          <span class="kpi-subtext" id="kpi-market-val">持仓市值: $0.00</span>
+        </div>
+
+        <div class="paper-kpi-card">
+          <span class="kpi-title">浮动盈亏 (Unrealized)</span>
+          <span class="kpi-number" id="kpi-unrealized-pnl">$0.00</span>
+          <span class="kpi-subtext">实时逐笔盯市浮动盈亏</span>
+        </div>
+
+        <div class="paper-kpi-card">
+          <span class="kpi-title">已实现盈亏 (Realized)</span>
+          <span class="kpi-number" id="kpi-realized-pnl">$0.00</span>
+          <span class="kpi-subtext" id="kpi-commission-paid">已付手续费: $0.00</span>
+        </div>
+
+        <div class="paper-kpi-card">
+          <span class="kpi-title">交易胜率 (Win Rate)</span>
+          <span class="kpi-number" id="kpi-win-rate">0.0%</span>
+          <span class="kpi-subtext" id="kpi-win-ratio">盈利/平亏: 0 / 0</span>
+        </div>
+
+        <div class="paper-kpi-card">
+          <span class="kpi-title">盈亏比 (Profit Factor)</span>
+          <span class="kpi-number" id="kpi-profit-factor">0.00</span>
+          <span class="kpi-subtext" id="kpi-max-drawdown">最大回撤: 0.00%</span>
+        </div>
+      </section>
+
+      <!-- Main Workbench 2-Column Grid -->
+      <section class="paper-workbench-grid">
+        <!-- Left Column: Chart & Blotters -->
+        <div class="paper-column">
+          <!-- Live Equity Curve -->
+          <div class="paper-card">
+            <div class="paper-card-header">
+              <div class="card-title-group">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2">
+                  <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+                  <polyline points="16 7 22 7 22 13"></polyline>
+                </svg>
+                <h3 class="card-heading">模拟对盘净值轨迹与性能跟踪 (Equity Curve vs Benchmark)</h3>
+              </div>
+              <div style="font-size: 11.5px; color: var(--text-secondary); font-family: var(--font-mono);" id="equity-update-stamp">
+                最近更新: --
+              </div>
+            </div>
+            <div class="paper-card-body" style="padding: 16px;">
+              <div style="position: relative; width: 100%; height: 320px;">
+                <canvas id="paper-equity-chart" style="width: 100%; height: 100%;"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Active Positions Blotter -->
+          <div class="paper-card">
+            <div class="paper-card-header">
+              <div class="card-title-group">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2">
+                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                </svg>
+                <h3 class="card-heading">当前实时持仓台账 (Live Positions Blotter)</h3>
+                <span class="badge-pro" id="positions-count-badge">0 只持仓</span>
+              </div>
+            </div>
+            <div class="paper-card-body" style="padding: 0;">
+              <div class="table-blotter-wrap">
+                <table class="table-blotter">
+                  <thead>
+                    <tr>
+                      <th>标的代码</th>
+                      <th>名称</th>
+                      <th>持仓股数</th>
+                      <th>成本价</th>
+                      <th>最新市价</th>
+                      <th>持仓市值</th>
+                      <th>浮动盈亏</th>
+                      <th>收益率</th>
+                      <th>止损价</th>
+                      <th>止盈价</th>
+                      <th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="positions-table-body">
+                    <tr>
+                      <td colspan="11" style="text-align: center; color: var(--text-muted); padding: 32px;">
+                        暂无持仓头寸。点击上方“单步对盘撮合”或右侧手工对盘以开仓。
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Execution Blotter (成交流水明细) -->
+          <div class="paper-card">
+            <div class="paper-card-header">
+              <div class="card-title-group">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2">
+                  <line x1="8" y1="6" x2="21" y2="6"></line>
+                  <line x1="8" y1="12" x2="21" y2="12"></line>
+                  <line x1="8" y1="18" x2="21" y2="18"></line>
+                  <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                  <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                  <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                </svg>
+                <h3 class="card-heading">撮合成交流水台账 (Execution Blotter)</h3>
+              </div>
+              <span style="font-size: 11.5px; color: var(--text-secondary);" id="orders-count-label">共 0 笔对盘记录</span>
+            </div>
+            <div class="paper-card-body" style="padding: 0;">
+              <div class="table-blotter-wrap" style="max-height: 380px; overflow-y: auto;">
+                <table class="table-blotter">
+                  <thead>
+                    <tr>
+                      <th>时间</th>
+                      <th>订单ID</th>
+                      <th>标的</th>
+                      <th>方向</th>
+                      <th>股数</th>
+                      <th>成交均价</th>
+                      <th>手续费/滑点</th>
+                      <th>成交金额</th>
+                      <th>对盘原因 / 策略模型</th>
+                    </tr>
+                  </thead>
+                  <tbody id="orders-table-body">
+                    <tr>
+                      <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 28px;">
+                        暂无历史成交流水。
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Model Radar, Manual Ticket & Config -->
+        <div class="paper-column">
+          <!-- Quantitative Signal Radar -->
+          <div class="paper-card">
+            <div class="paper-card-header">
+              <div class="card-title-group">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <path d="M16.2 7.8l-2 6.3-6.4 2 2-6.3z"></path>
+                </svg>
+                <h3 class="card-heading">量化模型决策雷达 (Model Radar)</h3>
+              </div>
+              <span class="badge-ml" id="radar-strategy-badge">BLEND</span>
+            </div>
+            <div class="paper-card-body">
+              <p style="font-size: 11.5px; color: var(--text-secondary); margin-bottom: 12px;">
+                实时跟踪股票池内标的的量化策略打分、入场方向与置信度：
+              </p>
+              <div class="radar-list" id="radar-signals-list">
+                <div style="text-align: center; color: var(--text-muted); padding: 20px;">
+                  加载模型雷达信号中...
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Manual Order Ticket -->
+          <div class="paper-card">
+            <div class="paper-card-header">
+              <div class="card-title-group">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                <h3 class="card-heading">交易员手工对盘委托 (Manual Ticket)</h3>
+              </div>
+            </div>
+            <div class="paper-card-body">
+              <form id="paper-manual-order-form" class="order-ticket-grid" onsubmit="return false;">
+                <div class="order-field">
+                  <label class="order-label">对盘标的代码</label>
+                  <input type="text" id="order-input-ticker" class="order-input" placeholder="例如 AAPL" value="AAPL" required>
+                </div>
+
+                <div class="order-field">
+                  <label class="order-label">对盘方向</label>
+                  <div class="action-toggle-btns">
+                    <button type="button" class="btn-toggle-action active-buy" id="btn-side-buy">买入 (BUY)</button>
+                    <button type="button" class="btn-toggle-action" id="btn-side-sell">卖出 (SELL)</button>
+                  </div>
+                </div>
+
+                <div class="order-field">
+                  <label class="order-label">委托股数 (Shares)</label>
+                  <input type="number" id="order-input-shares" class="order-input" placeholder="数量" value="20" min="1" step="1" required>
+                </div>
+
+                <div class="order-field">
+                  <label class="order-label">委托价格 (留空为市价)</label>
+                  <input type="number" id="order-input-price" class="order-input" placeholder="市价实时撮合" step="0.01">
+                </div>
+
+                <div class="order-field-full">
+                  <label class="order-label">委托批注 / 原因</label>
+                  <input type="text" id="order-input-reason" class="order-input" placeholder="例如: 交易员开盘试仓">
+                </div>
+
+                <div class="order-field-full">
+                  <button type="button" class="btn-submit-order buy-btn" id="btn-submit-order">
+                    确认提交模拟对盘买入委托
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Matching Engine Config Card -->
+          <div class="paper-card">
+            <div class="paper-card-header">
+              <div class="card-title-group">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2">
+                  <circle cx="12" cy="12" r="3"></circle>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+                <h3 class="card-heading">对盘引擎与风控参数配置</h3>
+              </div>
+            </div>
+            <div class="paper-card-body">
+              <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div class="order-field">
+                  <label class="order-label">驱动量化模型策略</label>
+                  <select id="cfg-paper-strategy" class="order-select">
+                    <option value="blend">机构综合多策略 (Blend Alpha Matrix)</option>
+                    <option value="momentum">多因子动量模型 (Multi-Factor Barra)</option>
+                    <option value="ml">机器学习预测 (ML Gradient Boosting)</option>
+                    <option value="turtle">CTA 波动率网格 (Turtle Volatility)</option>
+                  </select>
+                </div>
+
+                <div class="order-field">
+                  <label class="order-label">对盘股票池 (用逗号分隔代码)</label>
+                  <input type="text" id="cfg-paper-tickers" class="order-input" value="AAPL, NVDA, TSLA, MSFT, TSM">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                  <div class="order-field">
+                    <label class="order-label">单票仓位上限 (%)</label>
+                    <input type="number" id="cfg-paper-pos-size" class="order-input" value="20" min="5" max="100">
+                  </div>
+                  <div class="order-field">
+                    <label class="order-label">止损阈值 (%)</label>
+                    <input type="number" id="cfg-paper-stop-loss" class="order-input" value="4.0" step="0.5">
+                  </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                  <div class="order-field">
+                    <label class="order-label">止盈目标 (%)</label>
+                    <input type="number" id="cfg-paper-take-profit" class="order-input" value="8.0" step="0.5">
+                  </div>
+                  <div class="order-field">
+                    <label class="order-label">手续费率 (%)</label>
+                    <input type="number" id="cfg-paper-commission" class="order-input" value="0.05" step="0.01">
+                  </div>
+                </div>
+
+                <button class="btn-paper-action primary" id="btn-save-paper-cfg" style="width: 100%; justify-content: center; margin-top: 4px;">
+                  保存并应用参数
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/paper_trading.js"></script>
+</body>
+</html>

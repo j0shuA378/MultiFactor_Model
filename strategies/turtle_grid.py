@@ -57,28 +57,31 @@ class TurtleGridStrategy(BaseStrategy):
         # Volatility Targeting Sizing Weights
         target_weights = target_volatility_position_sizing(gk_vol, target_vol_annual=target_vol, max_leverage=max_lev)
 
-        signals = pd.Series(0, index=df.index, dtype=int)
+        c_prices = close.values
+        h_uppers = entry_upper.values
+        l_exits = exit_lower.values
+        atr_vals = atr_series.values
+        sig_arr = np.zeros(len(df), dtype=np.int32)
         
         in_position = False
         entry_price = 0.0
         stop_price = 0.0
 
         for i in range(len(df)):
-            date = df.index[i]
-            c_price = close.iloc[i]
-            h_upper = entry_upper.iloc[i]
-            l_exit = exit_lower.iloc[i]
-            curr_atr = atr_series.iloc[i] if not pd.isna(atr_series.iloc[i]) else (c_price * 0.02)
+            c_price = c_prices[i]
+            h_upper = h_uppers[i]
+            l_exit = l_exits[i]
+            curr_atr = atr_vals[i] if not np.isnan(atr_vals[i]) else (c_price * 0.02)
 
             if not in_position:
-                if not pd.isna(h_upper) and c_price > h_upper:
-                    signals.iloc[i] = 1
+                if not np.isnan(h_upper) and c_price > h_upper:
+                    sig_arr[i] = 1
                     in_position = True
                     entry_price = c_price
                     stop_price = entry_price - (curr_atr * stop_n_mult)
             else:
-                if c_price < stop_price or (not pd.isna(l_exit) and c_price < l_exit):
-                    signals.iloc[i] = -1
+                if c_price < stop_price or (not np.isnan(l_exit) and c_price < l_exit):
+                    sig_arr[i] = -1
                     in_position = False
                     entry_price = 0.0
                     stop_price = 0.0
@@ -86,6 +89,8 @@ class TurtleGridStrategy(BaseStrategy):
                     new_stop = c_price - (curr_atr * stop_n_mult)
                     if new_stop > stop_price:
                         stop_price = new_stop
+
+        signals = pd.Series(sig_arr, index=df.index, dtype=int)
 
         meta = {
             "system_type": "System 1 (20D/10D)" if sys_type == "s1" else "System 2 (55D/20D)",

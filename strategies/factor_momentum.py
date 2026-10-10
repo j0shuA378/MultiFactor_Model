@@ -143,8 +143,8 @@ class MultiFactorMomentumStrategy(BaseStrategy):
         signals = pd.Series(0, index=df.index, dtype=int)
         buy_condition = (composite_alpha > alpha_th) & (fast_ema >= slow_ema * 0.995)
         sell_condition = (composite_alpha < exit_th) | (fast_ema < slow_ema * 0.985)
-        signals[buy_condition] = 1
-        signals[sell_condition] = -1
+        signals.loc[buy_condition] = 1
+        signals.loc[sell_condition] = -1
 
         # 9. 动态波动率目标仓位管理 (Volatility-Targeted Sizing)
         gk_vol = calculate_garman_klass_volatility(high, low, open_p, close, window=20)

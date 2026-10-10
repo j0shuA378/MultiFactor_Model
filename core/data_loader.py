@@ -172,22 +172,29 @@ def generate_synthetic_data(ticker: str, days: int = 500) -> pd.DataFrame:
     end_date = datetime.now()
     dates = pd.date_range(end=end_date, periods=days, freq='B')
     
-    # Base parameters tailored to ticker symbol
+    # Base parameters tailored to ticker symbol based on current Yahoo Finance levels
     base_price = 150.0
-    if ticker in ["AAPL", "AMZN", "GOOGL"]:
-        base_price = 180.0
-    elif ticker in ["NVDA", "TSLA"]:
-        base_price = 220.0
-    elif ticker in ["SPY", "QQQ"]:
-        base_price = 450.0
-    elif ticker == "MSFT":
-        base_price = 400.0
-    elif ticker == "ASX":
-        base_price = 46.5
-    elif ticker == "TSM":
-        base_price = 190.0
-    elif ticker == "GS":
-        base_price = 512.0
+    if ticker == "AAPL": base_price = 336.64
+    elif ticker == "NVDA": base_price = 229.28
+    elif ticker == "TSLA": base_price = 382.70
+    elif ticker == "MSFT": base_price = 535.07
+    elif ticker == "AMZN": base_price = 262.43
+    elif ticker == "GOOGL": base_price = 351.66
+    elif ticker == "META": base_price = 718.67
+    elif ticker == "TSM": base_price = 453.31
+    elif ticker == "SPY": base_price = 778.57
+    elif ticker == "QQQ": base_price = 751.27
+    elif ticker == "AMD": base_price = 608.10
+    elif ticker == "PLTR": base_price = 209.05
+    elif ticker == "BABA": base_price = 111.37
+    elif ticker == "COIN": base_price = 179.39
+    elif ticker == "BRK-B": base_price = 515.62
+    elif ticker == "SMCI": base_price = 41.86
+    elif ticker == "ASX": base_price = 46.43
+    elif ticker == "GLD": base_price = 384.58
+    elif ticker == "XOM": base_price = 168.94
+    elif ticker == "JPM": base_price = 332.99
+    elif ticker == "BAC": base_price = 54.32
 
     # Geometric Brownian Motion simulation
     dt = 1 / 252
@@ -246,7 +253,12 @@ def fetch_stock_data(ticker: str = "AAPL", period: str = "2y", use_cache: bool =
         t = yf.Ticker(ticker)
         raw_df = t.history(period=period, auto_adjust=True)
         if raw_df is not None and len(raw_df) > 10:
-            df = raw_df[['Open', 'High', 'Low', 'Close', 'Volume']].copy()
+            price_cols = ['Open', 'High', 'Low', 'Close']
+            for col in price_cols:
+                if col not in raw_df.columns:
+                    raise KeyError(f"Missing required price column: {col}")
+            df = raw_df[price_cols].copy()
+            df['Volume'] = raw_df['Volume'].fillna(1000000) if 'Volume' in raw_df.columns else 1000000
             # Standardize index to YYYY-MM-DD string
             df.index = [pd.to_datetime(d).strftime("%Y-%m-%d") for d in df.index]
             df.index.name = "Date"
@@ -469,4 +481,53 @@ def search_yahoo_tickers(query: str, max_results: int = 5):
     # Save to memory cache
     SEARCH_CACHE[cache_key] = (now, results)
     return results
+
+def fetch_realtime_quote(ticker: str = "AAPL") -> dict:
+    """
+    Grabs real-time market quote directly from finance.yahoo.com via yfinance.
+    Returns dictionary with latest price, prev_close, change, change_pct, open, high, low, volume.
+    """
+    ticker = sanitize_ticker(ticker)
+    try:
+        t = yf.Ticker(ticker)
+        fi = t.fast_info
+        last_price = float(getattr(fi, 'last_price', 0.0) or 0.0)
+        prev_close = float(getattr(fi, 'previous_close', 0.0) or 0.0)
+        open_price = float(getattr(fi, 'open', 0.0) or 0.0)
+        day_high = float(getattr(fi, 'day_high', 0.0) or 0.0)
+        day_low = float(getattr(fi, 'day_low', 0.0) or 0.0)
+        volume = int(getattr(fi, 'last_volume', 0) or 0)
+
+        # Fallback to recent 1m bar if fast_info is sparse
+        if last_price <= 0:
+            h = t.history(period="1d", interval="1m")
+            if not h.empty:
+                last_price = float(h['Close'].iloc[-1])
+                open_price = float(h['Open'].iloc[0])
+                day_high = float(h['High'].max())
+                day_low = float(h['Low'].min())
+                volume = int(h['Volume'].sum())
+
+        chg = round(last_price - prev_close, 2)
+        chg_pct = round((chg / prev_close) * 100, 2) if prev_close > 0 else 0.0
+
+        return {
+            "status": "success",
+            "source": "finance.yahoo.com",
+            "ticker": ticker,
+            "price": round(last_price, 2),
+            "prev_close": round(prev_close, 2),
+            "open": round(open_price, 2),
+            "high": round(day_high, 2),
+            "low": round(day_low, 2),
+            "volume": volume,
+            "change": chg,
+            "change_pct": chg_pct,
+            "currency": getattr(fi, 'currency', 'USD'),
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error fetching quote from finance.yahoo.com for {ticker}: {e}")
+        return {"status": "error", "message": str(e), "ticker": ticker}
+
 

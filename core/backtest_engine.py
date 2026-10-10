@@ -38,10 +38,15 @@ class BacktestEngine:
         position_sizes: Optional fraction (0.0 to 1.0) or custom share sizes
         """
         dates = df.index.tolist()
+        if not dates or len(dates) == 0:
+            return {
+                "metrics": {},
+                "equity_curve": [],
+                "trades": [],
+                "signals": []
+            }
+
         closes = df['Close'].values
-        opens = df['Open'].values
-        highs = df['High'].values
-        lows = df['Low'].values
         sig_vals = signals.reindex(df.index).fillna(0).values
 
         cash = self.initial_capital
@@ -54,13 +59,14 @@ class BacktestEngine:
         current_entry_date = ""
         current_entry_idx = 0
 
-        # Benchmark: Buy and Hold using Initial Capital from day 0 Close
-        bench_shares = (self.initial_capital * 0.99) / (closes[0] * (1.0 + self.slippage_rate))
-        bench_cash = self.initial_capital - bench_shares * closes[0]
+        # Benchmark: Buy and Hold using Initial Capital from day 0 Close (guarded against <= 0)
+        day0_close = max(1e-4, float(closes[0]))
+        bench_shares = (self.initial_capital * 0.99) / (day0_close * (1.0 + self.slippage_rate))
+        bench_cash = self.initial_capital - bench_shares * day0_close
 
         for i in range(len(dates)):
             date = str(dates[i])
-            close_price = float(closes[i])
+            close_price = max(1e-4, float(closes[i]))
             sig = int(sig_vals[i])
             
             # Check Stop Loss / Take Profit if currently holding
@@ -111,13 +117,17 @@ class BacktestEngine:
 
             # Execute Entry if signal is BUY (1) and currently flat
             elif shares == 0 and sig > 0 and i < len(dates) - 1:
-                exec_price = close_price * (1.0 + self.slippage_rate)
+                exec_price = max(1e-4, close_price * (1.0 + self.slippage_rate))
                 target_alloc = cash * self.position_size_pct
                 if position_sizes is not None:
-                    custom_size = float(position_sizes.iloc[i]) if i < len(position_sizes) else 1.0
+                    try:
+                        raw_size = float(position_sizes.iloc[i]) if i < len(position_sizes) else 1.0
+                        custom_size = 1.0 if (np.isnan(raw_size) or raw_size <= 0) else raw_size
+                    except Exception:
+                        custom_size = 1.0
                     target_alloc = min(cash * self.position_size_pct, cash * custom_size)
 
-                order_shares = int(target_alloc / exec_price)
+                order_shares = int(target_alloc / exec_price) if not np.isnan(target_alloc) else 0
                 if order_shares > 0:
                     comm = self.calculate_commission(order_shares * exec_price)
                     total_cost = order_shares * exec_price + comm
@@ -170,15 +180,27 @@ class BacktestEngine:
                 "exit_reason": "END_OF_PERIOD"
             })
 
-        # Calculate metrics and drawdowns
-        df_equity = pd.DataFrame(equity_records).set_index("date")
-        equity_series = df_equity['equity']
-        bench_series = df_equity['benchmark']
-        dd_series = calculate_drawdown_series(equity_series)
+            trade_signals.append({
+                "date": str(dates[-1]),
+                "price": round(final_price, 2),
+                "type": "SELL",
+                "reason": "END_OF_PERIOD"
+            })
 
-        # Append drawdown to records
+        # Calculate metrics and drawdowns with fast vectorized numpy operations
+        eq_arr = np.array([r["equity"] for r in equity_records], dtype=np.float64)
+        bench_arr = np.array([r["benchmark"] for r in equity_records], dtype=np.float64)
+
+        peaks = np.maximum.accumulate(eq_arr)
+        dds = np.where(peaks > 0, (eq_arr - peaks) / peaks, 0.0)
+        dd_pcts = np.round(dds * 100.0, 2)
+
         for j, rec in enumerate(equity_records):
-            rec["drawdown_pct"] = round(float(dd_series.iloc[j] * 100.0), 2)
+            rec["drawdown_pct"] = float(dd_pcts[j])
+
+        date_indices = [r["date"] for r in equity_records]
+        equity_series = pd.Series(eq_arr, index=date_indices)
+        bench_series = pd.Series(bench_arr, index=date_indices)
 
         metrics = compute_performance_metrics(equity_series, bench_series, trades)
 
