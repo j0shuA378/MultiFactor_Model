@@ -69,7 +69,7 @@ def generate_trade_prediction(
     if is_holding:
         status = "HOLDING"
         status_badge = "bull"
-        status_text = "🔵 多头持仓跟踪"
+        status_text = "多头持仓跟踪"
         status_desc = "策略当前处于多头持仓状态，关注动态止盈保护与加仓买点"
         # For an open position, next buy point is the add-on pullback level
         expected_buy = round(min(last_close, max(bb_middle, sma20, last_close * 0.985)), 2)
@@ -77,14 +77,14 @@ def generate_trade_prediction(
     elif last_sig == 1 or prev_sig == 1:
         status = "BUY_TRIGGERED"
         status_badge = "bull"
-        status_text = "🟢 触发强烈买入"
+        status_text = "触发强烈买入"
         status_desc = "多因子 Alpha 共振达成入场条件，建议现价/轻微回踩即刻建仓"
         expected_buy = round(last_close, 2)
         buy_reason = "Alpha 动量指标突破，当前价即为建仓买点"
     else:
         status = "WAITING_BUY"
         status_badge = "warn"
-        status_text = "🟡 建议逢低关注"
+        status_text = "建议逢低关注"
         status_desc = "处于观望观察期，建议挂单等待价格回踩核心支撑位逢低介入"
         # Support level buy point
         candidate_support = min(last_close, max(sma20, bb_middle, last_close * 0.982))
@@ -162,7 +162,7 @@ def generate_trade_prediction(
             alpha_score_str = f"唐奇安上轨突破线: ${last_close:.2f}"
         suggested_size_str = "ATR(N) 风险单元头寸 (1% 风险预算)"
     elif strategy_key == "chan":
-        from core.chan_theory import run_chan_analysis
+        from core.chan_theory import run_chan_analysis, calculate_risk_budget_position
         chan_data = run_chan_analysis(df)
         active_zs = chan_data.get("active_zhongshu")
         tags = chan_data.get("tags", {})
@@ -170,16 +170,28 @@ def generate_trade_prediction(
             zg = float(active_zs.zg)
             zd = float(active_zs.zd)
             alpha_score_str = f"缠论中枢区间: [${zd:.2f}, ${zg:.2f}]"
-            suggested_size_str = "分仓律 (30%底仓 / 40%回踩确认 / 30%主升)"
+            
             if last_close >= zg:
                 expected_buy = round(zg, 2)
-                buy_reason = f"缠论第 3 类买点 (3B) 突破中枢上沿 ${zg:.2f} 回抽不破"
+                stop_loss = round(zg * 0.985, 2)
+                buy_reason = f"3B 突破中枢上沿 ${zg:.2f} 回抽不破，防守线守 ZG"
             else:
                 expected_buy = round(zd, 2)
-                buy_reason = f"缠论中枢下沿 [${zd:.2f}, ${zg:.2f}] 企稳分型介入"
+                stop_loss = round(min(last_close * 0.95, float(active_zs.dd)), 2)
+                buy_reason = f"中枢下沿 [${zd:.2f}, ${zg:.2f}] 企稳分型买点"
+
+            size_res = calculate_risk_budget_position(
+                account_equity=100000.0,
+                entry_price=expected_buy,
+                stop_loss_price=stop_loss,
+                risk_per_trade=0.02,
+                max_position_ratio=0.30,
+                lot_size=100
+            )
+            suggested_size_str = f"风险预算 {int(size_res.position_ratio*100)}% ({size_res.shares}股, 恒定2%净值风险)"
         else:
-            alpha_score_str = "缠论走势分类中"
-            suggested_size_str = "严格分型控仓"
+            alpha_score_str = "缠论走势结构分类中"
+            suggested_size_str = "固定比例风险预算 (单笔最大2%风险)"
 
     # 6. Actionable Commentary
     ticker_name = df.attrs.get("ticker", "当前标的")
