@@ -16,42 +16,37 @@
     <!-- Tier 1: Main Institutional Navigation Header -->
     <header class="app-header">
       <div class="header-left">
-        <a href="index.html" class="brand-logo">
+        <a href="index.html" class="brand-logo" title="AlphaQuant 量化终端">
           <div class="logo-icon">
             <span class="logo-symbol">AQ</span>
           </div>
           <div class="brand-text">
-            <h1 class="brand-title">AlphaQuant <span class="badge-pro">INSTITUTIONAL</span></h1>
-            <span class="brand-subtitle">Quantitative Research & Portfolio Analytics</span>
+            <h1 class="brand-title">AlphaQuant</h1>
+            <span class="badge-pro">PRO</span>
           </div>
         </a>
 
-        <!-- Modern Application Workspace Flow Switcher -->
+        <!-- Modern Application Workspace Flow Switcher (Segmented Control) -->
         <nav class="app-workspace-nav" id="app-workspace-nav">
-          <button class="nav-workspace-btn active" data-view="screener" id="tab-screener" type="button">
-            <span class="nwb-icon">🎯</span>
+          <button class="nav-workspace-btn active" data-view="screener" id="tab-screener" type="button" title="第1步: 智能选股大厅">
+            <span class="nwb-step">1</span>
             <span>选股大厅</span>
-            <span class="nav-page-badge badge-screener">1. 选股</span>
           </button>
-          <button class="nav-workspace-btn" data-view="fundamentals" id="tab-fundamentals" type="button">
-            <span class="nwb-icon">🏢</span>
+          <button class="nav-workspace-btn" data-view="fundamentals" id="tab-fundamentals" type="button" title="第2步: 深度财务基本面与机构预测">
+            <span class="nwb-step">2</span>
             <span>股票基本面</span>
-            <span class="nav-page-badge badge-fund">2. 财务/预测</span>
           </button>
-          <button class="nav-workspace-btn" data-view="strategy" id="tab-strategy" type="button">
-            <span class="nwb-icon">⚡</span>
+          <button class="nav-workspace-btn" data-view="strategy" id="tab-strategy" type="button" title="第3 & 4步: 策略交易台与买卖决策">
+            <span class="nwb-step">3</span>
             <span>策略交易台</span>
-            <span class="nav-page-badge badge-strat">3 & 4. 交易决策</span>
           </button>
-          <button class="nav-workspace-btn" data-view="compare" id="tab-compare" type="button">
+          <button class="nav-workspace-btn" data-view="compare" id="tab-compare" type="button" title="四大策略对决矩阵">
             <span class="nwb-icon">⚔️</span>
-            <span>四大策略对决</span>
-            <span class="nav-page-badge badge-alloc">MATRIX</span>
+            <span>策略矩阵</span>
           </button>
-          <a href="paper_trading.html" class="nav-workspace-btn" id="tab-paper">
+          <a href="paper_trading.html" class="nav-workspace-btn" id="tab-paper" title="实盘模拟交易">
             <span class="nwb-icon">💼</span>
             <span>实盘模拟</span>
-            <span class="nav-page-badge badge-paper">LIVE/SIM</span>
           </a>
         </nav>
       </div>
@@ -63,21 +58,21 @@
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
-          <input type="text" id="custom-ticker-input" placeholder="输入股票代码或名称 (如 茅台, 600519, 510300, AAPL)..." autocomplete="off" spellcheck="false">
+          <input type="text" id="custom-ticker-input" placeholder="标的代码/名称 (如 NVDA, 茅台)..." autocomplete="off" spellcheck="false">
           <button id="search-ticker-btn" class="btn-search">切换</button>
           <div class="search-suggestions-dropdown hidden" id="search-suggestions-dropdown"></div>
         </div>
 
         <!-- Period Selector -->
         <div class="period-selector" id="period-selector">
-          <button class="period-btn" data-period="6mo">6月</button>
-          <button class="period-btn active" data-period="1y">1年</button>
-          <button class="period-btn" data-period="2y">2年</button>
-          <button class="period-btn" data-period="3y">3年</button>
-          <button class="period-btn" data-period="5y">5年</button>
+          <button class="period-btn" data-period="6mo">6M</button>
+          <button class="period-btn active" data-period="1y">1Y</button>
+          <button class="period-btn" data-period="2y">2Y</button>
+          <button class="period-btn" data-period="3y">3Y</button>
+          <button class="period-btn" data-period="5y">5Y</button>
         </div>
 
-        <div class="system-status">
+        <div class="system-status" id="system-status-indicator">
           <span class="status-dot"></span>
           <span class="status-text" id="status-text">系统就绪</span>
         </div>

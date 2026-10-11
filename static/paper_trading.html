@@ -15,41 +15,37 @@
     <!-- Tier 1: Main Institutional Navigation Header -->
     <header class="app-header">
       <div class="header-left">
-        <a href="paper_trading.html" class="brand-logo">
+        <a href="index.html" class="brand-logo" title="AlphaQuant 量化终端">
           <div class="logo-icon">
             <span class="logo-symbol">AQ</span>
           </div>
           <div class="brand-text">
-            <h1 class="brand-title">AlphaQuant <span class="badge-pro">INSTITUTIONAL</span></h1>
-            <span class="brand-subtitle">Paper Trading Desk & Model Ledger</span>
+            <h1 class="brand-title">AlphaQuant</h1>
+            <span class="badge-pro">PRO</span>
           </div>
         </a>
 
-        <!-- Dedicated Page Switcher -->
-        <nav class="nav-pages-bar">
-          <a href="factor_model.html" class="nav-page-link">
-            <span>多因子Alpha模型</span>
-            <span class="nav-page-badge badge-barra">BARRA</span>
+        <!-- Modern Application Workspace Flow Switcher (Segmented Control) -->
+        <nav class="app-workspace-nav" id="app-workspace-nav">
+          <a href="index.html?view=screener" class="nav-workspace-btn" title="第1步: 智能选股大厅">
+            <span class="nwb-step">1</span>
+            <span>选股大厅</span>
           </a>
-          <a href="ml_model.html" class="nav-page-link">
-            <span>机器学习预测</span>
-            <span class="nav-page-badge badge-ml">ML/AI</span>
+          <a href="index.html?view=fundamentals" class="nav-workspace-btn" title="第2步: 深度财务基本面与机构预测">
+            <span class="nwb-step">2</span>
+            <span>股票基本面</span>
           </a>
-          <a href="cta_model.html" class="nav-page-link">
-            <span>CTA波动率平价</span>
-            <span class="nav-page-badge badge-cta">CTA</span>
+          <a href="index.html?view=strategy" class="nav-workspace-btn" title="第3 & 4步: 策略交易台与买卖决策">
+            <span class="nwb-step">3</span>
+            <span>策略交易台</span>
           </a>
-          <a href="index.html" class="nav-page-link">
-            <span>多策略组合矩阵</span>
-            <span class="nav-page-badge badge-alloc">ALLOC</span>
+          <a href="index.html?view=compare" class="nav-workspace-btn" title="四大策略对决矩阵">
+            <span class="nwb-icon">⚔️</span>
+            <span>策略矩阵</span>
           </a>
-          <a href="settings.html" class="nav-page-link">
-            <span>⚙️ 策略与风控配置</span>
-            <span class="nav-page-badge badge-cfg">CONFIG</span>
-          </a>
-          <a href="paper_trading.html" class="nav-page-link active">
-            <span>实盘模拟交易</span>
-            <span class="nav-page-badge badge-paper">SIM/LIVE</span>
+          <a href="paper_trading.html" class="nav-workspace-btn active" title="实盘模拟交易">
+            <span class="nwb-icon">💼</span>
+            <span>实盘模拟</span>
           </a>
         </nav>
       </div>
