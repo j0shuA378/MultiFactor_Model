@@ -177,7 +177,7 @@ function initEventHandlers() {
       if (klineChart) {
         const isShown = klineChart.toggleProjectionLines();
         toggleChartLevelsBtn.classList.toggle('active', isShown);
-        toggleChartLevelsBtn.innerHTML = `<span>📐 图表标线: ${isShown ? '开' : '关'}</span>`;
+        toggleChartLevelsBtn.innerHTML = `<span>图表标线: ${isShown ? '开' : '关'}</span>`;
       }
     });
   }
@@ -198,11 +198,140 @@ function initEventHandlers() {
       navigator.clipboard.writeText(text).then(() => {
         showStatus(`已复制 ${state.ticker} 预期买点与交易计划至剪贴板`);
         copyPlanBtn.innerHTML = `<span>✓ 已复制</span>`;
-        setTimeout(() => { copyPlanBtn.innerHTML = `<span>📋 复制计划</span>`; }, 2000);
+        setTimeout(() => { copyPlanBtn.innerHTML = `<span>复制计划</span>`; }, 2000);
       });
     });
   }
+
+  // TradingView Institutional Single-Screen Workspace Bindings
+  initTradingViewWorkspace();
 }
+
+function initTradingViewWorkspace() {
+  // 1. Left Drawing Toolbar Event Handlers
+  document.querySelectorAll('.tv-draw-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tool = btn.dataset.tool;
+      if (!tool) return;
+      if (tool === 'clear') {
+        if (klineChart) {
+          klineChart.clearDrawings();
+          klineChart.setTool('crosshair');
+        }
+        document.querySelectorAll('.tv-draw-btn').forEach(b => {
+          if (b.dataset.tool === 'crosshair') b.classList.add('active');
+          else b.classList.remove('active');
+        });
+        showStatus('已清空图表上的所有自定义画线与标记');
+        return;
+      }
+      document.querySelectorAll('.tv-draw-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      if (klineChart) {
+        klineChart.setTool(tool);
+        showStatus(`已激活画线工具: ${tool}`);
+      }
+    });
+  });
+
+  // 2. Right Dock Tab Switchers
+  document.querySelectorAll('.tv-dock-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const dock = btn.dataset.dock;
+      if (!dock) return;
+      document.querySelectorAll('.tv-dock-tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.tv-dock-content-pane').forEach(p => p.classList.remove('active'));
+      const targetPane = document.getElementById(`tv-dock-pane-${dock}`);
+      if (targetPane) targetPane.classList.add('active');
+
+      const rightDock = document.getElementById('tv-right-dock');
+      if (rightDock && rightDock.classList.contains('collapsed')) {
+        rightDock.classList.remove('collapsed');
+        const arrow = document.getElementById('tv-dock-toggle-arrow');
+        if (arrow) arrow.textContent = '›';
+        setTimeout(() => window.dispatchEvent(new Event('resize')), 260);
+      }
+
+      if (dock === 'screener') {
+        loadScreenerData(state.screenerCategory || 'all');
+      } else if (dock === 'fundamentals') {
+        loadStockFundamentals(state.ticker);
+      }
+    });
+  });
+
+  // Right Dock Collapse / Expand Toggle
+  const dockToggleBtn = document.getElementById('btn-toggle-right-dock');
+  if (dockToggleBtn) {
+    dockToggleBtn.addEventListener('click', () => {
+      const rightDock = document.getElementById('tv-right-dock');
+      if (!rightDock) return;
+      const isCollapsed = rightDock.classList.toggle('collapsed');
+      const arrow = document.getElementById('tv-dock-toggle-arrow');
+      if (arrow) arrow.textContent = isCollapsed ? '‹' : '›';
+      setTimeout(() => window.dispatchEvent(new Event('resize')), 260);
+    });
+  }
+
+  // 3. Bottom Strategy Tester Panel Tabs
+  document.querySelectorAll('.tv-panel-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const panel = btn.dataset.panel;
+      if (!panel) return;
+      document.querySelectorAll('.tv-panel-tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.tv-panel-pane').forEach(p => p.classList.remove('active'));
+      const targetPane = document.getElementById(`tv-panel-pane-${panel}`);
+      if (targetPane) targetPane.classList.add('active');
+
+      const bottomPanel = document.getElementById('tv-bottom-panel');
+      if (bottomPanel && bottomPanel.classList.contains('collapsed')) {
+        bottomPanel.classList.remove('collapsed');
+      }
+
+      setTimeout(() => {
+        if (panel === 'equity' && equityChart) {
+          if (typeof equityChart.resize === 'function') equityChart.resize();
+          else window.dispatchEvent(new Event('resize'));
+        } else if (panel === 'compare' && compareEquityChart) {
+          if (typeof compareEquityChart.resize === 'function') compareEquityChart.resize();
+          else window.dispatchEvent(new Event('resize'));
+        } else {
+          window.dispatchEvent(new Event('resize'));
+        }
+      }, 100);
+    });
+  });
+
+  // Bottom Panel Height Controls
+  const btnMin = document.getElementById('tv-btn-panel-minimize');
+  const btnNorm = document.getElementById('tv-btn-panel-normal');
+  const btnMax = document.getElementById('tv-btn-panel-maximize');
+  const bottomPanel = document.getElementById('tv-bottom-panel');
+
+  if (btnMin && bottomPanel) {
+    btnMin.addEventListener('click', () => {
+      bottomPanel.classList.remove('expanded');
+      bottomPanel.classList.toggle('collapsed');
+      setTimeout(() => window.dispatchEvent(new Event('resize')), 260);
+    });
+  }
+  if (btnNorm && bottomPanel) {
+    btnNorm.addEventListener('click', () => {
+      bottomPanel.classList.remove('collapsed', 'expanded');
+      setTimeout(() => window.dispatchEvent(new Event('resize')), 260);
+    });
+  }
+  if (btnMax && bottomPanel) {
+    btnMax.addEventListener('click', () => {
+      bottomPanel.classList.remove('collapsed');
+      bottomPanel.classList.toggle('expanded');
+      setTimeout(() => window.dispatchEvent(new Event('resize')), 260);
+    });
+  }
+}
+
 
 // ==========================================================================
 // Yahoo Finance Search & Autocomplete Engine
@@ -818,17 +947,17 @@ const ACTIVE_GROUP_STORAGE_KEY = 'alphaquant_active_group_id';
 const DEFAULT_WATCHLIST_GROUPS = [
   {
     id: "group-fav",
-    name: "⭐ 我的自选",
+    name: "我的自选",
     tickers: ["AAPL", "NVDA", "TSLA", "MSFT", "AMZN"]
   },
   {
     id: "group-index",
-    name: "🏛️ 宽基与ETF",
+    name: "宽基与ETF",
     tickers: ["SPY", "QQQ", "IWM", "TLT", "GLD"]
   },
   {
     id: "group-tech",
-    name: "🤖 科技与AI龙头",
+    name: "科技与AI龙头",
     tickers: ["NVDA", "MSFT", "GOOGL", "META", "AMD", "TSM", "PLTR"]
   },
   {
@@ -1953,6 +2082,18 @@ function switchStrategy(strat, triggerAnalysis = true) {
     }
   }
 
+  // Synchronize TradingView Bottom Panel
+  if (strat === 'compare') {
+    const tabComp = document.getElementById('tv-panel-tab-compare');
+    if (tabComp) tabComp.click();
+  } else if (strat === 'ml') {
+    const tabML = document.getElementById('tv-panel-tab-ml');
+    if (tabML) tabML.click();
+  } else {
+    const tabEq = document.getElementById('tv-panel-tab-equity');
+    if (tabEq) tabEq.click();
+  }
+
   if (triggerAnalysis) {
     runAnalysis();
   }
@@ -2067,63 +2208,29 @@ function switchWorkspaceView(viewName) {
     }
   });
 
-  // 2. Hide/Show views with smooth page transition animations
-  const screenerView = document.getElementById('workspace-screener-view');
-  const fundamentalsView = document.getElementById('workspace-fundamentals-view');
-  const strategyView = document.getElementById('workspace-strategy-view');
-  const ribbonBar = document.getElementById('market-ribbon-bar');
-
-  [screenerView, fundamentalsView, strategyView].forEach(v => {
-    if (v) {
-      v.classList.remove('view-enter-active');
-      v.classList.add('hidden');
-    }
-  });
-
-  const activateTargetView = (v) => {
-    if (!v) return;
-    v.classList.remove('hidden');
-    void v.offsetWidth; // Force reflow to replay CSS workspaceViewEnter keyframes
-    v.classList.add('view-enter-active');
-  };
-
+  // 2. Synchronize TradingView Right Dock & Bottom Panel Tabs
   if (viewName === 'screener') {
-    activateTargetView(screenerView);
-    if (ribbonBar) ribbonBar.classList.add('hidden');
+    const dockBtn = document.getElementById('tv-dock-btn-screener');
+    if (dockBtn) dockBtn.click();
     loadScreenerData(state.screenerCategory || 'all');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   } else if (viewName === 'fundamentals') {
-    activateTargetView(fundamentalsView);
-    if (ribbonBar) ribbonBar.classList.remove('hidden');
+    const dockBtn = document.getElementById('tv-dock-btn-fundamentals');
+    if (dockBtn) dockBtn.click();
     loadStockFundamentals(state.ticker);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   } else if (viewName === 'strategy') {
-    activateTargetView(strategyView);
-    if (ribbonBar) ribbonBar.classList.remove('hidden');
-    if (state.strategy === 'compare') {
-      switchStrategy('momentum', true);
-    } else {
-      const singleView = document.getElementById('single-strategy-view');
-      const compareView = document.getElementById('comparison-view');
-      if (singleView) singleView.classList.remove('hidden');
-      if (compareView) compareView.classList.add('hidden');
-      // Re-trigger dynamic drawing animation when switching into strategy view
-      if (klineChart && klineChart.data && klineChart.data.length) {
-        klineChart.animate(700);
-      }
-      if (equityChart && equityChart.records && equityChart.records.length) {
-        equityChart.animate(700);
-      }
+    const dockBtn = document.getElementById('tv-dock-btn-signals');
+    if (dockBtn) dockBtn.click();
+    const panelBtn = document.getElementById('tv-panel-tab-equity');
+    if (panelBtn) panelBtn.click();
+    if (klineChart && klineChart.data && klineChart.data.length) {
+      klineChart.animate(700);
     }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   } else if (viewName === 'compare') {
-    activateTargetView(strategyView);
-    if (ribbonBar) ribbonBar.classList.remove('hidden');
+    const dockBtn = document.getElementById('tv-dock-btn-signals');
+    if (dockBtn) dockBtn.click();
+    const panelBtn = document.getElementById('tv-panel-tab-compare');
+    if (panelBtn) panelBtn.click();
     switchStrategy('compare', true);
-    if (compareEquityChart && compareEquityChart.seriesList && compareEquityChart.seriesList.length) {
-      compareEquityChart.animate(800);
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }
 
@@ -3035,7 +3142,7 @@ function computeTradePrediction(candles, signals, trades, meta, strategyKey, met
 
   let status = 'WAITING_BUY';
   let statusBadge = 'warn';
-  let statusText = '🟡 建议逢低买入';
+  let statusText = '建议逢低买入';
   let statusDesc = '处于观望观察期，建议挂单等待价格回踩核心支撑位逢低介入';
   let expectedBuy = Math.round(Math.min(lastClose, Math.max(sma20, bbMiddle, lastClose * 0.985)) * 100) / 100;
   let buyReason = '等待回踩 EMA20 与布林中轨支撑位企稳买入';
@@ -3047,14 +3154,14 @@ function computeTradePrediction(candles, signals, trades, meta, strategyKey, met
   if (isHolding) {
     status = 'HOLDING';
     statusBadge = 'bull';
-    statusText = '🔵 多头持仓跟踪';
+    statusText = '多头持仓跟踪';
     statusDesc = '策略当前处于多头持仓状态，关注动态止盈保护与加仓买点';
     expectedBuy = Math.round(Math.min(lastClose, Math.max(bbMiddle, sma20, lastClose * 0.985)) * 100) / 100;
     buyReason = '多头持仓中，关注回踩 EMA20 企稳补仓位';
   } else if (isRecentBuy) {
     status = 'BUY_TRIGGERED';
     statusBadge = 'bull';
-    statusText = '🟢 触发强烈买入';
+    statusText = '触发强烈买入';
     statusDesc = '多因子 Alpha 共振达成入场条件，建议现价/轻微回踩即刻建仓';
     expectedBuy = Math.round(lastClose * 100) / 100;
     buyReason = 'Alpha 动量指标突破，当前价即为建仓买点';
@@ -3145,7 +3252,7 @@ function renderTradePredictionDock(pred) {
   const sigTag = document.getElementById('dock-signal-tag');
   if (sigTag) {
     sigTag.className = `hero-signal-badge ${pred.status_badge || 'bull'}`;
-    sigTag.textContent = pred.status_text || '🟢 建议逢低建仓';
+    sigTag.textContent = pred.status_text || '建议逢低建仓';
   }
 
   const confTag = document.getElementById('dock-confidence-tag');
@@ -3704,11 +3811,11 @@ function setLoadingState(isLoading) {
   const btn = document.getElementById('run-backtest-btn');
   if (!btn) return;
   if (isLoading) {
-    btn.innerHTML = `<span class="btn-icon">⏳</span><span class="btn-label">回测计算中...</span>`;
+    btn.innerHTML = `<svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>计算中...</span>`;
     btn.style.opacity = '0.75';
     btn.style.pointerEvents = 'none';
   } else {
-    btn.innerHTML = `<span class="btn-icon">⚡</span><span class="btn-label">运行回测 (Run Model)</span>`;
+    btn.innerHTML = `<svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg><span>运行模型 (Run)</span>`;
     btn.style.opacity = '1';
     btn.style.pointerEvents = 'auto';
   }

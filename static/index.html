@@ -3,1132 +3,961 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AlphaQuant - 专业股票量化交易与多模型智能回测终端</title>
-  <meta name="description" content="基于多因子动量、机器学习预测与海龟法则的专业全栈股票量化交易与回测分析平台">
-  <!-- Google Fonts -->
+  <title>AlphaQuant Terminal - 专业量化交易与回测终端 (TradingView Edition)</title>
+  <meta name="description" content="参考 TradingView 专业工作流重新设计的量化交易与多模型分析终端">
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body data-page="workspace">
-  <div class="app-layout">
-    <!-- Tier 1: Main Institutional Navigation Header -->
-    <header class="app-header">
-      <div class="header-left">
-        <a href="index.html" class="brand-logo" title="AlphaQuant 量化终端">
-          <div class="logo-icon">
-            <span class="logo-symbol">AQ</span>
-          </div>
-          <div class="brand-text">
-            <h1 class="brand-title">AlphaQuant</h1>
-            <span class="badge-pro">PRO</span>
-          </div>
+  <div class="tv-workspace-layout">
+    <!-- 1. Top TradingView Global Header Bar -->
+    <header class="tv-top-bar">
+      <div class="tv-top-left">
+        <a href="index.html" class="tv-brand" title="AlphaQuant 量化终端">
+          <svg class="art-icon logo-art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+          <span>AlphaQuant</span>
+          <span class="tv-brand-tag">PRO</span>
         </a>
 
-        <!-- Modern Application Workspace Flow Switcher (Segmented Control) -->
-        <nav class="app-workspace-nav" id="app-workspace-nav">
-          <button class="nav-workspace-btn active" data-view="screener" id="tab-screener" type="button" title="第1步: 智能选股大厅">
-            <span class="nwb-step">1</span>
-            <span>选股大厅</span>
-          </button>
-          <button class="nav-workspace-btn" data-view="fundamentals" id="tab-fundamentals" type="button" title="第2步: 深度财务基本面与机构预测">
-            <span class="nwb-step">2</span>
-            <span>股票基本面</span>
-          </button>
-          <button class="nav-workspace-btn" data-view="strategy" id="tab-strategy" type="button" title="第3 & 4步: 策略交易台与买卖决策">
-            <span class="nwb-step">3</span>
-            <span>策略交易台</span>
-          </button>
-          <button class="nav-workspace-btn" data-view="compare" id="tab-compare" type="button" title="四大策略对决矩阵">
-            <span class="nwb-icon">⚔️</span>
-            <span>策略矩阵</span>
-          </button>
-          <a href="paper_trading.html" class="nav-workspace-btn" id="tab-paper" title="实盘模拟交易">
-            <span class="nwb-icon">💼</span>
-            <span>实盘模拟</span>
-          </a>
-        </nav>
-      </div>
-
-      <div class="header-right">
-        <!-- Stock Search Input -->
-        <div class="search-box" id="search-box-wrap">
-          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-          <input type="text" id="custom-ticker-input" placeholder="标的代码/名称 (如 NVDA, 茅台)..." autocomplete="off" spellcheck="false">
-          <button id="search-ticker-btn" class="btn-search">切换</button>
+        <!-- Stock Search Box -->
+        <div class="tv-search-box" id="search-box-wrap">
+          <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="custom-ticker-input" class="tv-search-input" placeholder="代码/名称 (如 NVDA, 茅台)..." autocomplete="off" spellcheck="false">
+          <button id="search-ticker-btn" class="tv-tf-btn" style="padding: 2px 6px; font-size: 11px;">切换</button>
           <div class="search-suggestions-dropdown hidden" id="search-suggestions-dropdown"></div>
         </div>
 
-        <!-- Period Selector -->
-        <div class="period-selector" id="period-selector">
-          <button class="period-btn" data-period="6mo">6M</button>
-          <button class="period-btn active" data-period="1y">1Y</button>
-          <button class="period-btn" data-period="2y">2Y</button>
-          <button class="period-btn" data-period="3y">3Y</button>
-          <button class="period-btn" data-period="5y">5Y</button>
+        <!-- Global Real-Time Ticker & Price Hero Strip -->
+        <div class="tv-ticker-hero" id="active-stock-strip">
+          <span class="tv-ticker-code" id="ass-ticker">AAPL</span>
+          <span id="ass-name" style="font-size: 12px; color: #64748b; max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Apple Inc.</span>
+          <span id="ass-exchange" style="font-size: 10px; color: #94a3b8; font-weight: 600;">NASDAQ</span>
+          <span class="tv-ticker-price" id="ass-price">$336.64</span>
+          <span class="ass-change negative" id="ass-change" style="font-size: 11.5px; font-weight: 700;">-1.11%</span>
         </div>
 
-        <div class="system-status" id="system-status-indicator">
+        <!-- Hidden badges for backward compatibility -->
+        <div class="hidden" id="ass-center-badges">
+          <span id="ass-pe-pill"></span>
+          <span id="ass-target-pill"></span>
+          <span id="ass-div-pill"></span>
+          <span id="ass-strat-pill"></span>
+          <button id="ass-btn-screener"></button>
+          <button id="ass-btn-fund"></button>
+          <button id="ass-btn-strat"></button>
+        </div>
+      </div>
+
+      <!-- Top Center: Timeframe & Resolution Selector -->
+      <div class="tv-top-center" id="period-selector">
+        <button class="tv-tf-btn period-btn" data-period="6mo">6M</button>
+        <button class="tv-tf-btn period-btn active" data-period="1y">1Y</button>
+        <button class="tv-tf-btn period-btn" data-period="2y">2Y</button>
+        <button class="tv-tf-btn period-btn" data-period="3y">3Y</button>
+        <button class="tv-tf-btn period-btn" data-period="5y">5Y</button>
+        <div class="tv-sep"></div>
+
+        <!-- Strategy Quick Switcher -->
+        <div class="tv-strat-picker-row" id="strategy-tabs">
+          <button class="tv-strat-select-btn strat-tab active" data-strat="momentum" title="Barra/AQR 机构多因子动量">
+            <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="3" y1="20" x2="21" y2="20"/></svg>
+            <span>多因子动量</span>
+          </button>
+          <button class="tv-strat-select-btn strat-tab" data-strat="ml" title="机器学习非线性预测">
+            <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.5" fill="currentColor"/><circle cx="15" cy="9" r="1.5" fill="currentColor"/><path d="M9 15h6"/><line x1="12" y1="1" x2="12" y2="4"/><line x1="1" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="23" y2="12"/></svg>
+            <span>机器学习</span>
+          </button>
+          <button class="tv-strat-select-btn strat-tab" data-strat="turtle" title="海龟法则与动态突破">
+            <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 0 0-9 9c0 4.1 2.8 7.6 6.7 8.7l.3 2.3h4l.3-2.3C18.2 19.6 21 16.1 21 12a9 9 0 0 0-9-9z"/><path d="M12 7v10M8 10h8M9 14h6"/></svg>
+            <span>海龟突破</span>
+          </button>
+          <button class="tv-strat-select-btn strat-tab" data-strat="chan" title="缠论中枢与形态量化">
+            <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><polyline points="7 17 11 9 15 15 20 5"/></svg>
+            <span>缠论形态</span>
+          </button>
+          <button class="tv-strat-select-btn strat-tab" data-strat="compare" title="四大策略全景对决">
+            <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" y1="19" x2="19" y2="13"/><line x1="16" y1="16" x2="20" y2="20"/><line x1="19" y1="21" x2="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/><line x1="5" y1="11" x2="11" y2="17"/></svg>
+            <span>策略对决</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Top Right: Actions & Tools -->
+      <div class="tv-top-right">
+        <button id="run-backtest-btn" class="tv-btn-run" title="执行当前模型回测与信号标定">
+          <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          <span>运行模型 (Run)</span>
+        </button>
+
+        <a href="paper_trading.html" class="tv-strat-select-btn" title="进入实盘模拟交易">
+          <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          <span>实盘模拟</span>
+        </a>
+
+        <a href="settings.html" class="tv-strat-select-btn" title="进入独立参数中心">
+          <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>配置中心</span>
+        </a>
+
+        <div class="system-status" id="system-status-indicator" style="margin-left: 4px;">
           <span class="status-dot"></span>
-          <span class="status-text" id="status-text">系统就绪</span>
+          <span class="status-text" id="status-text" style="font-size: 11px;">就绪</span>
         </div>
       </div>
     </header>
 
-    <!-- Global Active Stock Context Strip (当前标的全局状态与快捷栏) -->
-    <div class="active-stock-strip" id="active-stock-strip">
-      <div class="ass-left">
-        <span class="ass-ticker" id="ass-ticker">AAPL</span>
-        <span class="ass-name" id="ass-name">Apple Inc. (苹果公司)</span>
-        <span class="ass-exchange" id="ass-exchange">NASDAQ</span>
-        <div class="ass-price-box">
-          <span class="ass-price" id="ass-price">$336.64</span>
-          <span class="ass-change negative" id="ass-change">-1.11%</span>
+    <!-- Hidden compatibility bar for watchlist ribbon & legacy nav -->
+    <div class="hidden" id="market-ribbon-bar">
+      <div id="brokerage-group-picker-wrapper">
+        <button id="btn-group-dropdown-trigger"><span id="bgt-current-name">自选</span></button>
+        <div id="brokerage-group-dropdown-menu" class="hidden">
+          <button id="btn-create-group-quick"></button>
+          <div id="bgm-group-items"></div>
+          <button id="btn-manage-groups"></button>
         </div>
+        <select id="watchlist-group-select" class="hidden"></select>
       </div>
-      <div class="ass-center-badges" id="ass-center-badges">
-        <span class="ass-pill" id="ass-pe-pill">市盈率: 38.6x</span>
-        <span class="ass-pill" id="ass-target-pill">机构目标均价: $328.09 (买入)</span>
-        <span class="ass-pill" id="ass-div-pill">除息日: 2026-08-10 (0.32%)</span>
-        <span class="ass-pill active-strat-pill" id="ass-strat-pill">当前策略: 机构多因子动量</span>
-      </div>
-      <div class="ass-right-actions">
-        <button class="ass-btn" id="ass-btn-screener" type="button" title="进入选股大厅探索全市场标的">🎯 选股大厅</button>
-        <button class="ass-btn" id="ass-btn-fund" type="button" title="查看当前股票深度基本面、财务与机构预测">🏢 基本面档案</button>
-        <button class="ass-btn highlight" id="ass-btn-strat" type="button" title="查看当前策略交易信号与买卖决策">⚡ 策略交易台</button>
-      </div>
+      <div id="ticker-presets"></div>
+      <button id="btn-add-ticker-chip"></button>
+      <button id="btn-toggle-ribbon-bar"><span id="ribbon-toggle-icon"></span><span id="ribbon-toggle-text"></span></button>
+      <span id="ribbon-ticker-display"></span>
+      <button id="btn-toggle-favorite"><span id="fav-star-icon">★</span><span id="fav-star-text">自选</span></button>
+      <nav id="app-workspace-nav">
+        <button id="tab-screener" data-view="screener"></button>
+        <button id="tab-fundamentals" data-view="fundamentals"></button>
+        <button id="tab-strategy" data-view="strategy"></button>
+        <button id="tab-compare" data-view="compare"></button>
+        <button id="tab-paper"></button>
+      </nav>
     </div>
 
-    <!-- Tier 2: Watchlist & Custom Groups Ribbon Bar (自选股与自建分组) -->
-    <div class="market-ribbon-bar" id="market-ribbon-bar">
-      <!-- Group Switcher Dropdown (选择组合后隐藏组合选项) -->
-      <div class="ribbon-group-section">
-        <div class="brokerage-group-picker-wrapper" id="brokerage-group-picker-wrapper">
-          <button id="btn-group-dropdown-trigger" class="btn-brokerage-group-trigger" type="button" title="点击选择或切换投资组合/自选分组">
-            <span class="bgt-label">组合/分组:</span>
-            <span id="bgt-current-name" class="bgt-name">🏛️ 宽基与ETF (5)</span>
-            <svg class="bgt-arrow" width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
-            </svg>
-          </button>
-
-          <!-- Dropdown Menu: 选择组合后点击自动隐藏 -->
-          <div id="brokerage-group-dropdown-menu" class="brokerage-group-menu hidden">
-            <div class="bgm-header">
-              <span class="bgm-title">选择投资组合 / 自选分组</span>
-              <button id="btn-create-group-quick" class="bgm-btn-new" type="button">+ 新建分组</button>
-            </div>
-            <div class="bgm-list" id="bgm-group-items"></div>
-            <div class="bgm-footer">
-              <button id="btn-manage-groups" class="bgm-footer-manage" type="button">⚙️ 管理所有分组与标的池</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Hidden native select for backwards compatibility -->
-        <select id="watchlist-group-select" class="group-select-dropdown hidden" title="切换自选股分组"></select>
-      </div>
-
-      <!-- Ticker Chips Container -->
-      <div class="ticker-presets-container">
-        <div class="ticker-presets" id="ticker-presets"></div>
-        <button id="btn-add-ticker-chip" class="btn-add-chip" title="添加标的到当前分组">+ 添加标的</button>
-      </div>
-
-      <!-- Right Actions -->
-      <div class="ribbon-actions-right">
-        <button id="btn-toggle-ribbon-bar" class="btn-ribbon-toggle" title="收起/展开标的栏以最大化图表空间">
-          <span id="ribbon-toggle-icon">⌃</span>
-          <span id="ribbon-toggle-text">收起标的栏</span>
+    <!-- 2. Middle Grid: Left Toolbar (44px) + Center Main Chart + Right Dock (380px) -->
+    <div class="tv-middle-grid">
+      <!-- Left Drawing Toolbar -->
+      <aside class="tv-left-toolbar">
+        <button class="tv-draw-btn active" data-tool="crosshair" id="tv-tool-crosshair" title="十字准星标尺 (Crosshair)">
+          <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="7"/><line x1="12" y1="17" x2="12" y2="22"/><line x1="2" y1="12" x2="7" y2="12"/><line x1="17" y1="12" x2="22" y2="12"/></svg>
         </button>
-        <div class="ribbon-asset-indicator">
-          <span class="rai-label">当前:</span>
-          <span class="rai-code" id="ribbon-ticker-display">AAPL</span>
-          <button id="btn-toggle-favorite" class="btn-fav-star" title="将当前标的添加/移出当前自选组">
-            <span id="fav-star-icon">★</span>
-            <span id="fav-star-text">自选</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Step 1: 选股大厅 (Screener View) -->
-    <section id="workspace-screener-view" class="workspace-screener-view">
-      <div class="screener-hero-banner">
-        <div class="shb-title-group">
-          <h2>🎯 全市场智能选股大厅与标的池 (Stock Screener)</h2>
-          <p>涵盖美股科技龙头、全球宽基指数与黄金大宗、港股中概核心互联、A股行业白马及高股息资产。点击任意标的即可一键调取其深度财务基本面与量化交易策略。</p>
-        </div>
-        <div class="shb-quick-stats">
-          <span class="badge-pro">覆盖 33+ 全球核心标的</span>
-        </div>
-      </div>
-
-      <div class="screener-toolbar-card">
-        <div class="screener-categories-row" id="screener-categories-row">
-          <button class="sc-pill active" data-category="all" type="button">全部标的 (All)</button>
-          <button class="sc-pill" data-category="us_tech" type="button">🇺🇸 美股科技与AI核心</button>
-          <button class="sc-pill" data-category="etf_gold" type="button">🏛️ 全球ETF与黄金大宗</button>
-          <button class="sc-pill" data-category="china_hk" type="button">🇨🇳 港股龙头与中概互联</button>
-          <button class="sc-pill" data-category="a_shares" type="button">🇨🇳 A股核心资产白马</button>
-          <button class="sc-pill" data-category="high_dividend" type="button">💰 高股息价值防守</button>
-        </div>
-
-        <div class="screener-filter-inputs-row">
-          <div class="screener-search-wrap">
-            <svg class="screener-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-            <input type="text" id="screener-keyword-input" placeholder="输入代码、公司名或细分板块即时过滤..." autocomplete="off">
-          </div>
-
-          <div class="screener-sort-group">
-            <span class="ssg-label">排序方式:</span>
-            <select id="screener-sort-select" class="ssg-select">
-              <option value="market_cap_desc">按总市值从大到小</option>
-              <option value="change_desc">按24h涨幅优先</option>
-              <option value="change_asc">按24h跌幅优先</option>
-              <option value="target_upside_desc">按机构看多空间最高</option>
-              <option value="pe_asc">按市盈率PE从低到高</option>
-              <option value="div_desc">按股息率从高到低</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <div class="screener-table-container">
-        <table class="screener-table" id="screener-table">
-          <thead>
-            <tr>
-              <th>标的代码与名称</th>
-              <th>分类所属</th>
-              <th>细分行业板块</th>
-              <th>实时现价</th>
-              <th>24h 涨跌幅</th>
-              <th>总市值</th>
-              <th>市盈率 (P/E)</th>
-              <th>华尔街评级</th>
-              <th>机构预期空间</th>
-              <th>股息率</th>
-              <th>交易操作</th>
-            </tr>
-          </thead>
-          <tbody id="screener-table-body">
-            <!-- Populated dynamically via JS -->
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- Step 2: 股票基本面与深度财务档案 (Fundamentals View) -->
-    <section id="workspace-fundamentals-view" class="workspace-fundamentals-view hidden">
-      <div class="fund-hero-card">
-        <div class="fhc-left">
-          <h2>
-            <span id="fund-hero-symbol" style="font-family:var(--font-mono); font-weight:800; color:var(--text-primary);">AAPL</span>
-            <span id="fund-hero-name" style="font-size:18px; color:var(--text-secondary); font-family:var(--font-sans); font-weight:500;">Apple Inc. (苹果公司)</span>
-            <span class="badge-pro" id="fund-hero-quote-type">EQUITY</span>
-          </h2>
-          <div class="fhc-meta-row">
-            <span>交易所: <strong id="fund-hero-exchange">NASDAQ</strong></span>
-            <span>·</span>
-            <span>行业分类: <strong id="fund-hero-sector">科技与消费电子</strong></span>
-            <span>·</span>
-            <span>细分赛道: <strong id="fund-hero-industry">智能硬件</strong></span>
-            <span>·</span>
-            <span>当前现价: <strong id="fund-hero-price" style="font-family:var(--font-mono); font-size:16px;">$336.64</strong></span>
-            <span id="fund-hero-change" class="ass-change negative">-1.11%</span>
-          </div>
-        </div>
-        <div class="fhc-right-actions">
-          <button id="fund-btn-to-strategy" class="btn-launch-strategy-cta" type="button">
-            <span>⚡ 前往交易策略决策 (Step 3 & 4)</span>
-            <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      <div class="fund-cards-grid">
-        <!-- Card 1: 核心估值与量化指标 -->
-        <div class="fund-card">
-          <div class="fund-card-header">
-            <h3 class="fund-card-title">📊 核心估值与基本面指标 (Valuation Multiples)</h3>
-            <span class="fund-card-badge">基石指标</span>
-          </div>
-          <div class="fund-metrics-2x3-grid">
-            <div class="fund-metric-box">
-              <span class="fmb-label">总市值 (Market Cap)</span>
-              <span class="fmb-val" id="fm-mktcap">--</span>
-              <span class="fmb-sub">总股本定价</span>
-            </div>
-            <div class="fund-metric-box">
-              <span class="fmb-label">企业价值 (EV)</span>
-              <span class="fmb-val" id="fm-entval">--</span>
-              <span class="fmb-sub">含净负债</span>
-            </div>
-            <div class="fund-metric-box">
-              <span class="fmb-label">静态市盈率 (P/E TTM)</span>
-              <span class="fmb-val" id="fm-pe">--</span>
-              <span class="fmb-sub" id="fm-pe-sub">历史12个月</span>
-            </div>
-            <div class="fund-metric-box">
-              <span class="fmb-label">预期市盈率 (Forward P/E)</span>
-              <span class="fmb-val" id="fm-fwd-pe">--</span>
-              <span class="fmb-sub">未来1年预期</span>
-            </div>
-            <div class="fund-metric-box">
-              <span class="fmb-label">市净率 (P/B)</span>
-              <span class="fmb-val" id="fm-pb">--</span>
-              <span class="fmb-sub">净资产比率</span>
-            </div>
-            <div class="fund-metric-box">
-              <span class="fmb-label">Beta 系数 (大盘弹性)</span>
-              <span class="fmb-val" id="fm-beta">--</span>
-              <span class="fmb-sub">波动敏感度</span>
-            </div>
-          </div>
-          <div class="range-52w-container">
-            <div class="r52-labels">
-              <span>52周最低: <strong id="fm-52l">$0.00</strong></span>
-              <span>52周位置: <strong id="fm-52pos">50%</strong></span>
-              <span>52周最高: <strong id="fm-52h">$0.00</strong></span>
-            </div>
-            <div class="r52-track">
-              <div class="r52-thumb" id="fm-52thumb" style="left:50%;"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Card 2: 财务状况与盈利能力 -->
-        <div class="fund-card">
-          <div class="fund-card-header">
-            <h3 class="fund-card-title">💰 财务状况与盈利能力 (Financial Health)</h3>
-            <span class="fund-card-badge">财报质量</span>
-          </div>
-          <div class="fund-metrics-2x3-grid">
-            <div class="fund-metric-box">
-              <span class="fmb-label">营业总收入 (Revenue)</span>
-              <span class="fmb-val" id="fm-rev">--</span>
-              <span class="fmb-sub" id="fm-rev-growth">YoY: --</span>
-            </div>
-            <div class="fund-metric-box">
-              <span class="fmb-label">净利润 (Net Income)</span>
-              <span class="fmb-val" id="fm-netinc">--</span>
-              <span class="fmb-sub" id="fm-inc-growth">YoY: --</span>
-            </div>
-            <div class="fund-metric-box">
-              <span class="fmb-label">销售毛利率 (Gross Margin)</span>
-              <span class="fmb-val" id="fm-grossm">--</span>
-              <span class="fmb-sub">产品议价权</span>
-            </div>
-            <div class="fund-metric-box">
-              <span class="fmb-label">净利率 (Profit Margin)</span>
-              <span class="fmb-val" id="fm-profm">--</span>
-              <span class="fmb-sub">最终留存率</span>
-            </div>
-            <div class="fund-metric-box">
-              <span class="fmb-label">净资产收益率 (ROE)</span>
-              <span class="fmb-val" id="fm-roe">--</span>
-              <span class="fmb-sub">股东回报能力</span>
-            </div>
-            <div class="fund-metric-box">
-              <span class="fmb-label">自由现金流 (FCF)</span>
-              <span class="fmb-val" id="fm-fcf">--</span>
-              <span class="fmb-sub">造血抗风险</span>
-            </div>
-          </div>
-          <div style="font-size:12px; color:var(--text-muted); padding:6px 12px; background:var(--bg-subtle); border-radius:var(--radius-xs);">
-            资产负债率 / 债务股本比 (Debt to Equity): <strong id="fm-debt" style="color:var(--text-primary); font-family:var(--font-mono);">--</strong>
-          </div>
-        </div>
-
-        <!-- Card 3: 华尔街机构预测价与评级 -->
-        <div class="fund-card">
-          <div class="fund-card-header">
-            <h3 class="fund-card-title">🎯 机构预测价与华尔街共识 (Analyst Target)</h3>
-            <span class="fund-card-badge" id="fm-analyst-count">39 位分析师</span>
-          </div>
-          <div class="target-gauge-box">
-            <div class="tgb-top">
-              <div>
-                <span style="font-size:12px; color:var(--text-muted);">机构综合目标均价:</span>
-                <div class="tgb-mean-target" id="fm-target-mean">$0.00</div>
-              </div>
-              <div style="text-align:right;">
-                <span class="tgb-recomm-badge" id="fm-recomm-badge">买入 (Buy)</span>
-                <div style="margin-top:4px;"><span class="tgb-upside positive" id="fm-target-upside">+0.0%</span></div>
-              </div>
-            </div>
-            <div style="display:flex; justify-content:space-between; font-size:12px; font-family:var(--font-mono); color:var(--text-muted); border-top:1px dashed var(--border-subtle); padding-top:8px;">
-              <span>最低预期: <strong id="fm-target-low">$0.00</strong></span>
-              <span>当前现价: <strong id="fm-target-curr">$0.00</strong></span>
-              <span>最高预期: <strong id="fm-target-high">$0.00</strong></span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Card 4: 分红派息与股东回报 -->
-        <div class="fund-card">
-          <div class="fund-card-header">
-            <h3 class="fund-card-title">🎁 分红派息与除息日程 (Dividend Schedule)</h3>
-            <span class="fund-card-badge">现金回报</span>
-          </div>
-          <div class="fund-metrics-2x3-grid" style="grid-template-columns: repeat(2, 1fr);">
-            <div class="fund-metric-box">
-              <span class="fmb-label">最新除息日 (Ex-Dividend Date)</span>
-              <span class="fmb-val" id="fm-exdiv" style="color:var(--accent-orange);">--</span>
-              <span class="fmb-sub">分红权利登记截止日</span>
-            </div>
-            <div class="fund-metric-box">
-              <span class="fmb-label">年化股息率 (Dividend Yield)</span>
-              <span class="fmb-val" id="fm-divyield" style="color:var(--color-bull);">--</span>
-              <span class="fmb-sub">按最新收盘价折算</span>
-            </div>
-            <div class="fund-metric-box">
-              <span class="fmb-label">每股年化分红金额</span>
-              <span class="fmb-val" id="fm-divrate">--</span>
-              <span class="fmb-sub">单股派息现金</span>
-            </div>
-            <div class="fund-metric-box">
-              <span class="fmb-label">分红派息率 (Payout Ratio)</span>
-              <span class="fmb-val" id="fm-payout">--</span>
-              <span class="fmb-sub">占净利润百分比</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Card 5: 公司业务简介 -->
-        <div class="fund-summary-card">
-          <div class="fund-card-header">
-            <h3 class="fund-card-title">🏢 公司主营业务概况与商业壁垒 (Business Summary)</h3>
-            <span class="fund-card-badge" id="fm-country-city">美国 · 加州</span>
-          </div>
-          <p class="fsc-text" id="fm-summary-text">正在加载公司深度业务简况与商业壁垒...</p>
-          <div class="fsc-footer">
-            <span>官方网站: <a id="fm-website" href="#" target="_blank" style="color:var(--accent-blue); text-decoration:underline;">--</a></span>
-            <span>·</span>
-            <span>全职员工: <strong id="fm-employees">--</strong> 人</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Step 3 & 4: 策略选择与当前策略下的信息展示 (Strategy Workbench View) -->
-    <div id="workspace-strategy-view" class="workspace-strategy-view hidden">
-      <!-- Strategy Selection Navigation Tabs -->
-      <nav class="strategy-navbar">
-      <div class="strategy-tabs" id="strategy-tabs">
-        <button class="strat-tab" data-strat="momentum">
-          <span class="tab-icon">📊</span>
-          <div class="tab-content">
-            <span class="tab-title">机构多因子动量策略 (Barra/AQR)</span>
-            <span class="tab-desc">12M-1M中长动量 · 波动率风险调整 · Beta残差中性化 · 路径平滑质量</span>
-          </div>
+        <button class="tv-draw-btn" data-tool="trendline" id="tv-tool-trendline" title="趋势线绘制 (Trendline)">
+          <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="19" r="2.5" fill="currentColor"/><circle cx="19" cy="5" r="2.5" fill="currentColor"/><line x1="5" y1="19" x2="19" y2="5"/></svg>
         </button>
-        <button class="strat-tab" data-strat="ml">
-          <span class="tab-icon">🤖</span>
-          <div class="tab-content">
-            <span class="tab-title">机器学习预测模型</span>
-            <span class="tab-desc">随机森林 / 梯度提升树 · 时序特征工程 · 概率置信过滤</span>
-          </div>
+        <button class="tv-draw-btn" data-tool="horizontal" id="tv-tool-horizontal" title="关键水平支撑阻力射线 (Horizontal Ray)">
+          <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="2.5" fill="currentColor"/><line x1="6" y1="12" x2="21" y2="12"/><polyline points="17 8 21 12 17 16"/></svg>
         </button>
-        <button class="strat-tab" data-strat="turtle">
-          <span class="tab-icon">🐢</span>
-          <div class="tab-content">
-            <span class="tab-title">海龟法则与动态网格</span>
-            <span class="tab-desc">唐奇安20日突破 · ATR(N)风险头寸 · 2N动态移动止损</span>
-          </div>
+        <button class="tv-draw-btn" data-tool="rect" id="tv-tool-rect" title="筹码密集/中枢震荡箱体 (Rectangle Box)">
+          <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="6" width="16" height="12" rx="2" stroke-dasharray="3 2"/><circle cx="4" cy="6" r="2" fill="currentColor"/><circle cx="20" cy="18" r="2" fill="currentColor"/></svg>
         </button>
-        <button class="strat-tab" data-strat="chan">
-          <span class="tab-icon">📐</span>
-          <div class="tab-content">
-            <span class="tab-title">缠论中枢与形态量化</span>
-            <span class="tab-desc">K线包含合并 · 顶底分型严格笔 · 中枢演化 · 趋势背驰与一二三类买卖点</span>
-          </div>
+        <button class="tv-draw-btn" data-tool="risk_reward" id="tv-tool-risk_reward" title="做多盈亏比量化测算工具 (Long Risk/Reward)">
+          <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="7" fill="rgba(16,185,129,0.25)" stroke="#10b981"/><rect x="4" y="11" width="16" height="9" fill="rgba(239,68,68,0.25)" stroke="#ef4444"/><line x1="3" y1="11" x2="21" y2="11" stroke-width="2"/></svg>
         </button>
-        <button class="strat-tab active" data-strat="compare">
-          <span class="tab-icon">⚔️</span>
-          <div class="tab-content">
-            <span class="tab-title">多策略横向对决</span>
-            <span class="tab-desc">同周期回测对比 · 夏普比率 / 最大回撤 / 收益曲线叠图</span>
-          </div>
+        <div class="tv-draw-divider"></div>
+        <button class="tv-draw-btn" data-tool="clear" id="tv-tool-clear" title="清除所有绘制标记 (Clear Drawings)">
+          <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
         </button>
-      </div>
-
-      <div class="action-bar-right">
-        <button id="run-backtest-btn" class="btn-primary-action">
-          <span class="btn-icon">⚡</span>
-          <span class="btn-label">运行回测 (Run Model)</span>
-        </button>
-      </div>
-    </nav>
-
-    <!-- Main Workspace Grid -->
-    <main class="main-workspace">
-      <!-- Left Sidebar: Parameters & Sizing Controls -->
-      <aside class="control-sidebar">
-        <div class="sidebar-header">
-          <h2 class="sidebar-title">
-            <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="3"></circle>
-              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-            </svg>
-            策略参数与资金管理
-          </h2>
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <span class="ticker-badge" id="current-ticker-display">AAPL</span>
-            <button id="btn-toggle-sidebar" class="btn-toggle-sidebar-collapse" title="收起/展开侧边栏 (切换全屏图表)">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="9" y1="3" x2="9" y2="21"></line>
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <div class="sidebar-scroll">
-          <!-- Active Strategy Profile & Compact Parameters Hub -->
-          <div class="active-profile-card">
-            <div class="apc-header">
-              <span class="apc-badge">当前生效配置</span>
-              <span class="apc-preset-tag" id="sidebar-active-preset-tag">AQR 动量优化型</span>
-            </div>
-            
-            <div class="apc-desc" id="sidebar-active-preset-desc">
-              重仓特质波动率缩放与残差动量，开启动态波动率目标仓位管理。已连接后端持久化存储。
-            </div>
-
-            <!-- Mini 5-Pillar Factor Allocations -->
-            <div class="apc-pillars">
-              <div class="apc-pillar-item">
-                <div class="apc-p-lbl"><span>12M-1M 动量</span><span id="sb-p-12-1">30%</span></div>
-                <div class="mini-pillar-track"><div class="mini-pillar-fill" id="sb-bar-12-1" style="width:30%; background:#0052cc;"></div></div>
-              </div>
-              <div class="apc-pillar-item">
-                <div class="apc-p-lbl"><span>低波风险调整</span><span id="sb-p-risk">25%</span></div>
-                <div class="mini-pillar-track"><div class="mini-pillar-fill" id="sb-bar-risk" style="width:25%; background:#059669;"></div></div>
-              </div>
-              <div class="apc-pillar-item">
-                <div class="apc-p-lbl"><span>残差 Alpha</span><span id="sb-p-res">20%</span></div>
-                <div class="mini-pillar-track"><div class="mini-pillar-fill" id="sb-bar-res" style="width:20%; background:#7c3aed;"></div></div>
-              </div>
-              <div class="apc-pillar-item">
-                <div class="apc-p-lbl"><span>R² 路径质量</span><span id="sb-p-qual">15%</span></div>
-                <div class="mini-pillar-track"><div class="mini-pillar-fill" id="sb-bar-qual" style="width:15%; background:#d97706;"></div></div>
-              </div>
-              <div class="apc-pillar-item">
-                <div class="apc-p-lbl"><span>量价共振确认</span><span id="sb-p-vol">10%</span></div>
-                <div class="mini-pillar-track"><div class="mini-pillar-fill" id="sb-bar-vol" style="width:10%; background:#0284c7;"></div></div>
-              </div>
-            </div>
-
-            <!-- Account & Execution Friction Summary -->
-            <div class="apc-friction-box">
-              <div class="apc-f-row">
-                <span class="apc-f-label">初始资金:</span>
-                <span class="apc-f-val" id="sb-f-cap">$100,000</span>
-              </div>
-              <div class="apc-f-row">
-                <span class="apc-f-label">手续费 / 滑点:</span>
-                <span class="apc-f-val" id="sb-f-friction">0.05% / 0.05%</span>
-              </div>
-              <div class="apc-f-row">
-                <span class="apc-f-label">目标年化波动率:</span>
-                <span class="apc-f-val" id="sb-f-vol">15.0% (动态目标化)</span>
-              </div>
-            </div>
-
-            <!-- Navigation to Dedicated Settings Hub -->
-            <a href="settings.html" class="btn-open-settings-hub" title="前往专属独立设置页面进行全面精细化调参与预设切换">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="3"></circle>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-              </svg>
-              <span>⚙️ 独立参数配置中心</span>
-            </a>
-
-            <!-- Quick Tweak Drawer Trigger -->
-            <button id="btn-open-quick-drawer" class="btn-quick-tweak" title="在当前页面弹出侧边抽屉快速微调参数">
-              <span>⚡ 侧边快速微调 (抽屉)</span>
-            </button>
-          </div>
-        </div>
       </aside>
 
-      <!-- Center Workspace: Charts & Analytics Dashboard -->
-      <section class="content-workspace">
-        <!-- Brokerage Real-time Quote & Market Stats Banner -->
-        <div class="brokerage-quote-banner" id="brokerage-quote-banner">
-          <div class="bqu-main-info">
-            <div class="bqu-ticker-row">
-              <span class="bqu-ticker-sym" id="bqu-symbol">AAPL</span>
-              <span class="bqu-ticker-name" id="bqu-name">Apple Inc. (苹果公司)</span>
-              <span class="bqu-badge-market" id="bqu-market">NASDAQ · USD</span>
-            </div>
-            <div class="bqu-price-row">
-              <span class="bqu-current-price" id="bqu-price">$336.64</span>
-              <div class="bqu-change-badge positive" id="bqu-change-badge">
-                <span id="bqu-change-val">+3.12</span>
-                <span id="bqu-change-pct">(+0.94%)</span>
-              </div>
-              <div class="bqu-live-sync-indicator closed" title="美股行情状态 (不开市不跳动)">
-                <span class="pulse-live-dot"></span>
-                <span class="bqu-sync-label">休市 (Market Closed)</span>
-                <span class="live-clock-seconds" id="live-seconds-val" style="display: none;"></span>
-              </div>
+      <!-- Center Main Chart Viewport -->
+      <main class="tv-main-chart-area">
+        <!-- Chart Status & Interactive Tooltip Strip -->
+        <div class="tv-chart-status-strip">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span id="kline-chart-title" style="font-weight: 700; color: #0f172a; font-family: var(--font-mono, monospace);">AAPL 历史行情与交易信号标定</span>
+            <div class="legend-row" style="margin: 0; padding: 0;">
+              <span class="legend-item"><span class="legend-dot dot-sma20"></span>SMA 20</span>
+              <span class="legend-item"><span class="legend-dot dot-sma50"></span>SMA 50</span>
+              <span class="legend-item"><span class="legend-dot dot-bb"></span>Bollinger</span>
+              <span class="legend-item"><span class="legend-line line-prediction-buy"></span>预期买点</span>
+              <span class="legend-item"><span class="legend-line line-prediction-tp"></span>目标止盈</span>
+              <span class="legend-item"><span class="legend-line line-prediction-sl"></span>防守止损</span>
             </div>
           </div>
-
-          <div class="bqu-stats-grid">
-            <div class="bqu-stat-item">
-              <span class="bqu-stat-lbl">今开 Open</span>
-              <span class="bqu-stat-val" id="bqu-open">--</span>
-            </div>
-            <div class="bqu-stat-item">
-              <span class="bqu-stat-lbl">最高 High</span>
-              <span class="bqu-stat-val val-high" id="bqu-high">--</span>
-            </div>
-            <div class="bqu-stat-item">
-              <span class="bqu-stat-lbl">最低 Low</span>
-              <span class="bqu-stat-val val-low" id="bqu-low">--</span>
-            </div>
-            <div class="bqu-stat-item">
-              <span class="bqu-stat-lbl">昨收 Prev</span>
-              <span class="bqu-stat-val" id="bqu-prev-close">--</span>
-            </div>
-            <div class="bqu-stat-item">
-              <span class="bqu-stat-lbl">成交量 Vol</span>
-              <span class="bqu-stat-val" id="bqu-volume">--</span>
-            </div>
-            <div class="bqu-stat-item">
-              <span class="bqu-stat-lbl">振幅 Amp</span>
-              <span class="bqu-stat-val" id="bqu-amplitude">--</span>
-            </div>
-            <div class="bqu-stat-item">
-              <span class="bqu-stat-lbl">52周范围 52W</span>
-              <span class="bqu-stat-val" id="bqu-52w">--</span>
-            </div>
-          </div>
-
-          <div class="bqu-actions-col">
-            <div class="bqu-nav-btns">
-              <button id="btn-quote-prev-ticker" class="btn-quote-nav" type="button" title="切换到组合上一只标的">‹ 上一标的</button>
-              <button id="btn-quote-next-ticker" class="btn-quote-nav" type="button" title="切换到组合下一只标的">下一标的 ›</button>
-            </div>
-            <button id="btn-quote-fav-toggle" class="btn-quote-fav" type="button" title="加入或移出自选">
-              <span id="bqu-fav-icon">★</span>
-              <span id="bqu-fav-label">自选</span>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="cursor-price-info" id="kline-tooltip-bar">移动光标查看具体日K线行情与信号标定</span>
+            <button class="btn-dock-toggle hidden" id="btn-toggle-prediction-dock">
+              <span id="btn-toggle-dock-icon"></span><span id="btn-toggle-dock-text"></span>
             </button>
           </div>
         </div>
 
-        <!-- Top Metrics KPI Cards Banner -->
-        <div class="kpi-grid" id="kpi-grid">
-          <div class="kpi-card">
-            <span class="kpi-label">策略累计收益率</span>
-            <div class="kpi-value-row">
-              <span class="kpi-value positive" id="kpi-return">+0.00%</span>
-              <span class="kpi-tag" id="kpi-cagr">CAGR 0.0%</span>
-            </div>
-            <span class="kpi-subtext" id="kpi-bench-return">基准 (买入持有): +0.00%</span>
-          </div>
+        <!-- Canvas Container -->
+        <div class="tv-chart-canvas-wrap" id="kline-wrapper">
+          <canvas id="kline-canvas"></canvas>
+        </div>
 
-          <div class="kpi-card">
-            <span class="kpi-label">夏普比率 (Sharpe)</span>
-            <div class="kpi-value-row">
-              <span class="kpi-value" id="kpi-sharpe">0.00</span>
-              <span class="kpi-tag" id="kpi-sortino">Sortino 0.00</span>
-            </div>
-            <span class="kpi-subtext" id="kpi-volatility">年化波动率: 0.00%</span>
-          </div>
+        <!-- Hidden quote fields for backwards-compatibility -->
+        <div class="hidden" id="brokerage-quote-banner">
+          <span id="bqu-symbol">AAPL</span>
+          <span id="bqu-name">Apple</span>
+          <span id="bqu-market">NASDAQ</span>
+          <span id="bqu-price">$336.64</span>
+          <div id="bqu-change-badge"><span id="bqu-change-val">+3.12</span><span id="bqu-change-pct">+0.94%</span></div>
+          <span id="live-seconds-val"></span>
+          <span id="bqu-open"></span><span id="bqu-high"></span><span id="bqu-low"></span><span id="bqu-prev-close"></span>
+          <span id="bqu-volume"></span><span id="bqu-amplitude"></span><span id="bqu-52w"></span>
+          <button id="btn-quote-prev-ticker"></button><button id="btn-quote-next-ticker"></button>
+          <button id="btn-quote-fav-toggle"><span id="bqu-fav-icon">★</span><span id="bqu-fav-label">自选</span></button>
+        </div>
+      </main>
 
-          <div class="kpi-card">
-            <span class="kpi-label">最大回撤 (Max Drawdown)</span>
-            <div class="kpi-value-row">
-              <span class="kpi-value negative" id="kpi-mdd">-0.00%</span>
-              <span class="kpi-tag" id="kpi-calmar">Calmar 0.00</span>
-            </div>
-            <span class="kpi-subtext" id="kpi-alpha-beta">Alpha: +0.0% · Beta: 1.0</span>
-          </div>
+      <!-- Right Dock (380px collapsible drawer) -->
+      <aside class="tv-right-dock" id="tv-right-dock">
+        <!-- Dock Tab Switcher Header -->
+        <div class="tv-dock-tab-bar">
+          <button class="tv-dock-tab-btn active" data-dock="screener" id="tv-dock-btn-screener" title="全市场智能选股池">
+            <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>
+            <span>选股池</span>
+          </button>
+          <button class="tv-dock-tab-btn" data-dock="fundamentals" id="tv-dock-btn-fundamentals" title="深度财务基本面与机构评级">
+            <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 10h1M14 10h1M9 14h1M14 14h1M9 18h1M14 18h1"/></svg>
+            <span>基本面</span>
+          </button>
+          <button class="tv-dock-tab-btn" data-dock="signals" id="tv-dock-btn-signals" title="预期买点与前瞻决策看板">
+            <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            <span>买点决策</span>
+          </button>
+          <button class="tv-dock-tab-btn" data-dock="params" id="tv-dock-btn-params" title="策略因子参数与风控微调">
+            <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span>参数调控</span>
+          </button>
+          <button class="tv-dock-toggle-btn" id="btn-toggle-right-dock" title="收起/展开右侧面板">
+            <span id="tv-dock-toggle-arrow">›</span>
+          </button>
+        </div>
 
-          <div class="kpi-card">
-            <span class="kpi-label">交易胜率 / 盈亏比</span>
-            <div class="kpi-value-row">
-              <span class="kpi-value" id="kpi-winrate">0.0%</span>
-              <span class="kpi-tag" id="kpi-profit-factor">盈亏比 0.00</span>
+        <!-- Pane 1: 选股大厅 (Screener) -->
+        <div class="tv-dock-content-pane active" id="tv-dock-pane-screener">
+          <div id="workspace-screener-view" style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span style="font-size: 13px; font-weight: 700; color: #0f172a;">全市场标的池 (33+ 核心资产)</span>
+              <span class="badge-pro" style="font-size: 10px;">Yahoo 实时源</span>
             </div>
-            <span class="kpi-subtext" id="kpi-trades-count">总交易: 0 笔 (胜 0 / 负 0)</span>
+
+            <!-- Categories Filter -->
+            <div class="screener-categories-row" id="screener-categories-row" style="flex-wrap: wrap; gap: 4px;">
+              <button class="sc-pill active" data-category="all" type="button">全部</button>
+              <button class="sc-pill" data-category="us_tech" type="button">美股AI科技</button>
+              <button class="sc-pill" data-category="etf_gold" type="button">ETF与黄金</button>
+              <button class="sc-pill" data-category="china_hk" type="button">港股互联</button>
+              <button class="sc-pill" data-category="a_shares" type="button">A股白马</button>
+              <button class="sc-pill" data-category="high_dividend" type="button">高股息</button>
+            </div>
+
+            <!-- Keyword & Sort -->
+            <div style="display: flex; gap: 6px;">
+              <div class="screener-search-wrap" style="flex: 1; padding: 0 6px; height: 28px;">
+                <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="screener-keyword-input" placeholder="代码/板块过滤..." autocomplete="off" style="font-size: 11px;">
+              </div>
+              <select id="screener-sort-select" class="ssg-select" style="height: 28px; font-size: 11px; padding: 0 4px; width: 130px;">
+                <option value="market_cap_desc">市值从大到小</option>
+                <option value="change_desc">24h 涨幅优先</option>
+                <option value="change_asc">24h 跌幅优先</option>
+                <option value="target_upside_desc">机构看多空间</option>
+                <option value="pe_asc">市盈率从低到高</option>
+                <option value="div_desc">股息率从高到低</option>
+              </select>
+            </div>
+
+            <!-- Screener Table Container -->
+            <div style="overflow-x: auto; max-height: calc(100vh - 200px);">
+              <table class="screener-table" id="screener-table" style="font-size: 11px;">
+                <thead>
+                  <tr>
+                    <th>标的</th>
+                    <th>现价</th>
+                    <th>24h涨跌</th>
+                    <th>总市值</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody id="screener-table-body">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
-        <!-- Single Strategy View (Candlestick + Equity Curve) -->
-        <div id="single-strategy-view" class="view-panel hidden">
-          <!-- Chart 1: Candlestick & Technical Indicators with Prediction Dock -->
-          <div class="chart-container-card">
-            <div class="chart-header">
-              <div class="chart-title-group">
-                <h3 class="chart-title" id="kline-chart-title">AAPL 历史行情与交易信号标定 (Candlestick & Signals)</h3>
-                <div class="legend-row">
-                  <span class="legend-item"><span class="legend-dot dot-sma20"></span>SMA 20</span>
-                  <span class="legend-item"><span class="legend-dot dot-sma50"></span>SMA 50</span>
-                  <span class="legend-item"><span class="legend-dot dot-bb"></span>Bollinger</span>
-                  <span class="legend-item"><span class="legend-marker marker-buy">▲</span>买入信号</span>
-                  <span class="legend-item"><span class="legend-marker marker-sell">▼</span>卖出平仓</span>
-                  <span class="legend-item"><span class="legend-line line-prediction-buy"></span>预期买点</span>
-                  <span class="legend-item"><span class="legend-line line-prediction-tp"></span>目标止盈</span>
-                  <span class="legend-item"><span class="legend-line line-prediction-sl"></span>防守止损</span>
+        <!-- Pane 2: 深度基本面 (Fundamentals) -->
+        <div class="tv-dock-content-pane" id="tv-dock-pane-fundamentals">
+          <div id="workspace-fundamentals-view" style="display: flex; flex-direction: column; gap: 10px;">
+            <div class="fund-hero-card" style="padding: 10px; margin-bottom: 0;">
+              <div class="fhc-left">
+                <h3 style="margin: 0; font-size: 15px; display: flex; align-items: center; gap: 6px;">
+                  <span id="fund-hero-symbol" style="font-family: var(--font-mono); font-weight: 800;">AAPL</span>
+                  <span id="fund-hero-name" style="font-size: 12px; color: #64748b;">Apple Inc.</span>
+                  <span class="badge-pro" id="fund-hero-quote-type" style="font-size: 9px;">EQUITY</span>
+                </h3>
+                <div class="fhc-meta-row" style="font-size: 11px; margin-top: 4px;">
+                  <span>交易所: <strong id="fund-hero-exchange">NASDAQ</strong></span>
+                  <span>·</span>
+                  <span>行业: <strong id="fund-hero-sector">科技</strong></span>
+                  <span>·</span>
+                  <span>现价: <strong id="fund-hero-price" style="font-family: var(--font-mono);">$336.64</strong></span>
+                  <span id="fund-hero-change" class="ass-change negative">-1.11%</span>
+                  <span id="fund-hero-industry" class="hidden"></span>
                 </div>
               </div>
-              <div class="chart-header-right">
-                <span class="cursor-price-info" id="kline-tooltip-bar">移动光标查看具体日K线行情与信号标定</span>
-                <button class="btn-dock-toggle" id="btn-toggle-prediction-dock" title="展开或收起右侧预期买点决策看板">
-                  <span id="btn-toggle-dock-icon">⌃</span> <span id="btn-toggle-dock-text">收起买点看板</span>
+              <button id="fund-btn-to-strategy" class="btn-launch-strategy-cta hidden"></button>
+            </div>
+
+            <!-- 核心估值指标 -->
+            <div class="fund-card" style="padding: 10px;">
+              <div class="fund-card-header" style="margin-bottom: 6px;">
+                <h4 class="fund-card-title" style="font-size: 12px; font-weight: 700;">核心估值倍数 (Multiples)</h4>
+              </div>
+              <div class="fund-metrics-2x3-grid" style="gap: 6px;">
+                <div class="fund-metric-box" style="padding: 6px;">
+                  <span class="fmb-label">总市值</span>
+                  <span class="fmb-val" id="fm-mktcap" style="font-size: 13px;">--</span>
+                </div>
+                <div class="fund-metric-box" style="padding: 6px;">
+                  <span class="fmb-label">企业价值(EV)</span>
+                  <span class="fmb-val" id="fm-entval" style="font-size: 13px;">--</span>
+                </div>
+                <div class="fund-metric-box" style="padding: 6px;">
+                  <span class="fmb-label">静态市盈率(PE)</span>
+                  <span class="fmb-val" id="fm-pe" style="font-size: 13px;">--</span>
+                  <span class="fmb-sub hidden" id="fm-pe-sub"></span>
+                </div>
+                <div class="fund-metric-box" style="padding: 6px;">
+                  <span class="fmb-label">预期市盈率</span>
+                  <span class="fmb-val" id="fm-fwd-pe" style="font-size: 13px;">--</span>
+                </div>
+                <div class="fund-metric-box" style="padding: 6px;">
+                  <span class="fmb-label">市净率(P/B)</span>
+                  <span class="fmb-val" id="fm-pb" style="font-size: 13px;">--</span>
+                </div>
+                <div class="fund-metric-box" style="padding: 6px;">
+                  <span class="fmb-label">Beta 系数</span>
+                  <span class="fmb-val" id="fm-beta" style="font-size: 13px;">--</span>
+                </div>
+              </div>
+              <div class="range-52w-container" style="margin-top: 8px;">
+                <div class="r52-labels" style="font-size: 10px;">
+                  <span>52周低: <strong id="fm-52l">$0.00</strong></span>
+                  <span>位置: <strong id="fm-52pos">50%</strong></span>
+                  <span>52周高: <strong id="fm-52h">$0.00</strong></span>
+                </div>
+                <div class="r52-track">
+                  <div class="r52-thumb" id="fm-52thumb" style="left:50%;"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 财务状况与盈利质量 -->
+            <div class="fund-card" style="padding: 10px;">
+              <div class="fund-card-header" style="margin-bottom: 6px;">
+                <h4 class="fund-card-title" style="font-size: 12px; font-weight: 700;">财务状况与盈利能力</h4>
+              </div>
+              <div class="fund-metrics-2x3-grid" style="gap: 6px;">
+                <div class="fund-metric-box" style="padding: 6px;">
+                  <span class="fmb-label">营业总收入</span>
+                  <span class="fmb-val" id="fm-rev" style="font-size: 13px;">--</span>
+                  <span class="fmb-sub" id="fm-rev-growth" style="font-size: 10px;">--</span>
+                </div>
+                <div class="fund-metric-box" style="padding: 6px;">
+                  <span class="fmb-label">净利润</span>
+                  <span class="fmb-val" id="fm-netinc" style="font-size: 13px;">--</span>
+                  <span class="fmb-sub" id="fm-inc-growth" style="font-size: 10px;">--</span>
+                </div>
+                <div class="fund-metric-box" style="padding: 6px;">
+                  <span class="fmb-label">销售毛利率</span>
+                  <span class="fmb-val" id="fm-grossm" style="font-size: 13px;">--</span>
+                </div>
+                <div class="fund-metric-box" style="padding: 6px;">
+                  <span class="fmb-label">净利率</span>
+                  <span class="fmb-val" id="fm-profm" style="font-size: 13px;">--</span>
+                </div>
+                <div class="fund-metric-box" style="padding: 6px;">
+                  <span class="fmb-label">净资产收益率(ROE)</span>
+                  <span class="fmb-val" id="fm-roe" style="font-size: 13px;">--</span>
+                </div>
+                <div class="fund-metric-box" style="padding: 6px;">
+                  <span class="fmb-label">自由现金流(FCF)</span>
+                  <span class="fmb-val" id="fm-fcf" style="font-size: 13px;">--</span>
+                </div>
+              </div>
+              <div style="font-size: 11px; color: #64748b; margin-top: 6px;">
+                债务股本比 (Debt/Equity): <strong id="fm-debt" style="color: #0f172a; font-family: var(--font-mono);">--</strong>
+              </div>
+            </div>
+
+            <!-- 机构预测价与分红 -->
+            <div class="fund-card" style="padding: 10px;">
+              <div class="fund-card-header" style="margin-bottom: 6px;">
+                <h4 class="fund-card-title" style="font-size: 12px; font-weight: 700;">华尔街机构预测价与评级</h4>
+                <span class="fund-card-badge" id="fm-analyst-count" style="font-size: 10px;">--</span>
+              </div>
+              <div class="target-gauge-box" style="padding: 8px;">
+                <div class="tgb-top">
+                  <div>
+                    <span style="font-size: 11px; color: #64748b;">综合目标均价:</span>
+                    <div class="tgb-mean-target" id="fm-target-mean" style="font-size: 18px;">$0.00</div>
+                  </div>
+                  <div style="text-align: right;">
+                    <span class="tgb-recomm-badge" id="fm-recomm-badge">买入</span>
+                    <div style="margin-top: 2px;"><span class="tgb-upside positive" id="fm-target-upside" style="font-size: 12px;">+0.0%</span></div>
+                  </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 10px; font-family: var(--font-mono); color: #64748b; border-top: 1px dashed #e2e8f0; padding-top: 6px; margin-top: 6px;">
+                  <span>最低: <strong id="fm-target-low">$0.00</strong></span>
+                  <span>现价: <strong id="fm-target-curr">$0.00</strong></span>
+                  <span>最高: <strong id="fm-target-high">$0.00</strong></span>
+                </div>
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; font-size: 11px;">
+                <div style="background: #f8fafc; padding: 6px; border-radius: 4px;">
+                  <span style="color: #64748b; font-size: 10px;">除息日</span>
+                  <div id="fm-exdiv" style="font-weight: 700; color: #d97706; font-family: var(--font-mono);">--</div>
+                </div>
+                <div style="background: #f8fafc; padding: 6px; border-radius: 4px;">
+                  <span style="color: #64748b; font-size: 10px;">股息率 (Yield)</span>
+                  <div id="fm-divyield" style="font-weight: 700; color: #10b981; font-family: var(--font-mono);">--</div>
+                </div>
+                <span id="fm-divrate" class="hidden"></span>
+                <span id="fm-payout" class="hidden"></span>
+              </div>
+            </div>
+
+            <!-- 公司简介 -->
+            <div class="fund-summary-card" style="padding: 10px;">
+              <div class="fund-card-header" style="margin-bottom: 6px;">
+                <h4 class="fund-card-title" style="font-size: 12px; font-weight: 700;">业务概况与壁垒</h4>
+                <span class="fund-card-badge" id="fm-country-city" style="font-size: 10px;">--</span>
+              </div>
+              <p class="fsc-text" id="fm-summary-text" style="font-size: 11.5px; line-height: 1.5; margin: 0;">正在加载公司深度业务简况...</p>
+              <div class="fsc-footer" style="margin-top: 8px; font-size: 11px;">
+                <span>官网: <a id="fm-website" href="#" target="_blank" style="color: #0052cc;">--</a></span>
+                <span>·</span>
+                <span>员工: <strong id="fm-employees">--</strong> 人</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pane 3: 买点决策 (Signals & Prediction Dock) -->
+        <div class="tv-dock-content-pane" id="tv-dock-pane-signals">
+          <div class="kline-prediction-dock" id="kline-prediction-dock" style="width: 100%; border: none; padding: 0;">
+            <div class="dock-header" style="margin-bottom: 8px;">
+              <div class="dock-title-group">
+                <span class="dock-status-pulse"></span>
+                <span class="dock-title">前瞻买点与买卖决策</span>
+              </div>
+              <span class="dock-strategy-badge" id="dock-strategy-tag">多因子 Alpha</span>
+            </div>
+
+            <!-- Main Signal Card -->
+            <div class="dock-hero-card" id="dock-hero-card" style="padding: 10px; margin-bottom: 8px;">
+              <div class="hero-status-bar">
+                <span class="hero-signal-badge bull" id="dock-signal-tag">建议逢低建仓</span>
+                <span class="hero-confidence-badge" id="dock-confidence-tag">置信度: 88%</span>
+              </div>
+              <div class="hero-price-display" style="margin-top: 8px;">
+                <div class="hero-price-meta">
+                  <span class="hero-price-title">核心预期买点</span>
+                  <span class="hero-price-val" id="dock-buy-point" style="font-size: 22px;">$0.00</span>
+                </div>
+                <div class="hero-price-diff-box">
+                  <span class="hero-diff-label">距现价</span>
+                  <span class="hero-diff-val" id="dock-buy-diff">0.0%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Levels 2x2 Grid -->
+            <div class="dock-levels-grid" style="gap: 6px; margin-bottom: 8px;">
+              <div class="level-cell" style="padding: 6px;">
+                <span class="cell-label">建议建仓区间</span>
+                <span class="cell-val" id="dock-buy-range" style="font-size: 11.5px;">$0.00 ~ $0.00</span>
+              </div>
+              <div class="level-cell" style="padding: 6px;">
+                <span class="cell-label">预期止盈位 (TP)</span>
+                <span class="cell-val profit-color" id="dock-tp-point" style="font-size: 11.5px;">$0.00 (+0.0%)</span>
+              </div>
+              <div class="level-cell" style="padding: 6px;">
+                <span class="cell-label">防守止损位 (SL)</span>
+                <span class="cell-val loss-color" id="dock-sl-point" style="font-size: 11.5px;">$0.00 (-0.0%)</span>
+              </div>
+              <div class="level-cell" style="padding: 6px;">
+                <span class="cell-label">预期盈亏比 (R:R)</span>
+                <span class="cell-val rr-color" id="dock-rr-ratio" style="font-size: 11.5px;">1 : 2.4 (优)</span>
+              </div>
+            </div>
+
+            <!-- Forecast Rows -->
+            <div class="dock-forecast-section" style="padding: 8px; margin-bottom: 8px;">
+              <div class="forecast-item-row" style="font-size: 11px;">
+                <span class="fc-row-label">未来5日预测走势</span>
+                <span class="fc-row-val bull" id="dock-fc-return">+2.8% (胜率 71%)</span>
+              </div>
+              <div class="forecast-item-row" style="font-size: 11px;">
+                <span class="fc-row-label">Alpha 因子强度</span>
+                <span class="fc-row-val" id="dock-alpha-score">Z-Score +1.45 (极强)</span>
+              </div>
+              <div class="forecast-item-row" style="font-size: 11px;">
+                <span class="fc-row-label">建议动态仓位</span>
+                <span class="fc-row-val" id="dock-suggested-size">80% (GK波动率自适应)</span>
+              </div>
+            </div>
+
+            <!-- Commentary Box -->
+            <div class="dock-commentary-box" style="padding: 8px; margin-bottom: 8px;">
+              <div class="commentary-header" style="margin-bottom: 4px;">
+                <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-7 7c0 2.4 1.2 4.5 3 5.7V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.3c1.8-1.2 3-3.3 3-5.7a7 7 0 0 0-7-7z"/></svg>
+                <span class="comm-title" style="font-size: 11.5px;">操盘决策指引</span>
+              </div>
+              <p class="commentary-text" id="dock-guidance-text" style="font-size: 11px; line-height: 1.5; margin: 0;">
+                计算中，等待模型生成前瞻交易指引...
+              </p>
+            </div>
+
+            <!-- Actions -->
+            <div class="dock-actions-row" style="display: flex; gap: 6px;">
+              <button class="dock-action-btn active" id="btn-toggle-chart-levels" style="flex: 1; padding: 6px; font-size: 11px;">
+                <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><polyline points="7 17 11 9 15 15 20 5"/></svg>
+                <span>图表标线: 开</span>
+              </button>
+              <button class="dock-action-btn" id="btn-copy-trade-plan" style="flex: 1; padding: 6px; font-size: 11px;">
+                <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+                <span>复制计划</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pane 4: 策略参数 (Parameters & Friction Hub) -->
+        <div class="tv-dock-content-pane" id="tv-dock-pane-params">
+          <aside class="control-sidebar" id="control-sidebar" style="width: 100%; border: none; padding: 0;">
+            <div class="sidebar-header" style="padding: 0 0 8px 0;">
+              <h3 class="sidebar-title" style="font-size: 13px;">
+                <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                <span>策略参数与资金管理</span>
+              </h3>
+              <span class="ticker-badge" id="current-ticker-display">AAPL</span>
+              <button id="btn-toggle-sidebar" class="hidden"></button>
+            </div>
+
+            <div class="active-profile-card" style="margin-bottom: 10px;">
+              <div class="apc-header">
+                <span class="apc-badge">生效配置</span>
+                <span class="apc-preset-tag" id="sidebar-active-preset-tag">AQR 动量优化型</span>
+              </div>
+              <div class="apc-desc" id="sidebar-active-preset-desc" style="font-size: 11px; margin: 6px 0;">
+                重仓特质波动率缩放与残差动量，开启动态波动率目标仓位管理。
+              </div>
+
+              <!-- 5-Pillar Bars -->
+              <div class="apc-pillars" style="gap: 4px;">
+                <div class="apc-pillar-item">
+                  <div class="apc-p-lbl" style="font-size: 10.5px;"><span>12M-1M 动量</span><span id="sb-p-12-1">30%</span></div>
+                  <div class="mini-pillar-track"><div class="mini-pillar-fill" id="sb-bar-12-1" style="width:30%; background:#0052cc;"></div></div>
+                </div>
+                <div class="apc-pillar-item">
+                  <div class="apc-p-lbl" style="font-size: 10.5px;"><span>低波风险调整</span><span id="sb-p-risk">25%</span></div>
+                  <div class="mini-pillar-track"><div class="mini-pillar-fill" id="sb-bar-risk" style="width:25%; background:#059669;"></div></div>
+                </div>
+                <div class="apc-pillar-item">
+                  <div class="apc-p-lbl" style="font-size: 10.5px;"><span>残差 Alpha</span><span id="sb-p-res">20%</span></div>
+                  <div class="mini-pillar-track"><div class="mini-pillar-fill" id="sb-bar-res" style="width:20%; background:#7c3aed;"></div></div>
+                </div>
+                <div class="apc-pillar-item">
+                  <div class="apc-p-lbl" style="font-size: 10.5px;"><span>R² 路径质量</span><span id="sb-p-qual">15%</span></div>
+                  <div class="mini-pillar-track"><div class="mini-pillar-fill" id="sb-bar-qual" style="width:15%; background:#d97706;"></div></div>
+                </div>
+                <div class="apc-pillar-item">
+                  <div class="apc-p-lbl" style="font-size: 10.5px;"><span>量价共振确认</span><span id="sb-p-vol">10%</span></div>
+                  <div class="mini-pillar-track"><div class="mini-pillar-fill" id="sb-bar-vol" style="width:10%; background:#0284c7;"></div></div>
+                </div>
+              </div>
+
+              <!-- Friction Box -->
+              <div class="apc-friction-box" style="margin-top: 8px;">
+                <div class="apc-f-row" style="font-size: 10.5px;">
+                  <span class="apc-f-label">初始资金:</span>
+                  <span class="apc-f-val" id="sb-f-cap">$100,000</span>
+                </div>
+                <div class="apc-f-row" style="font-size: 10.5px;">
+                  <span class="apc-f-label">费率 / 滑点:</span>
+                  <span class="apc-f-val" id="sb-f-friction">0.05% / 0.05%</span>
+                </div>
+                <div class="apc-f-row" style="font-size: 10.5px;">
+                  <span class="apc-f-label">目标年化波:</span>
+                  <span class="apc-f-val" id="sb-f-vol">15.0%</span>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 6px; margin-top: 8px;">
+                <a href="settings.html" class="btn-open-settings-hub" style="flex: 1; padding: 5px 8px; font-size: 11px;">
+                  <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  <span>参数中心</span>
+                </a>
+                <button id="btn-open-quick-drawer" class="btn-quick-tweak" style="flex: 1; padding: 5px 8px; font-size: 11px;">
+                  <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                  <span>微调抽屉</span>
                 </button>
               </div>
             </div>
-            <div class="kline-workbench-grid" id="kline-workbench-grid">
-              <div class="canvas-wrapper kline-canvas-wrapper" id="kline-wrapper">
-                <canvas id="kline-canvas"></canvas>
+
+            <!-- Parameters Sliders & Inputs -->
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <div class="form-group" style="margin: 0;">
+                <label style="font-size: 11px; font-weight: 600;">初始本金 (USD)</label>
+                <input type="number" id="initial-capital" value="100000" step="5000" style="padding: 4px 6px; font-size: 11px;">
               </div>
-
-              <!-- 右侧框选处：预期买点与买卖预测看板 (Brokerage Buy Point & Signal Dock) -->
-              <div class="kline-prediction-dock" id="kline-prediction-dock">
-                <div class="dock-header">
-                  <div class="dock-title-group">
-                    <span class="dock-status-pulse"></span>
-                    <span class="dock-title">预期买点与交易决策</span>
-                  </div>
-                  <span class="dock-strategy-badge" id="dock-strategy-tag">多因子 Alpha</span>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+                <div class="form-group" style="margin: 0;">
+                  <label style="font-size: 10.5px;">手续费率 (%)</label>
+                  <input type="number" id="commission-rate" value="0.05" step="0.01" style="padding: 4px 6px; font-size: 11px;">
                 </div>
-
-                <!-- Main Hero Card: Signal, Status & Expected Buy Point -->
-                <div class="dock-hero-card" id="dock-hero-card">
-                  <div class="hero-status-bar">
-                    <span class="hero-signal-badge bull" id="dock-signal-tag">🟢 建议逢低建仓</span>
-                    <span class="hero-confidence-badge" id="dock-confidence-tag">置信度: 88%</span>
-                  </div>
-                  <div class="hero-price-display">
-                    <div class="hero-price-meta">
-                      <span class="hero-price-title">核心预期买点</span>
-                      <span class="hero-price-val" id="dock-buy-point">$0.00</span>
-                    </div>
-                    <div class="hero-price-diff-box">
-                      <span class="hero-diff-label">距现价</span>
-                      <span class="hero-diff-val" id="dock-buy-diff">0.0%</span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Key Price Levels 2x2 Grid -->
-                <div class="dock-levels-grid">
-                  <div class="level-cell">
-                    <span class="cell-label">建议建仓区间</span>
-                    <span class="cell-val" id="dock-buy-range">$0.00 ~ $0.00</span>
-                  </div>
-                  <div class="level-cell">
-                    <span class="cell-label">预期止盈位 (TP)</span>
-                    <span class="cell-val profit-color" id="dock-tp-point">$0.00 (+0.0%)</span>
-                  </div>
-                  <div class="level-cell">
-                    <span class="cell-label">防守止损位 (SL)</span>
-                    <span class="cell-val loss-color" id="dock-sl-point">$0.00 (-0.0%)</span>
-                  </div>
-                  <div class="level-cell">
-                    <span class="cell-label">预期盈亏比 (R:R)</span>
-                    <span class="cell-val rr-color" id="dock-rr-ratio">1 : 2.4 (优)</span>
-                  </div>
-                </div>
-
-                <!-- Forecast Analytics Rows -->
-                <div class="dock-forecast-section">
-                  <div class="forecast-item-row">
-                    <span class="fc-row-label">未来5日预测走势</span>
-                    <span class="fc-row-val bull" id="dock-fc-return">+2.8% (胜率 71%)</span>
-                  </div>
-                  <div class="forecast-item-row">
-                    <span class="fc-row-label">Alpha 因子强度</span>
-                    <span class="fc-row-val" id="dock-alpha-score">Z-Score +1.45 (极强)</span>
-                  </div>
-                  <div class="forecast-item-row">
-                    <span class="fc-row-label">建议动态仓位</span>
-                    <span class="fc-row-val" id="dock-suggested-size">80% (GK波动率自适应)</span>
-                  </div>
-                </div>
-
-                <!-- Commentary Box -->
-                <div class="dock-commentary-box">
-                  <div class="commentary-header">
-                    <span class="comm-icon">💡</span>
-                    <span class="comm-title">操盘决策指引</span>
-                  </div>
-                  <p class="commentary-text" id="dock-guidance-text">
-                    计算中，等待模型生成前瞻交易指引...
-                  </p>
-                </div>
-
-                <!-- Dock Tool Actions -->
-                <div class="dock-actions-row">
-                  <button class="dock-action-btn active" id="btn-toggle-chart-levels" title="在K线图上切换预期买卖水平标线与阴影区间">
-                    <span>📐 图表标线: 开</span>
-                  </button>
-                  <button class="dock-action-btn" id="btn-copy-trade-plan" title="复制买点交易计划">
-                    <span>📋 复制计划</span>
-                  </button>
+                <div class="form-group" style="margin: 0;">
+                  <label style="font-size: 10.5px;">滑点比例 (%)</label>
+                  <input type="number" id="slippage-rate" value="0.05" step="0.01" style="padding: 4px 6px; font-size: 11px;">
                 </div>
               </div>
+              <button id="reset-params-btn" class="btn-sm" style="font-size: 11px; padding: 4px 8px; margin-top: 4px;">重置所有参数</button>
+            </div>
+          </aside>
+        </div>
+      </aside>
+    </div>
+
+    <!-- 3. Bottom Strategy Tester Panel (TradingView Drawer) -->
+    <footer class="tv-bottom-panel" id="tv-bottom-panel">
+      <div class="tv-panel-header">
+        <div class="tv-panel-tabs">
+          <button class="tv-panel-tab-btn active" data-panel="equity" id="tv-panel-tab-equity">
+            <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="3" y1="20" x2="21" y2="20"/></svg>
+            <span>策略净值走势</span>
+          </button>
+          <button class="tv-panel-tab-btn" data-panel="kpis" id="tv-panel-tab-kpis">
+            <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>
+            <span>量化绩效指标</span>
+          </button>
+          <button class="tv-panel-tab-btn" data-panel="trades" id="tv-panel-tab-trades">
+            <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+            <span>成交记录明细</span>
+          </button>
+          <button class="tv-panel-tab-btn" data-panel="compare" id="tv-panel-tab-compare">
+            <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" y1="19" x2="19" y2="13"/><line x1="16" y1="16" x2="20" y2="20"/><line x1="19" y1="21" x2="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/><line x1="5" y1="11" x2="11" y2="17"/></svg>
+            <span>四大策略对决</span>
+          </button>
+          <button class="tv-panel-tab-btn" data-panel="ml" id="tv-panel-tab-ml">
+            <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.5" fill="currentColor"/><circle cx="15" cy="9" r="1.5" fill="currentColor"/><path d="M9 15h6"/><line x1="12" y1="1" x2="12" y2="4"/><line x1="1" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="23" y2="12"/></svg>
+            <span>ML模型诊断</span>
+          </button>
+        </div>
+
+        <div class="tv-panel-controls">
+          <button class="tv-ctrl-btn" id="tv-btn-panel-minimize" title="折叠底栏 (32px)">−</button>
+          <button class="tv-ctrl-btn" id="tv-btn-panel-normal" title="标准高度 (260px)">▫</button>
+          <button class="tv-ctrl-btn" id="tv-btn-panel-maximize" title="展开底栏 (520px)">□</button>
+        </div>
+      </div>
+
+      <div class="tv-panel-content">
+        <!-- Pane 1: 策略净值与基准走势 (Equity Curve) -->
+        <div class="tv-panel-pane active" id="tv-panel-pane-equity">
+          <div style="display: flex; flex-direction: column; height: 100%;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+              <div class="legend-row" style="margin: 0; padding: 0;">
+                <span class="legend-item"><span class="legend-line line-strategy"></span>量化策略净值</span>
+                <span class="legend-item"><span class="legend-line line-benchmark"></span>基准 (买入持有)</span>
+                <span class="legend-item"><span class="legend-area area-drawdown"></span>动态回撤深度</span>
+              </div>
+              <span class="cursor-price-info" id="equity-tooltip-bar" style="font-size: 11px;">资金曲线追踪</span>
+            </div>
+            <div class="canvas-wrapper" id="equity-wrapper" style="flex: 1; min-height: 180px; position: relative;">
+              <canvas id="equity-canvas" style="position: absolute; inset: 0; width: 100%; height: 100%;"></canvas>
             </div>
           </div>
+        </div>
 
-          <!-- Chart 2: Equity Growth & Drawdown Analysis -->
-          <div class="chart-container-card">
-            <div class="chart-header">
-              <div class="chart-title-group">
-                <h3 class="chart-title">策略净值曲线对比 (Strategy Equity vs Buy & Hold Benchmark)</h3>
-                <div class="legend-row">
-                  <span class="legend-item"><span class="legend-line line-strategy"></span>量化策略净值</span>
-                  <span class="legend-item"><span class="legend-line line-benchmark"></span>基准(买入持有)</span>
-                  <span class="legend-item"><span class="legend-area area-drawdown"></span>动态回撤深度</span>
-                </div>
+        <!-- Pane 2: 核心绩效指标 (KPIs Grid) -->
+        <div class="tv-panel-pane" id="tv-panel-pane-kpis">
+          <div class="kpi-grid" id="kpi-grid">
+            <div class="kpi-card">
+              <span class="kpi-label">策略累计收益率</span>
+              <div class="kpi-value-row">
+                <span class="kpi-value positive" id="kpi-return">+0.00%</span>
+                <span class="kpi-tag" id="kpi-cagr">CAGR 0.0%</span>
               </div>
-              <div class="chart-tools">
-                <span class="cursor-price-info" id="equity-tooltip-bar">资金曲线追踪</span>
-              </div>
+              <span class="kpi-subtext" id="kpi-bench-return">基准 (买入持有): +0.00%</span>
             </div>
-            <div class="canvas-wrapper" id="equity-wrapper">
-              <canvas id="equity-canvas"></canvas>
+            <div class="kpi-card">
+              <span class="kpi-label">夏普比率 (Sharpe)</span>
+              <div class="kpi-value-row">
+                <span class="kpi-value" id="kpi-sharpe">0.00</span>
+                <span class="kpi-tag" id="kpi-sortino">Sortino 0.00</span>
+              </div>
+              <span class="kpi-subtext" id="kpi-volatility">年化波动率: 0.00%</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">最大回撤 (Max Drawdown)</span>
+              <div class="kpi-value-row">
+                <span class="kpi-value negative" id="kpi-mdd">-0.00%</span>
+                <span class="kpi-tag" id="kpi-calmar">Calmar 0.00</span>
+              </div>
+              <span class="kpi-subtext" id="kpi-alpha-beta">Alpha: +0.0% · Beta: 1.0</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">交易胜率 / 盈亏比</span>
+              <div class="kpi-value-row">
+                <span class="kpi-value" id="kpi-winrate">0.0%</span>
+                <span class="kpi-tag" id="kpi-profit-factor">盈亏比 0.00</span>
+              </div>
+              <span class="kpi-subtext" id="kpi-trades-count">总交易: 0 笔</span>
             </div>
           </div>
+        </div>
 
-          <!-- ML Diagnostics Sub-Panel (Visible when ML is selected) -->
-          <div id="ml-diagnostics-panel" class="diagnostics-card hidden">
-            <div class="card-inner-header">
-              <h3 class="card-inner-title">
-                <span class="ai-sparkle">✦</span> 机器学习模型诊断与特征贡献度分析 (Feature Importance)
-              </h3>
-              <div class="ml-meta-tags" id="ml-meta-tags">
-                <!-- Accuracy, Samples, etc. -->
-              </div>
-            </div>
-            <div class="ml-diagnostics-grid">
-              <div class="feature-bar-list" id="feature-importance-bars">
-                <!-- Dynamically populated bars -->
-              </div>
-              <div class="ml-explanation-box">
-                <h4>特征重要性与时序训练机制</h4>
-                <p>模型在历史特征（多周期涨跌幅滞后、RSI振荡器、MACD零轴偏离度、布林带%B、ATR波动率等）上拟合非线性决策树，自动识别对未来涨跌最具备预测力的关键技术因子。</p>
-                <div class="ml-stat-pills">
-                  <div class="stat-pill">
-                    <span class="p-label">验证集预测准确率</span>
-                    <span class="p-val" id="ml-acc-val">--</span>
-                  </div>
-                  <div class="stat-pill">
-                    <span class="p-label">查准率 (Precision)</span>
-                    <span class="p-val" id="ml-prec-val">--</span>
-                  </div>
-                  <div class="stat-pill">
-                    <span class="p-label">查全率 (Recall)</span>
-                    <span class="p-val" id="ml-rec-val">--</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Trade Execution Log Table -->
-          <div class="trades-card">
-            <div class="trades-card-header">
-              <h3 class="trades-card-title">历史交易成交明细与出场原因追踪</h3>
-              <div class="table-actions">
-                <button id="export-csv-btn" class="btn-sm">导出 CSV</button>
-              </div>
+        <!-- Pane 3: 交易明细记录 (Trades Table) -->
+        <div class="tv-panel-pane" id="tv-panel-pane-trades">
+          <div class="trades-card" style="border: none; padding: 0;">
+            <div class="trades-card-header" style="padding-bottom: 6px;">
+              <span style="font-size: 12px; font-weight: 700;">历史交易成交明细与出场原因</span>
+              <button id="export-csv-btn" class="btn-sm" style="font-size: 11px;">导出 CSV</button>
             </div>
             <div class="table-container">
-              <table class="trades-table" id="trades-table">
+              <table class="trades-table" id="trades-table" style="font-size: 11px;">
                 <thead>
                   <tr>
                     <th>序号</th>
                     <th>类型</th>
                     <th>入场日期</th>
-                    <th>入场价格</th>
+                    <th>入场价</th>
                     <th>出场日期</th>
-                    <th>出场价格</th>
-                    <th>持仓股数</th>
-                    <th>持仓天数</th>
-                    <th>净盈亏 ($)</th>
-                    <th>收益率 (%)</th>
+                    <th>出场价</th>
+                    <th>持股</th>
+                    <th>天数</th>
+                    <th>净盈亏</th>
+                    <th>收益率</th>
                     <th>出场判定原因</th>
                   </tr>
                 </thead>
                 <tbody id="trades-table-body">
-                  <tr>
-                    <td colspan="11" class="empty-state">等待执行回测获取交易记录...</td>
-                  </tr>
+                  <tr><td colspan="11" class="empty-state">等待执行回测获取交易记录...</td></tr>
                 </tbody>
               </table>
             </div>
           </div>
         </div>
 
-        <!-- Strategy Comparison Matrix View -->
-        <div id="comparison-view" class="view-panel">
-          <div class="comparison-cards-grid" id="comparison-cards-grid">
-            <!-- Dynamically populated side-by-side cards -->
-          </div>
-
-          <!-- Overlaid Equity Curve Chart for All 3 Strategies -->
-          <div class="chart-container-card">
-            <div class="chart-header">
-              <div class="chart-title-group">
-                <h3 class="chart-title">多策略同台竞技净值曲线叠加对比 (Head-to-Head Equity Curves)</h3>
-                <div class="legend-row">
-                  <span class="legend-item"><span class="legend-line line-momentum"></span>多因子动量策略</span>
-                  <span class="legend-item"><span class="legend-line line-ml"></span>机器学习预测模型</span>
-                  <span class="legend-item"><span class="legend-line line-turtle"></span>海龟法则与网格</span>
-                  <span class="legend-item"><span class="legend-line line-chan"></span>缠论形态与中枢</span>
-                  <span class="legend-item"><span class="legend-line line-benchmark"></span>基准 (SPY/买入持有)</span>
-                </div>
-              </div>
-            </div>
-            <div class="canvas-wrapper" id="compare-equity-wrapper">
-              <canvas id="compare-equity-canvas"></canvas>
-            </div>
-          </div>
-
-          <!-- Comparison Table -->
-          <div class="trades-card">
-            <div class="trades-card-header">
-              <h3 class="trades-card-title">四大策略全维度量化指标深度对比矩阵</h3>
+        <!-- Pane 4: 四大策略对决 (Comparison View) -->
+        <div class="tv-panel-pane" id="tv-panel-pane-compare">
+          <div id="comparison-view" style="display: flex; flex-direction: column; gap: 10px;">
+            <div class="comparison-cards-grid" id="comparison-cards-grid"></div>
+            <div style="height: 180px; position: relative;" id="compare-equity-wrapper">
+              <canvas id="compare-equity-canvas" style="position: absolute; inset: 0; width: 100%; height: 100%;"></canvas>
             </div>
             <div class="table-container">
-              <table class="trades-table comparison-table" id="comparison-matrix-table">
+              <table class="trades-table comparison-table" id="comparison-matrix-table" style="font-size: 11px;">
                 <thead>
                   <tr>
                     <th>交易模型</th>
-                    <th>累计收益率</th>
-                    <th>年化收益率 (CAGR)</th>
-                    <th>夏普比率 (Sharpe)</th>
-                    <th>索提诺比率 (Sortino)</th>
-                    <th>最大回撤 (MDD)</th>
-                    <th>交易胜率</th>
+                    <th>累计收益</th>
+                    <th>年化(CAGR)</th>
+                    <th>夏普比率</th>
+                    <th>索提诺</th>
+                    <th>最大回撤</th>
+                    <th>胜率</th>
                     <th>盈亏比</th>
-                    <th>总交易笔数</th>
-                    <th>Alpha 超额收益</th>
-                    <th>Beta 系数</th>
+                    <th>总笔数</th>
+                    <th>Alpha</th>
+                    <th>Beta</th>
                   </tr>
                 </thead>
-                <tbody id="comparison-matrix-body">
-                  <!-- Generated by JS -->
-                </tbody>
+                <tbody id="comparison-matrix-body"></tbody>
               </table>
             </div>
           </div>
         </div>
-      </section>
-    </main>
+
+        <!-- Pane 5: 机器学习模型诊断 (ML Diagnostics) -->
+        <div class="tv-panel-pane" id="tv-panel-pane-ml">
+          <div id="ml-diagnostics-panel" class="diagnostics-card" style="border: none; padding: 0;">
+            <div class="card-inner-header" style="margin-bottom: 8px;">
+              <h4 class="card-inner-title" style="font-size: 12.5px;">机器学习模型诊断与特征贡献度分析</h4>
+              <div class="ml-meta-tags" id="ml-meta-tags"></div>
+            </div>
+            <div class="ml-diagnostics-grid">
+              <div class="feature-bar-list" id="feature-importance-bars"></div>
+              <div class="ml-explanation-box">
+                <div class="ml-stat-pills" style="margin-bottom: 8px;">
+                  <div class="stat-pill"><span class="p-label">准确率</span><span class="p-val" id="ml-acc-val">--</span></div>
+                  <div class="stat-pill"><span class="p-label">查准率</span><span class="p-val" id="ml-prec-val">--</span></div>
+                  <div class="stat-pill"><span class="p-label">查全率</span><span class="p-val" id="ml-rec-val">--</span></div>
+                </div>
+                <p style="font-size: 11px; line-height: 1.5; color: #64748b; margin: 0;">
+                  基于随机森林 / 梯度提升树模型拟合多周期涨跌幅、波动率、振荡器与成交量特征，动态识别特征贡献度。
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
   </div>
 
-    <!-- Modal: Add Ticker to Active Group -->
-    <div id="add-ticker-modal" class="modal-backdrop hidden">
-      <div class="modal-box">
-        <div class="modal-header">
-          <h3>添加标的至当前自选分组</h3>
-          <button id="close-add-ticker-modal-btn" class="btn-close">&times;</button>
+  <!-- Compatibility wrapper for single-strategy-view / workspace-strategy-view -->
+  <div class="hidden" id="workspace-strategy-view">
+    <div id="single-strategy-view"></div>
+    <div id="kline-workbench-grid"></div>
+  </div>
+
+  <!-- Modal: Add Ticker to Active Group -->
+  <div id="add-ticker-modal" class="modal-backdrop hidden">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>添加标的至当前自选分组</h3>
+        <button id="close-add-ticker-modal-btn" class="btn-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>当前目标分组: <strong id="modal-target-group-name" style="color:var(--accent-blue)">⭐ 我的自选</strong></p>
+        <div class="new-group-input-row">
+          <input type="text" id="modal-ticker-input" placeholder="输入股票代码 (如 PLTR, BABA, TSM, AMD)..." autocomplete="off" spellcheck="false">
+          <button id="modal-btn-confirm-add-ticker" class="btn-primary-action" style="padding:7px 16px;">确认添加</button>
         </div>
-        <div class="modal-body">
-          <p>当前目标分组: <strong id="modal-target-group-name" style="color:var(--accent-blue)">⭐ 我的自选</strong></p>
-          <div class="new-group-input-row">
-            <input type="text" id="modal-ticker-input" placeholder="输入股票代码 (如 PLTR, BABA, TSM, AMD)..." autocomplete="off" spellcheck="false">
-            <button id="modal-btn-confirm-add-ticker" class="btn-primary-action" style="padding:7px 16px;">确认添加</button>
-          </div>
-          <div style="margin-top:14px;">
-            <div style="font-size:11px; font-weight:600; color:var(--text-muted); margin-bottom:6px;">热门快速添加选项:</div>
-            <div class="quick-stock-tags" id="quick-stock-tags">
-              <span class="tag-suggestion-chip">PLTR</span>
-              <span class="tag-suggestion-chip">TSM</span>
-              <span class="tag-suggestion-chip">AMD</span>
-              <span class="tag-suggestion-chip">BABA</span>
-              <span class="tag-suggestion-chip">META</span>
-              <span class="tag-suggestion-chip">COIN</span>
-              <span class="tag-suggestion-chip">AMZN</span>
-              <span class="tag-suggestion-chip">BRK-B</span>
-              <span class="tag-suggestion-chip">SMCI</span>
-            </div>
+        <div style="margin-top:14px;">
+          <div style="font-size:11px; font-weight:600; color:var(--text-muted); margin-bottom:6px;">热门快速添加选项:</div>
+          <div class="quick-stock-tags" id="quick-stock-tags">
+            <span class="tag-suggestion-chip">PLTR</span>
+            <span class="tag-suggestion-chip">TSM</span>
+            <span class="tag-suggestion-chip">AMD</span>
+            <span class="tag-suggestion-chip">BABA</span>
+            <span class="tag-suggestion-chip">META</span>
+            <span class="tag-suggestion-chip">COIN</span>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Modal: Manage Watchlist Groups -->
-    <div id="manage-groups-modal" class="modal-backdrop hidden">
-      <div class="modal-box" style="width:620px;">
-        <div class="modal-header">
-          <h3>自选股与分组管理 (Watchlist & Groups)</h3>
-          <button id="close-manage-groups-modal-btn" class="btn-close">&times;</button>
+  <!-- Modal: Manage Watchlist Groups -->
+  <div id="manage-groups-modal" class="modal-backdrop hidden">
+    <div class="modal-box" style="width:620px;">
+      <div class="modal-header">
+        <h3>自选股与分组管理 (Watchlist & Groups)</h3>
+        <button id="close-manage-groups-modal-btn" class="btn-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="font-size:12px; font-weight:600; color:var(--text-secondary); margin-bottom:6px;">新建自定义分组:</div>
+        <div class="new-group-input-row">
+          <input type="text" id="modal-new-group-name-input" placeholder="输入新分组名称 (如: 芯片半导体 / 医药生物)...">
+          <button id="modal-btn-create-group" class="btn-primary-action" style="padding:7px 16px;">+ 创建分组</button>
         </div>
-        <div class="modal-body">
-          <div style="font-size:12px; font-weight:600; color:var(--text-secondary); margin-bottom:6px;">新建自定义分组:</div>
-          <div class="new-group-input-row">
-            <input type="text" id="modal-new-group-name-input" placeholder="输入新分组名称 (如: 芯片半导体 / 医药生物 / 观察仓)...">
-            <button id="modal-btn-create-group" class="btn-primary-action" style="padding:7px 16px;">+ 创建分组</button>
+        <div style="margin-top:18px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <span style="font-size:12px; font-weight:600; color:var(--text-secondary);">已有分组清单:</span>
+            <button id="modal-btn-reset-groups" class="btn-sm" style="color:var(--text-muted);">恢复默认分组</button>
           </div>
-
-          <div style="margin-top:18px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-              <span style="font-size:12px; font-weight:600; color:var(--text-secondary);">已有分组清单:</span>
-              <button id="modal-btn-reset-groups" class="btn-sm" style="color:var(--text-muted);">恢复默认分组</button>
-            </div>
-            <div class="group-list-box" id="modal-group-list-container">
-              <!-- Rendered dynamically -->
-            </div>
-          </div>
+          <div class="group-list-box" id="modal-group-list-container"></div>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Modal: CLI Command Helper -->
-    <div id="cli-modal" class="modal-backdrop hidden">
-      <div class="modal-box">
-        <div class="modal-header">
-          <h3>纯 Python 命令行独立运行指南</h3>
-          <button id="close-modal-btn" class="btn-close">&times;</button>
-        </div>
-        <div class="modal-body">
-          <p>您也可以随时在终端直接运行独立的纯 Python 量化回测框架，支持一键生成 ANSI 彩色绩效报表与导出 JSON：</p>
-          <div class="code-snippet-box">
-            <code id="cli-command-preview">python backtest_cli.py --ticker NVDA --strategy all --period 2y</code>
-            <button id="copy-cli-btn" class="btn-copy">复制命令</button>
-          </div>
-          <h4>可用命令行参数：</h4>
-          <ul>
-            <li><code>--ticker &lt;SYMBOL&gt;</code>: 股票代码（如 AAPL, NVDA, TSLA, SPY, QQQ）</li>
-            <li><code>--strategy &lt;momentum|ml|turtle|all&gt;</code>: 策略类型或三大策略同时对比</li>
-            <li><code>--period &lt;6mo|1y|2y|3y|5y&gt;</code>: 回测历史周期跨度</li>
-            <li><code>--capital &lt;FLOAT&gt;</code>: 初始回测账户本金</li>
-            <li><code>--export &lt;PATH.json&gt;</code>: 自动将回测结果导出为 JSON 文件</li>
-          </ul>
+  <!-- Modal: CLI Command Helper -->
+  <div id="cli-modal" class="modal-backdrop hidden">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>纯 Python 命令行独立运行指南</h3>
+        <button id="close-modal-btn" class="btn-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>您也可以随时在终端直接运行独立的纯 Python 量化回测框架：</p>
+        <div class="code-snippet-box">
+          <code id="cli-command-preview">python backtest_cli.py --ticker NVDA --strategy all --period 2y</code>
+          <button id="copy-cli-btn" class="btn-copy">复制命令</button>
         </div>
       </div>
-    <!-- Modal: Quick Settings Drawer (侧边抽屉快速调参) -->
-    <div id="quick-drawer-modal" class="quick-drawer-backdrop hidden">
-      <div class="quick-drawer-panel">
-        <div class="quick-drawer-header">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);">⚡ 动量因子权重与风控快速微调</span>
-            <span class="badge-blue" style="font-size: 10px; padding: 2px 6px;">Quick Tweak</span>
-          </div>
-          <button id="btn-close-quick-drawer" style="background: transparent; border: none; font-size: 20px; line-height: 1; cursor: pointer; color: var(--text-muted);">&times;</button>
+    </div>
+  </div>
+
+  <!-- Modal: Quick Settings Drawer -->
+  <div id="quick-drawer-modal" class="quick-drawer-backdrop hidden">
+    <div class="quick-drawer-panel">
+      <div class="quick-drawer-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);">动量因子权重与风控快速微调</span>
+          <span class="badge-blue" style="font-size: 10px; padding: 2px 6px;">Quick Tweak</span>
         </div>
-        <div class="quick-drawer-body">
-          <div style="background: #f8fafc; padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); font-size: 11px; color: var(--text-secondary);">
-            💡 在此快速调整参数并点击“应用并运行回测”将立即刷新下方图表与 IC 因子诊断；如需保存方案或切换机构预设，请访问 <a href="settings.html" style="color: #0052cc; font-weight: 600;">独立配置中心</a>。
+        <button id="btn-close-quick-drawer" style="background: transparent; border: none; font-size: 20px; line-height: 1; cursor: pointer; color: var(--text-muted);">&times;</button>
+      </div>
+      <div class="quick-drawer-body">
+        <div class="param-card">
+          <div class="form-group" style="margin-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
+              <label for="param-w-mom-12-1">12M-1M 经典截面动量</label>
+              <span id="w-mom-12-1-val" style="font-family: var(--font-mono); font-weight: 700; color: #0052cc;">30%</span>
+            </div>
+            <input type="range" id="param-w-mom-12-1" min="0.00" max="0.80" step="0.05" value="0.30" style="width: 100%;">
           </div>
-
-          <!-- Account Settings in Drawer -->
-          <div class="param-card">
-            <h4 style="font-size: 12.5px; font-weight: 700; margin: 0 0 10px 0; color: var(--text-primary);">交易账户与费率</h4>
-            <div class="form-group" style="margin-bottom: 8px;">
-              <label for="initial-capital" style="font-size: 11px;">初始资金 (USD)</label>
-              <input type="number" id="initial-capital" value="100000" step="5000" style="width: 100%;">
+          <div class="form-group" style="margin-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
+              <label for="param-w-risk-adj">特质波动率风险调整</label>
+              <span id="w-risk-adj-val" style="font-family: var(--font-mono); font-weight: 700; color: #0ea5e9;">25%</span>
             </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label for="commission-rate" style="font-size: 11px;">手续费率 (%)</label>
-                <input type="number" id="commission-rate" value="0.05" step="0.01">
-              </div>
-              <div class="form-group">
-                <label for="slippage-rate" style="font-size: 11px;">滑点比例 (%)</label>
-                <input type="number" id="slippage-rate" value="0.05" step="0.01">
-              </div>
-            </div>
+            <input type="range" id="param-w-risk-adj" min="0.00" max="0.80" step="0.05" value="0.25" style="width: 100%;">
           </div>
-
-          <!-- 5 Pillars Sliders in Drawer -->
-          <div class="param-card">
-            <h4 style="font-size: 12.5px; font-weight: 700; margin: 0 0 10px 0; color: var(--text-primary);">动量 5 大支柱权重</h4>
-            
-            <div class="form-group" style="margin-bottom: 12px;">
-              <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
-                <label for="param-w-mom-12-1">12M-1M 经典截面动量</label>
-                <span id="w-mom-12-1-val" style="font-family: var(--font-mono); font-weight: 700; color: #0052cc;">30%</span>
-              </div>
-              <input type="range" id="param-w-mom-12-1" min="0.00" max="0.80" step="0.05" value="0.30" style="width: 100%;">
+          <div class="form-group" style="margin-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
+              <label for="param-w-residual">Beta 中性化残差 Alpha</label>
+              <span id="w-residual-val" style="font-family: var(--font-mono); font-weight: 700; color: #6366f1;">20%</span>
             </div>
-
-            <div class="form-group" style="margin-bottom: 12px;">
-              <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
-                <label for="param-w-risk-adj">特质波动率风险调整</label>
-                <span id="w-risk-adj-val" style="font-family: var(--font-mono); font-weight: 700; color: #0ea5e9;">25%</span>
-              </div>
-              <input type="range" id="param-w-risk-adj" min="0.00" max="0.80" step="0.05" value="0.25" style="width: 100%;">
+            <input type="range" id="param-w-residual" min="0.00" max="0.80" step="0.05" value="0.20" style="width: 100%;">
+          </div>
+          <div class="form-group" style="margin-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
+              <label for="param-w-trend-qual">动量路径平滑度 (R²)</label>
+              <span id="w-trend-qual-val" style="font-family: var(--font-mono); font-weight: 700; color: #f59e0b;">15%</span>
             </div>
-
-            <div class="form-group" style="margin-bottom: 12px;">
-              <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
-                <label for="param-w-residual">Beta 中性化残差 Alpha</label>
-                <span id="w-residual-val" style="font-family: var(--font-mono); font-weight: 700; color: #6366f1;">20%</span>
-              </div>
-              <input type="range" id="param-w-residual" min="0.00" max="0.80" step="0.05" value="0.20" style="width: 100%;">
+            <input type="range" id="param-w-trend-qual" min="0.00" max="0.60" step="0.05" value="0.15" style="width: 100%;">
+          </div>
+          <div class="form-group">
+            <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
+              <label for="param-w-vol-confirm">量价放量协同动量</label>
+              <span id="w-vol-confirm-val" style="font-family: var(--font-mono); font-weight: 700; color: #8b5cf6;">10%</span>
             </div>
+            <input type="range" id="param-w-vol-confirm" min="0.00" max="0.60" step="0.05" value="0.10" style="width: 100%;">
+          </div>
+        </div>
 
-            <div class="form-group" style="margin-bottom: 12px;">
-              <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
-                <label for="param-w-trend-qual">动量路径平滑度 (R²)</label>
-                <span id="w-trend-qual-val" style="font-family: var(--font-mono); font-weight: 700; color: #f59e0b;">15%</span>
-              </div>
-              <input type="range" id="param-w-trend-qual" min="0.00" max="0.60" step="0.05" value="0.15" style="width: 100%;">
-            </div>
-
+        <div class="param-card">
+          <div class="checkbox-group" style="margin-bottom: 8px;">
+            <label class="checkbox-label" style="font-size: 11.5px; font-weight: 600;">
+              <input type="checkbox" id="param-use-vol-target" checked>
+              <span>动态波动率目标管理</span>
+            </label>
+          </div>
+          <div class="form-row">
             <div class="form-group">
-              <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
-                <label for="param-w-vol-confirm">量价放量协同动量</label>
-                <span id="w-vol-confirm-val" style="font-family: var(--font-mono); font-weight: 700; color: #8b5cf6;">10%</span>
-              </div>
-              <input type="range" id="param-w-vol-confirm" min="0.00" max="0.60" step="0.05" value="0.10" style="width: 100%;">
+              <label for="param-target-vol" style="font-size: 11px;">目标年化波 (%)</label>
+              <input type="number" id="param-target-vol" value="15" min="5" max="50">
+            </div>
+            <div class="form-group">
+              <label for="param-z-win" style="font-size: 11px;">Z-Score窗口 (日)</label>
+              <input type="number" id="param-z-win" value="30" min="10" max="100">
             </div>
           </div>
-
-          <!-- Vol Target & Thresholds -->
-          <div class="param-card">
-            <h4 style="font-size: 12.5px; font-weight: 700; margin: 0 0 10px 0; color: var(--text-primary);">动态波控与阈值</h4>
-            <div class="checkbox-group" style="margin-bottom: 8px;">
-              <label class="checkbox-label" style="font-size: 11.5px; font-weight: 600;">
-                <input type="checkbox" id="param-use-vol-target" checked>
-                <span>动态波动率目标管理</span>
-              </label>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="param-alpha-th" style="font-size: 11px;">开仓 Alpha 阈值</label>
+              <input type="number" id="param-alpha-th" value="0.30" min="0.10" max="1.50" step="0.05">
             </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label for="param-target-vol" style="font-size: 11px;">目标年化波 (%)</label>
-                <input type="number" id="param-target-vol" value="15" min="5" max="50">
-              </div>
-              <div class="form-group">
-                <label for="param-z-win" style="font-size: 11px;">Z-Score窗口 (日)</label>
-                <input type="number" id="param-z-win" value="30" min="10" max="100">
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label for="param-alpha-th" style="font-size: 11px;">开仓 Alpha 阈值</label>
-                <input type="number" id="param-alpha-th" value="0.30" min="0.10" max="1.50" step="0.05">
-              </div>
-              <div class="form-group">
-                <label for="param-exit-th" style="font-size: 11px;">平仓 Alpha 阈值</label>
-                <input type="number" id="param-exit-th" value="-0.20" min="-1.50" max="0.0" step="0.05">
-              </div>
+            <div class="form-group">
+              <label for="param-exit-th" style="font-size: 11px;">平仓 Alpha 阈值</label>
+              <input type="number" id="param-exit-th" value="-0.20" min="-1.50" max="0.0" step="0.05">
             </div>
           </div>
         </div>
-        <div class="quick-drawer-footer">
-          <a href="settings.html" style="font-size: 12px; font-weight: 600; color: #0052cc; text-decoration: none;">⚙️ 进入独立设置中心 &rarr;</a>
-          <button id="btn-drawer-apply-backtest" class="btn-primary-action" style="padding: 6px 14px; font-size: 12px;">应用并运行回测</button>
-        </div>
+      </div>
+      <div class="quick-drawer-footer">
+        <a href="settings.html" style="font-size: 12px; font-weight: 600; color: #0052cc; text-decoration: none;">⚙️ 进入独立设置中心 &rarr;</a>
+        <button id="btn-drawer-apply-backtest" class="btn-primary-action" style="padding: 6px 14px; font-size: 12px;">应用并运行回测</button>
       </div>
     </div>
   </div>
