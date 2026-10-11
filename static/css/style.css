@@ -4715,4 +4715,149 @@ input:checked + .slider:before {
   border-color: var(--border-dark);
 }
 
+/* ==========================================================================
+   Fluid Animations & Transitions Engine
+   1. K-Line & Chart Progressive Drawing Enhancements
+   2. Workspace View & Step Switching Transitions
+   3. Financial Metrics & Strategy Panel Cascade Micro-Interactions
+   ========================================================================== */
+
+/* 1. Workspace View Transitions */
+.view-enter-active {
+  animation: workspaceViewEnter 0.40s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes workspaceViewEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.995);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 2. Fundamentals View Cards Staggered Cascade */
+.view-enter-active .fund-hero-card {
+  animation: cardCascadeIn 0.38s 0.03s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.view-enter-active .fund-metrics-grid .fm-card:nth-child(1) {
+  animation: cardCascadeIn 0.38s 0.07s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.view-enter-active .fund-metrics-grid .fm-card:nth-child(2) {
+  animation: cardCascadeIn 0.38s 0.11s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.view-enter-active .fund-metrics-grid .fm-card:nth-child(3) {
+  animation: cardCascadeIn 0.38s 0.15s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.view-enter-active .fund-metrics-grid .fm-card:nth-child(4) {
+  animation: cardCascadeIn 0.38s 0.19s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.view-enter-active .fund-metrics-grid .fm-card:nth-child(5) {
+  animation: cardCascadeIn 0.38s 0.23s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.view-enter-active .fund-metrics-grid .fm-card:nth-child(6) {
+  animation: cardCascadeIn 0.38s 0.27s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes cardCascadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 3. Strategy Tab & Parameter Panel Switching */
+.strategy-tab-enter {
+  animation: stratTabSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes stratTabSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 4. Screener Table Waterfall Rows */
+.screener-row-enter {
+  animation: screenerRowFade 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes screenerRowFade {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 5. Metrics & Card Pulse Highlight Animation */
+.pulse-highlight {
+  animation: metricPulseGlow 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes metricPulseGlow {
+  0% {
+    background-color: rgba(0, 82, 204, 0.16);
+    transform: scale(1.02);
+  }
+  50% {
+    background-color: rgba(0, 82, 204, 0.08);
+  }
+  100% {
+    background-color: transparent;
+    transform: scale(1);
+  }
+}
+
+/* 6. Active Stock Strip & Forward Projection Badges */
+.hero-signal-badge {
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hero-signal-badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 82, 204, 0.15);
+}
+
+.brokerage-quote-banner {
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.brokerage-quote-banner:hover {
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+}
+
+/* 7. Canvas Chart Containers */
+.chart-card, .kline-chart-box, .equity-chart-box {
+  position: relative;
+  transition: box-shadow 0.25s ease;
+}
+.chart-card:hover, .kline-chart-box:hover, .equity-chart-box:hover {
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+}
+
+/* 8. Modern Navigation Buttons Interaction */
+.nav-workspace-btn {
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.nav-workspace-btn .nwb-step {
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.strat-tab {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+
 

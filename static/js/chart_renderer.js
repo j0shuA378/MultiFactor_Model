@@ -25,6 +25,10 @@ const INSTITUTIONAL_PALETTE = {
   fontSerif: "'Newsreader', Georgia, 'Times New Roman', serif"
 };
 
+function easeOutCubic(t) {
+  return 1 - Math.pow(1 - t, 3);
+}
+
 class CandlestickChart {
   constructor(canvasId, tooltipId) {
     this.canvas = document.getElementById(canvasId);
@@ -37,35 +41,87 @@ class CandlestickChart {
     this.showProjectionLines = true;
     this.padding = { top: 22, right: 86, bottom: 25, left: 15 };
     this.hoverIdx = -1;
+    this.animProgress = 1.0;
+    this.isAnimating = false;
+    this.animFrameId = null;
 
     this.setupListeners();
   }
 
-  setData(candles, signals = [], predictionLevels = null) {
+  animate(duration = 750) {
+    if (this.animFrameId) {
+      cancelAnimationFrame(this.animFrameId);
+      this.animFrameId = null;
+    }
+    const startTime = performance.now();
+    this.isAnimating = true;
+
+    const frame = (now) => {
+      const elapsed = now - startTime;
+      const t = Math.min(1, elapsed / duration);
+      const progress = easeOutCubic(t);
+      this.animProgress = progress;
+      this.render(progress);
+
+      if (t < 1) {
+        this.animFrameId = requestAnimationFrame(frame);
+      } else {
+        this.isAnimating = false;
+        this.animFrameId = null;
+        this.animProgress = 1.0;
+        this.render(1.0);
+      }
+    };
+
+    this.animFrameId = requestAnimationFrame(frame);
+  }
+
+  setData(candles, signals = [], predictionLevels = null, animate = true) {
     this.data = candles || [];
     this.signals = signals || [];
     if (predictionLevels !== null && predictionLevels !== undefined) {
       this.predictionLevels = predictionLevels;
     }
-    this.render();
+    if (animate && this.data.length > 0) {
+      this.animate(750);
+    } else {
+      this.animProgress = 1.0;
+      this.render(1.0);
+    }
   }
 
   setPredictionLevels(predictionLevels) {
     this.predictionLevels = predictionLevels;
-    this.render();
+    this.render(this.animProgress);
   }
 
   toggleProjectionLines() {
     this.showProjectionLines = !this.showProjectionLines;
-    this.render();
+    this.render(this.animProgress);
     return this.showProjectionLines;
   }
 
   setupListeners() {
     if (!this.canvas) return;
-    window.addEventListener('resize', () => this.render());
+    window.addEventListener('resize', () => {
+      if (this.animFrameId) {
+        cancelAnimationFrame(this.animFrameId);
+        this.animFrameId = null;
+        this.isAnimating = false;
+      }
+      this.animProgress = 1.0;
+      this.render(1.0);
+    });
 
     this.canvas.addEventListener('mousemove', (e) => {
+      if (this.isAnimating) {
+        if (this.animFrameId) {
+          cancelAnimationFrame(this.animFrameId);
+          this.animFrameId = null;
+        }
+        this.isAnimating = false;
+        this.animProgress = 1.0;
+      }
       const rect = this.canvas.getBoundingClientRect();
       const mouseX = e.clientX - rect.left;
       const total = this.data.length;
@@ -134,7 +190,7 @@ class CandlestickChart {
     `;
   }
 
-  render() {
+  render(progress = (this.animProgress !== undefined ? this.animProgress : 1.0)) {
     if (!this.canvas) return;
     const dpr = window.devicePixelRatio || 1;
     const width = this.canvas.clientWidth;
@@ -245,6 +301,14 @@ class CandlestickChart {
       signalMap[s.date] = s;
     }
 
+    // --- Progressive Left-to-Right Clipping Mask ---
+    const currentX = padding.left + chartWidth * Math.min(1.0, progress);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(padding.left, 0, chartWidth * Math.min(1.0, progress), height);
+    ctx.clip();
+
     // 1. Draw Bollinger Bands Area
     ctx.fillStyle = 'rgba(99, 102, 241, 0.06)';
     ctx.beginPath();
@@ -339,13 +403,56 @@ class CandlestickChart {
       y: c.sma_50 ? priceToY(c.sma_50) : null
     })), INSTITUTIONAL_PALETTE.teal, 1.8);
 
-    // 6. Draw Forward Trade Predictions & Buy Point Overlays (Cirled Area on Right)
+    ctx.restore();
+
+    // --- Dynamic Scanning Laser Beam & Price Pulse Spark ---
+    if (progress < 1.0 && progress > 0.02) {
+      const sweepX = currentX;
+      const beamW = Math.min(36, sweepX - padding.left);
+      if (beamW > 0) {
+        const beamGrad = ctx.createLinearGradient(sweepX - beamW, 0, sweepX, 0);
+        beamGrad.addColorStop(0, 'rgba(0, 82, 204, 0.00)');
+        beamGrad.addColorStop(1, 'rgba(0, 82, 204, 0.20)');
+        ctx.fillStyle = beamGrad;
+        ctx.fillRect(sweepX - beamW, padding.top, beamW, mainHeight - padding.top);
+      }
+
+      ctx.strokeStyle = 'rgba(0, 82, 204, 0.85)';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(sweepX, padding.top);
+      ctx.lineTo(sweepX, height - padding.bottom);
+      ctx.stroke();
+
+      if (n > 0) {
+        const curIdx = Math.min(n - 1, Math.max(0, Math.floor(n * progress)));
+        const sparkY = priceToY(this.data[curIdx].close);
+
+        ctx.fillStyle = 'rgba(0, 82, 204, 0.30)';
+        ctx.beginPath();
+        ctx.arc(sweepX, sparkY, 8, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#0052cc';
+        ctx.beginPath();
+        ctx.arc(sweepX, sparkY, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+    }
+
+    // 6. Draw Forward Trade Predictions & Buy Point Overlays (Animated Reveal on Right)
     if (this.predictionLevels && this.showProjectionLines && n > 0) {
-      this.drawPredictionOverlay(ctx, width, height, padding, priceToY, minPrice, maxPrice, barWidth, n);
+      if (progress >= 0.70) {
+        const predProgress = Math.min(1.0, (progress - 0.70) / 0.30);
+        this.drawPredictionOverlay(ctx, width, height, padding, priceToY, minPrice, maxPrice, barWidth, n, predProgress);
+      }
     }
 
     // 7. Crosshair if hovered
-    if (this.hoverIdx >= 0 && this.hoverIdx < n) {
+    if (!this.isAnimating && this.hoverIdx >= 0 && this.hoverIdx < n) {
       const hx = padding.left + this.hoverIdx * barWidth + barWidth / 2;
       const hc = this.data[this.hoverIdx];
       const hy = priceToY(hc.close);
@@ -362,7 +469,12 @@ class CandlestickChart {
     }
   }
 
-  drawPredictionOverlay(ctx, width, height, padding, priceToY, minPrice, maxPrice, barWidth, n) {
+  drawPredictionOverlay(ctx, width, height, padding, priceToY, minPrice, maxPrice, barWidth, n, predProgress = 1.0) {
+    if (predProgress <= 0) return;
+    ctx.save();
+    ctx.globalAlpha = Math.min(1.0, Math.max(0, predProgress));
+    const slideOffset = (1.0 - predProgress) * 20;
+
     const pred = this.predictionLevels;
     const cLast = this.data[n - 1];
     const xLast = padding.left + (n - 1) * barWidth + barWidth / 2;
@@ -402,7 +514,7 @@ class CandlestickChart {
       ctx.stroke();
       ctx.setLineDash([]);
 
-      this.drawAxisBadge(ctx, rightEdge + 3, yBuy, `🟢买点 $${buyPrice.toFixed(2)}`, '#16a34a');
+      this.drawAxisBadge(ctx, rightEdge + 3 + slideOffset, yBuy, `🟢买点 $${buyPrice.toFixed(2)}`, '#16a34a');
     }
 
     // 3. Target Profit Horizontal Line
@@ -417,7 +529,7 @@ class CandlestickChart {
       ctx.stroke();
       ctx.setLineDash([]);
 
-      this.drawAxisBadge(ctx, rightEdge + 3, yTp, `🎯止盈 $${tpPrice.toFixed(2)}`, '#0284c7');
+      this.drawAxisBadge(ctx, rightEdge + 3 + slideOffset, yTp, `🎯止盈 $${tpPrice.toFixed(2)}`, '#0284c7');
     }
 
     // 4. Stop Loss Horizontal Line
@@ -432,7 +544,7 @@ class CandlestickChart {
       ctx.stroke();
       ctx.setLineDash([]);
 
-      this.drawAxisBadge(ctx, rightEdge + 3, ySl, `🛡️止损 $${slPrice.toFixed(2)}`, '#dc2626');
+      this.drawAxisBadge(ctx, rightEdge + 3 + slideOffset, ySl, `🛡️止损 $${slPrice.toFixed(2)}`, '#dc2626');
     }
 
     // 5. Future 5-Day Forward Forecast Cone & Arrow Trajectory
@@ -471,6 +583,8 @@ class CandlestickChart {
     ctx.fillStyle = '#0f172a';
     ctx.textAlign = 'right';
     ctx.fillText('✦ 5日预期通道', futureX - 6, targetY - 6);
+
+    ctx.restore();
   }
 
   drawAxisBadge(ctx, x, y, text, bgColor) {
@@ -529,20 +643,72 @@ class EquityChart {
     this.records = [];
     this.padding = { top: 20, right: 75, bottom: 25, left: 20 };
     this.hoverIdx = -1;
+    this.animProgress = 1.0;
+    this.isAnimating = false;
+    this.animFrameId = null;
 
     this.setupListeners();
   }
 
-  setData(records) {
+  animate(duration = 750) {
+    if (this.animFrameId) {
+      cancelAnimationFrame(this.animFrameId);
+      this.animFrameId = null;
+    }
+    const startTime = performance.now();
+    this.isAnimating = true;
+
+    const frame = (now) => {
+      const elapsed = now - startTime;
+      const t = Math.min(1, elapsed / duration);
+      const progress = easeOutCubic(t);
+      this.animProgress = progress;
+      this.render(progress);
+
+      if (t < 1) {
+        this.animFrameId = requestAnimationFrame(frame);
+      } else {
+        this.isAnimating = false;
+        this.animFrameId = null;
+        this.animProgress = 1.0;
+        this.render(1.0);
+      }
+    };
+
+    this.animFrameId = requestAnimationFrame(frame);
+  }
+
+  setData(records, animate = true) {
     this.records = records || [];
-    this.render();
+    if (animate && this.records.length > 0) {
+      this.animate(750);
+    } else {
+      this.animProgress = 1.0;
+      this.render(1.0);
+    }
   }
 
   setupListeners() {
     if (!this.canvas) return;
-    window.addEventListener('resize', () => this.render());
+    window.addEventListener('resize', () => {
+      if (this.animFrameId) {
+        cancelAnimationFrame(this.animFrameId);
+        this.animFrameId = null;
+        this.isAnimating = false;
+      }
+      this.animProgress = 1.0;
+      this.render(1.0);
+    });
 
     this.canvas.addEventListener('mousemove', (e) => {
+      if (this.isAnimating) {
+        if (this.animFrameId) {
+          cancelAnimationFrame(this.animFrameId);
+          this.animFrameId = null;
+        }
+        this.isAnimating = false;
+        this.animProgress = 1.0;
+      }
       const rect = this.canvas.getBoundingClientRect();
       const mouseX = e.clientX - rect.left;
       const total = this.records.length;
@@ -556,14 +722,14 @@ class EquityChart {
       const idx = Math.max(0, Math.min(total - 1, Math.round((mouseX - paddingLeft) / stepX)));
       if (idx >= 0 && idx < total) {
         this.hoverIdx = idx;
-        this.render();
+        this.render(1.0);
         this.updateTooltip(this.records[idx]);
       }
     });
 
     this.canvas.addEventListener('mouseleave', () => {
       this.hoverIdx = -1;
-      this.render();
+      this.render(1.0);
       if (this.tooltipEl) {
         this.tooltipEl.textContent = "多因子投资组合净值走势与动态基准对比";
       }
@@ -584,7 +750,7 @@ class EquityChart {
     `;
   }
 
-  render() {
+  render(progress = (this.animProgress !== undefined ? this.animProgress : 1.0)) {
     if (!this.canvas) return;
     const dpr = window.devicePixelRatio || 1;
     const width = this.canvas.clientWidth;
@@ -660,6 +826,14 @@ class EquityChart {
     const n = this.records.length;
     const stepX = chartWidth / (n - 1 || 1);
 
+    // --- Progressive Left-to-Right Clipping Mask ---
+    const currentX = padding.left + chartWidth * Math.min(1.0, progress);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(padding.left, 0, chartWidth * Math.min(1.0, progress), height);
+    ctx.clip();
+
     // 1. Draw Benchmark Line (Muted Institutional Slate)
     ctx.strokeStyle = INSTITUTIONAL_PALETTE.grayLight;
     ctx.lineWidth = 1.8;
@@ -703,8 +877,49 @@ class EquityChart {
     }
     ctx.stroke();
 
+    ctx.restore();
+
+    // --- Dynamic Scanning Guide & Leading Tracer Pulse Dot ---
+    if (progress < 1.0 && progress > 0.02 && n > 0) {
+      const sweepX = currentX;
+      const sweepIdx = Math.min(n - 1, Math.max(0, Math.floor((n - 1) * progress)));
+      const curEquity = this.records[sweepIdx].equity;
+      const dotY = valToY(curEquity);
+
+      const beamW = Math.min(32, sweepX - padding.left);
+      if (beamW > 0) {
+        const beamGrad = ctx.createLinearGradient(sweepX - beamW, 0, sweepX, 0);
+        beamGrad.addColorStop(0, 'rgba(0, 82, 204, 0.00)');
+        beamGrad.addColorStop(1, 'rgba(0, 82, 204, 0.16)');
+        ctx.fillStyle = beamGrad;
+        ctx.fillRect(sweepX - beamW, padding.top, beamW, chartHeight);
+      }
+
+      ctx.strokeStyle = 'rgba(0, 82, 204, 0.7)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(sweepX, padding.top);
+      ctx.lineTo(sweepX, height - padding.bottom);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = 'rgba(0, 82, 204, 0.25)';
+      ctx.beginPath();
+      ctx.arc(sweepX, dotY, 9, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = INSTITUTIONAL_PALETTE.blue;
+      ctx.beginPath();
+      ctx.arc(sweepX, dotY, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+
     // 4. Crosshair indicator
-    if (this.hoverIdx >= 0 && this.hoverIdx < n) {
+    if (!this.isAnimating && this.hoverIdx >= 0 && this.hoverIdx < n) {
       const hx = padding.left + this.hoverIdx * stepX;
       const hy = valToY(this.records[this.hoverIdx].equity);
 
@@ -732,15 +947,55 @@ class MultiEquityChart {
     this.ctx = this.canvas.getContext('2d');
     this.seriesList = [];
     this.padding = { top: 20, right: 75, bottom: 25, left: 20 };
-    window.addEventListener('resize', () => this.render());
+    this.animProgress = 1.0;
+    this.isAnimating = false;
+    this.animFrameId = null;
+
+    window.addEventListener('resize', () => {
+      this.animProgress = 1.0;
+      this.render(1.0);
+    });
   }
 
-  setSeries(seriesList) {
+  animate(duration = 800) {
+    if (this.animFrameId) {
+      cancelAnimationFrame(this.animFrameId);
+      this.animFrameId = null;
+    }
+    const startTime = performance.now();
+    this.isAnimating = true;
+
+    const frame = (now) => {
+      const elapsed = now - startTime;
+      const t = Math.min(1, elapsed / duration);
+      const progress = easeOutCubic(t);
+      this.animProgress = progress;
+      this.render(progress);
+
+      if (t < 1) {
+        this.animFrameId = requestAnimationFrame(frame);
+      } else {
+        this.isAnimating = false;
+        this.animFrameId = null;
+        this.animProgress = 1.0;
+        this.render(1.0);
+      }
+    };
+
+    this.animFrameId = requestAnimationFrame(frame);
+  }
+
+  setSeries(seriesList, animate = true) {
     this.seriesList = seriesList || [];
-    this.render();
+    if (animate && this.seriesList.length > 0) {
+      this.animate(800);
+    } else {
+      this.animProgress = 1.0;
+      this.render(1.0);
+    }
   }
 
-  render() {
+  render(progress = (this.animProgress !== undefined ? this.animProgress : 1.0)) {
     if (!this.canvas) return;
     const dpr = window.devicePixelRatio || 1;
     const width = this.canvas.clientWidth;
@@ -764,7 +1019,6 @@ class MultiEquityChart {
     let minVal = Infinity;
     let maxVal = -Infinity;
 
-    // Collect and sort all unique dates across series to build a unified chronological timeline
     const dateSet = new Set();
     for (const s of this.seriesList) {
       for (const pt of (s.data || [])) {
@@ -813,6 +1067,12 @@ class MultiEquityChart {
       ctx.fillText(`$${(v / 1000).toFixed(1)}k`, width - padding.right + 8, y + 4);
     }
 
+    // --- Progressive Left-to-Right Clipping Mask ---
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(padding.left, 0, chartWidth * Math.min(1.0, progress), height);
+    ctx.clip();
+
     // Draw each series accurately aligned by date
     for (const s of this.seriesList) {
       const pts = s.data || [];
@@ -840,6 +1100,20 @@ class MultiEquityChart {
       ctx.stroke();
       ctx.setLineDash([]);
     }
+
+    ctx.restore();
+
+    if (progress < 1.0 && progress > 0.02) {
+      const sweepX = padding.left + chartWidth * progress;
+      ctx.strokeStyle = 'rgba(0, 82, 204, 0.6)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(sweepX, padding.top);
+      ctx.lineTo(sweepX, height - padding.bottom);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
   }
 }
 
@@ -851,19 +1125,67 @@ class RollingICChart {
     this.data = [];
     this.overallIC = 0.0;
     this.hoverIdx = -1;
-    window.addEventListener('resize', () => this.render());
+    this.animProgress = 1.0;
+    this.isAnimating = false;
+    this.animFrameId = null;
+
+    window.addEventListener('resize', () => {
+      this.animProgress = 1.0;
+      this.render(1.0);
+    });
     this.setupListeners();
   }
 
-  setData(data, overallIC = 0.0) {
+  animate(duration = 700) {
+    if (this.animFrameId) {
+      cancelAnimationFrame(this.animFrameId);
+      this.animFrameId = null;
+    }
+    const startTime = performance.now();
+    this.isAnimating = true;
+
+    const frame = (now) => {
+      const elapsed = now - startTime;
+      const t = Math.min(1, elapsed / duration);
+      const progress = easeOutCubic(t);
+      this.animProgress = progress;
+      this.render(progress);
+
+      if (t < 1) {
+        this.animFrameId = requestAnimationFrame(frame);
+      } else {
+        this.isAnimating = false;
+        this.animFrameId = null;
+        this.animProgress = 1.0;
+        this.render(1.0);
+      }
+    };
+
+    this.animFrameId = requestAnimationFrame(frame);
+  }
+
+  setData(data, overallIC = 0.0, animate = true) {
     this.data = data || [];
     this.overallIC = overallIC;
-    this.render();
+    if (animate && this.data.length > 0) {
+      this.animate(700);
+    } else {
+      this.animProgress = 1.0;
+      this.render(1.0);
+    }
   }
 
   setupListeners() {
     if (!this.canvas) return;
     this.canvas.addEventListener('mousemove', (e) => {
+      if (this.isAnimating) {
+        if (this.animFrameId) {
+          cancelAnimationFrame(this.animFrameId);
+          this.animFrameId = null;
+        }
+        this.isAnimating = false;
+        this.animProgress = 1.0;
+      }
       const rect = this.canvas.getBoundingClientRect();
       const mouseX = e.clientX - rect.left;
       const total = this.data.length;
@@ -877,17 +1199,17 @@ class RollingICChart {
       const idx = Math.round((mouseX - paddingLeft) / stepX);
       if (idx >= 0 && idx < total) {
         this.hoverIdx = idx;
-        this.render();
+        this.render(1.0);
       }
     });
 
     this.canvas.addEventListener('mouseleave', () => {
       this.hoverIdx = -1;
-      this.render();
+      this.render(1.0);
     });
   }
 
-  render() {
+  render(progress = (this.animProgress !== undefined ? this.animProgress : 1.0)) {
     if (!this.canvas) return;
     const dpr = window.devicePixelRatio || 1;
     const width = this.canvas.clientWidth;
@@ -954,19 +1276,25 @@ class RollingICChart {
     ctx.lineTo(width - padding.right, zeroY);
     ctx.stroke();
 
-    // 3. Positive / Negative Bars (Institutional Green & Red)
+    // 3. Positive / Negative Bars with growing height animation
+    const barProgress = Math.min(1.0, progress * 1.25);
     for (let i = 0; i < n; i++) {
       const x = padding.left + i * stepX;
-      const v = this.data[i].ic;
+      const v = this.data[i].ic * barProgress;
       const y = valToY(v);
-      const isPos = v >= 0;
+      const isPos = this.data[i].ic >= 0;
 
       const barW = Math.max(2, (chartWidth / n) * 0.7);
       ctx.fillStyle = isPos ? 'rgba(22, 163, 74, 0.65)' : 'rgba(220, 38, 38, 0.65)';
       ctx.fillRect(x - barW / 2, Math.min(y, zeroY), barW, Math.abs(y - zeroY));
     }
 
-    // 4. Smooth trend line (Invesco Navy-Blue)
+    // 4. Smooth trend line (clipped left to right)
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(padding.left, 0, chartWidth * Math.min(1.0, progress), height);
+    ctx.clip();
+
     ctx.strokeStyle = INSTITUTIONAL_PALETTE.blue;
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -977,6 +1305,8 @@ class RollingICChart {
       else ctx.lineTo(x, y);
     }
     ctx.stroke();
+
+    ctx.restore();
 
     // 5. Mean IC dashed benchmark line (Warm Amber)
     const meanY = valToY(this.overallIC);
@@ -992,7 +1322,7 @@ class RollingICChart {
     ctx.fillText(`均值: ${this.overallIC >= 0 ? '+' : ''}${this.overallIC.toFixed(3)}`, padding.left + 5, meanY - 4);
 
     // 6. Hover indicator
-    if (this.hoverIdx >= 0 && this.hoverIdx < n) {
+    if (!this.isAnimating && this.hoverIdx >= 0 && this.hoverIdx < n) {
       const item = this.data[this.hoverIdx];
       const hx = padding.left + this.hoverIdx * stepX;
       const hy = valToY(item.ic);

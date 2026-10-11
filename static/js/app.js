@@ -1887,24 +1887,32 @@ function switchStrategy(strat, triggerAnalysis = true) {
     assStratPill.textContent = `当前策略: ${getStrategyDisplayName(state.strategy)}`;
   }
 
-  // Switch parameter cards
+  // Switch parameter cards with slide-fade transition
   const groupMomentum = document.getElementById('params-momentum');
   const groupML = document.getElementById('params-ml');
   const groupTurtle = document.getElementById('params-turtle');
   const heading = document.getElementById('param-card-heading');
+
+  const activateParamGroup = (el) => {
+    if (!el) return;
+    el.classList.remove('hidden');
+    el.classList.remove('strategy-tab-enter');
+    void el.offsetWidth;
+    el.classList.add('strategy-tab-enter');
+  };
 
   if (groupMomentum) groupMomentum.classList.add('hidden');
   if (groupML) groupML.classList.add('hidden');
   if (groupTurtle) groupTurtle.classList.add('hidden');
 
   if (strat === 'momentum') {
-    if (groupMomentum) groupMomentum.classList.remove('hidden');
+    if (groupMomentum) activateParamGroup(groupMomentum);
     if (heading) heading.textContent = '多因子动量模型参数';
   } else if (strat === 'ml') {
-    if (groupML) groupML.classList.remove('hidden');
+    if (groupML) activateParamGroup(groupML);
     if (heading) heading.textContent = '机器学习预测模型参数';
   } else if (strat === 'turtle') {
-    if (groupTurtle) groupTurtle.classList.remove('hidden');
+    if (groupTurtle) activateParamGroup(groupTurtle);
     if (heading) heading.textContent = '海龟法则与网格风控参数';
   } else if (strat === 'chan') {
     if (heading) heading.textContent = '缠论形态与中枢参数设定';
@@ -1919,13 +1927,29 @@ function switchStrategy(strat, triggerAnalysis = true) {
 
   if (strat === 'compare') {
     if (singleView) singleView.classList.add('hidden');
-    if (compareView) compareView.classList.remove('hidden');
+    if (compareView) {
+      compareView.classList.remove('hidden');
+      compareView.classList.remove('strategy-tab-enter');
+      void compareView.offsetWidth;
+      compareView.classList.add('strategy-tab-enter');
+    }
   } else {
-    if (singleView) singleView.classList.remove('hidden');
+    if (singleView) {
+      singleView.classList.remove('hidden');
+      singleView.classList.remove('strategy-tab-enter');
+      void singleView.offsetWidth;
+      singleView.classList.add('strategy-tab-enter');
+    }
     if (compareView) compareView.classList.add('hidden');
     if (mlDiag) {
-      if (strat === 'ml') mlDiag.classList.remove('hidden');
-      else mlDiag.classList.add('hidden');
+      if (strat === 'ml') {
+        mlDiag.classList.remove('hidden');
+        mlDiag.classList.remove('strategy-tab-enter');
+        void mlDiag.offsetWidth;
+        mlDiag.classList.add('strategy-tab-enter');
+      } else {
+        mlDiag.classList.add('hidden');
+      }
     }
   }
 
@@ -2043,28 +2067,38 @@ function switchWorkspaceView(viewName) {
     }
   });
 
-  // 2. Hide/Show views
+  // 2. Hide/Show views with smooth page transition animations
   const screenerView = document.getElementById('workspace-screener-view');
   const fundamentalsView = document.getElementById('workspace-fundamentals-view');
   const strategyView = document.getElementById('workspace-strategy-view');
   const ribbonBar = document.getElementById('market-ribbon-bar');
 
-  if (screenerView) screenerView.classList.add('hidden');
-  if (fundamentalsView) fundamentalsView.classList.add('hidden');
-  if (strategyView) strategyView.classList.add('hidden');
+  [screenerView, fundamentalsView, strategyView].forEach(v => {
+    if (v) {
+      v.classList.remove('view-enter-active');
+      v.classList.add('hidden');
+    }
+  });
+
+  const activateTargetView = (v) => {
+    if (!v) return;
+    v.classList.remove('hidden');
+    void v.offsetWidth; // Force reflow to replay CSS workspaceViewEnter keyframes
+    v.classList.add('view-enter-active');
+  };
 
   if (viewName === 'screener') {
-    if (screenerView) screenerView.classList.remove('hidden');
+    activateTargetView(screenerView);
     if (ribbonBar) ribbonBar.classList.add('hidden');
     loadScreenerData(state.screenerCategory || 'all');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   } else if (viewName === 'fundamentals') {
-    if (fundamentalsView) fundamentalsView.classList.remove('hidden');
+    activateTargetView(fundamentalsView);
     if (ribbonBar) ribbonBar.classList.remove('hidden');
     loadStockFundamentals(state.ticker);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   } else if (viewName === 'strategy') {
-    if (strategyView) strategyView.classList.remove('hidden');
+    activateTargetView(strategyView);
     if (ribbonBar) ribbonBar.classList.remove('hidden');
     if (state.strategy === 'compare') {
       switchStrategy('momentum', true);
@@ -2073,12 +2107,22 @@ function switchWorkspaceView(viewName) {
       const compareView = document.getElementById('comparison-view');
       if (singleView) singleView.classList.remove('hidden');
       if (compareView) compareView.classList.add('hidden');
+      // Re-trigger dynamic drawing animation when switching into strategy view
+      if (klineChart && klineChart.data && klineChart.data.length) {
+        klineChart.animate(700);
+      }
+      if (equityChart && equityChart.records && equityChart.records.length) {
+        equityChart.animate(700);
+      }
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   } else if (viewName === 'compare') {
-    if (strategyView) strategyView.classList.remove('hidden');
+    activateTargetView(strategyView);
     if (ribbonBar) ribbonBar.classList.remove('hidden');
     switchStrategy('compare', true);
+    if (compareEquityChart && compareEquityChart.seriesList && compareEquityChart.seriesList.length) {
+      compareEquityChart.animate(800);
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }
@@ -2380,11 +2424,12 @@ function renderScreenerTable() {
     return;
   }
 
-  tbody.innerHTML = list.map(stock => {
+  tbody.innerHTML = list.map((stock, idx) => {
     const isPos = stock.change_pct >= 0;
     const isUp = (stock.target_upside_pct || 0) >= 0;
+    const delay = Math.min(idx * 0.025, 0.40);
     return `
-      <tr data-symbol="${stock.symbol}">
+      <tr data-symbol="${stock.symbol}" class="screener-row-enter" style="animation-delay: ${delay}s;">
         <td>
           <div class="st-ticker-cell">
             <div class="st-sym-row">
@@ -3143,6 +3188,13 @@ function renderTradePredictionDock(pred) {
 
   const guidance = document.getElementById('dock-guidance-text');
   if (guidance) guidance.textContent = pred.guidance_text || '';
+
+  const dockCard = document.querySelector('.brokerage-prediction-card');
+  if (dockCard) {
+    dockCard.classList.remove('pulse-highlight');
+    void dockCard.offsetWidth;
+    dockCard.classList.add('pulse-highlight');
+  }
 }
 
 async function runComparison() {
@@ -3218,6 +3270,29 @@ async function runComparison() {
   showStatus(`三大策略横向对决回测完成 · ${state.ticker}`);
 }
 
+function animateKPIValue(el, targetVal, formatFn, duration = 650) {
+  if (!el || typeof targetVal !== 'number' || isNaN(targetVal)) {
+    if (el && typeof formatFn === 'function') el.textContent = formatFn(targetVal || 0);
+    return;
+  }
+  const startVal = parseFloat(el.dataset.rawVal) || 0;
+  el.dataset.rawVal = targetVal;
+  const startTime = performance.now();
+  function step(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const ease = 1 - Math.pow(1 - progress, 3);
+    const current = startVal + (targetVal - startVal) * ease;
+    el.textContent = formatFn(current);
+    if (progress < 1) {
+      requestAnimationFrame(step);
+    } else {
+      el.textContent = formatFn(targetVal);
+    }
+  }
+  requestAnimationFrame(step);
+}
+
 function renderKPIs(m) {
   if (!m) return;
   const _n = (val, d = 2) => (typeof val === 'number' && !isNaN(val)) ? val.toFixed(d) : '0.00';
@@ -3229,32 +3304,63 @@ function renderKPIs(m) {
 
   if (kpiReturn) {
     const retVal = typeof m.total_return_pct === 'number' ? m.total_return_pct : 0.0;
-    kpiReturn.textContent = `${_s(retVal)}${_n(retVal)}%`;
+    animateKPIValue(kpiReturn, retVal, (v) => `${_s(v)}${_n(v)}%`, 700);
     kpiReturn.className = `kpi-value ${retVal >= 0 ? 'positive' : 'negative'}`;
   }
-  if (kpiCagr) kpiCagr.textContent = `CAGR ${_s(m.cagr_pct)}${_n(m.cagr_pct)}%`;
-  if (kpiBench) kpiBench.textContent = `基准 (买入持有): ${_s(m.benchmark_return_pct)}${_n(m.benchmark_return_pct)}%`;
+  if (kpiCagr) {
+    const cVal = typeof m.cagr_pct === 'number' ? m.cagr_pct : 0.0;
+    animateKPIValue(kpiCagr, cVal, (v) => `CAGR ${_s(v)}${_n(v)}%`, 700);
+  }
+  if (kpiBench) {
+    const bVal = typeof m.benchmark_return_pct === 'number' ? m.benchmark_return_pct : 0.0;
+    animateKPIValue(kpiBench, bVal, (v) => `基准 (买入持有): ${_s(v)}${_n(v)}%`, 700);
+  }
 
   const kpiSharpe = document.getElementById('kpi-sharpe');
-  if (kpiSharpe) kpiSharpe.textContent = _n(m.sharpe_ratio);
+  if (kpiSharpe) {
+    const sVal = typeof m.sharpe_ratio === 'number' ? m.sharpe_ratio : 0.0;
+    animateKPIValue(kpiSharpe, sVal, (v) => _n(v), 700);
+  }
   const kpiSortino = document.getElementById('kpi-sortino');
-  if (kpiSortino) kpiSortino.textContent = `Sortino ${_n(m.sortino_ratio)}`;
+  if (kpiSortino) {
+    const soVal = typeof m.sortino_ratio === 'number' ? m.sortino_ratio : 0.0;
+    animateKPIValue(kpiSortino, soVal, (v) => `Sortino ${_n(v)}`, 700);
+  }
   const kpiVol = document.getElementById('kpi-volatility');
   if (kpiVol) kpiVol.textContent = `年化总波动率: ${_n(m.annual_volatility_pct)}%`;
 
   const kpiMdd = document.getElementById('kpi-mdd');
-  if (kpiMdd) kpiMdd.textContent = `-${_n(m.max_drawdown_pct)}%`;
+  if (kpiMdd) {
+    const mVal = typeof m.max_drawdown_pct === 'number' ? m.max_drawdown_pct : 0.0;
+    animateKPIValue(kpiMdd, mVal, (v) => `-${_n(v)}%`, 700);
+  }
   const kpiCalmar = document.getElementById('kpi-calmar');
-  if (kpiCalmar) kpiCalmar.textContent = `Calmar ${_n(m.calmar_ratio)}`;
+  if (kpiCalmar) {
+    const calVal = typeof m.calmar_ratio === 'number' ? m.calmar_ratio : 0.0;
+    animateKPIValue(kpiCalmar, calVal, (v) => `Calmar ${_n(v)}`, 700);
+  }
   const kpiAlphaBeta = document.getElementById('kpi-alpha-beta');
   if (kpiAlphaBeta) kpiAlphaBeta.textContent = `Alpha: ${_s(m.alpha_pct)}${_n(m.alpha_pct)}% · Beta: ${_n(m.beta)}`;
 
   const kpiWin = document.getElementById('kpi-winrate');
-  if (kpiWin) kpiWin.textContent = `${_n(m.win_rate_pct, 1)}%`;
+  if (kpiWin) {
+    const winVal = typeof m.win_rate_pct === 'number' ? m.win_rate_pct : 0.0;
+    animateKPIValue(kpiWin, winVal, (v) => `${_n(v, 1)}%`, 700);
+  }
   const kpiPf = document.getElementById('kpi-profit-factor');
-  if (kpiPf) kpiPf.textContent = `盈亏比 ${_n(m.profit_factor)}`;
+  if (kpiPf) {
+    const pfVal = typeof m.profit_factor === 'number' ? m.profit_factor : 0.0;
+    animateKPIValue(kpiPf, pfVal, (v) => `盈亏比 ${_n(v)}`, 700);
+  }
   const kpiTrades = document.getElementById('kpi-trades-count');
   if (kpiTrades) kpiTrades.textContent = `总交易: ${m.total_trades || 0} 笔 (胜 ${m.winning_trades || 0} / 负 ${m.losing_trades || 0})`;
+
+  // Pulsing glow animation on KPI cards
+  document.querySelectorAll('.kpi-card').forEach(card => {
+    card.classList.remove('pulse-highlight');
+    void card.offsetWidth;
+    card.classList.add('pulse-highlight');
+  });
 }
 
 function renderFactorDiagnostics(meta, metrics) {
