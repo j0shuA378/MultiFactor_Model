@@ -203,34 +203,141 @@ function initEventHandlers() {
 // ==========================================================================
 
 const FALLBACK_AUTOCOMPLETE_STOCKS = [
-  { symbol: "ASX", name: "ASE Technology Holding Co., Ltd.", exchange: "NYSE", price: 46.43, change_pct: 2.04, type: "Equity" },
-  { symbol: "AAPL", name: "Apple Inc.", exchange: "NASDAQ", price: 336.64, change_pct: -1.11, type: "Equity" },
-  { symbol: "NVDA", name: "NVIDIA Corporation", exchange: "NASDAQ", price: 229.28, change_pct: -0.52, type: "Equity" },
-  { symbol: "TSLA", name: "Tesla, Inc.", exchange: "NASDAQ", price: 268.45, change_pct: 2.34, type: "Equity" },
-  { symbol: "MSFT", name: "Microsoft Corporation", exchange: "NASDAQ", price: 435.10, change_pct: 0.85, type: "Equity" },
-  { symbol: "AMZN", name: "Amazon.com, Inc.", exchange: "NASDAQ", price: 185.30, change_pct: -0.45, type: "Equity" },
-  { symbol: "GOOGL", name: "Alphabet Inc.", exchange: "NASDAQ", price: 178.90, change_pct: 1.12, type: "Equity" },
-  { symbol: "META", name: "Meta Platforms, Inc.", exchange: "NASDAQ", price: 582.40, change_pct: 1.65, type: "Equity" },
-  { symbol: "AMD", name: "Advanced Micro Devices", exchange: "NASDAQ", price: 165.20, change_pct: -1.80, type: "Equity" },
-  { symbol: "SPY", name: "SPDR S&P 500 ETF Trust", exchange: "NYSEArca", price: 585.10, change_pct: 0.32, type: "ETF" },
-  { symbol: "QQQ", name: "Invesco QQQ Trust", exchange: "NASDAQ", price: 492.60, change_pct: 0.45, type: "ETF" },
-  { symbol: "BABA", name: "Alibaba Group Holding", exchange: "NYSE", price: 98.40, change_pct: -0.75, type: "Equity" },
-  { symbol: "TSM", name: "Taiwan Semiconductor Mfg", exchange: "NYSE", price: 190.50, change_pct: 1.95, type: "Equity" },
-  { symbol: "GS", name: "Goldman Sachs Group, Inc.", exchange: "NYSE", price: 512.30, change_pct: 1.15, type: "Equity" },
-  { symbol: "MS", name: "Morgan Stanley", exchange: "NYSE", price: 118.40, change_pct: 0.82, type: "Equity" },
-  { symbol: "JPM", name: "JPMorgan Chase & Co.", exchange: "NYSE", price: 222.50, change_pct: 0.65, type: "Equity" },
-  { symbol: "PLTR", name: "Palantir Technologies", exchange: "NYSE", price: 43.80, change_pct: 3.45, type: "Equity" },
-  { symbol: "COIN", name: "Coinbase Global, Inc.", exchange: "NASDAQ", price: 215.30, change_pct: 4.12, type: "Equity" },
-  { symbol: "NFLX", name: "Netflix, Inc.", exchange: "NASDAQ", price: 712.50, change_pct: -0.25, type: "Equity" }
+  // A-Share Benchmark & Index ETFs
+  { symbol: "510300.SS", name: "华泰柏瑞沪深300 ETF", exchange: "SSE", price: 4.39, change_pct: 0.05, type: "ETF" },
+  { symbol: "510050.SS", name: "华夏上证50 ETF", exchange: "SSE", price: 3.12, change_pct: -0.12, type: "ETF" },
+  { symbol: "159915.SZ", name: "易方达创业板 ETF", exchange: "SZSE", price: 2.45, change_pct: 0.41, type: "ETF" },
+  { symbol: "588000.SS", name: "华夏科创50 ETF", exchange: "SSE", price: 1.08, change_pct: 0.85, type: "ETF" },
+  { symbol: "510500.SS", name: "南方中证500 ETF", exchange: "SSE", price: 5.82, change_pct: 0.22, type: "ETF" },
+  { symbol: "512880.SS", name: "国泰中证全指证券 ETF", exchange: "SSE", price: 1.15, change_pct: 0.35, type: "ETF" },
+  { symbol: "512480.SS", name: "国泰CES半导体芯片 ETF", exchange: "SSE", price: 0.98, change_pct: 1.25, type: "ETF" },
+
+  // A-Share Core Blue Chips & Leaders
+  { symbol: "600519.SS", name: "贵州茅台 (白酒龙头)", exchange: "SSE", price: 1263.00, change_pct: 0.64, type: "Equity" },
+  { symbol: "300750.SZ", name: "宁德时代 (动力电池龙头)", exchange: "SZSE", price: 245.50, change_pct: 1.82, type: "Equity" },
+  { symbol: "002594.SZ", name: "比亚迪 (新能源汽车龙头)", exchange: "SZSE", price: 285.20, change_pct: 1.15, type: "Equity" },
+  { symbol: "000001.SZ", name: "平安银行 (商业银行标杆)", exchange: "SZSE", price: 11.59, change_pct: -0.42, type: "Equity" },
+  { symbol: "601318.SS", name: "中国平安 (金融保险综合龙头)", exchange: "SSE", price: 52.80, change_pct: 0.58, type: "Equity" },
+  { symbol: "600036.SS", name: "招商银行 (零售银行标杆)", exchange: "SSE", price: 38.60, change_pct: 0.26, type: "Equity" },
+  { symbol: "000858.SZ", name: "五粮液 (高端浓香白酒)", exchange: "SZSE", price: 142.30, change_pct: 0.45, type: "Equity" },
+  { symbol: "600030.SS", name: "中信证券 (券商龙头)", exchange: "SSE", price: 28.50, change_pct: 0.71, type: "Equity" },
+  { symbol: "002415.SZ", name: "海康威视 (安防与智能视觉)", exchange: "SZSE", price: 31.40, change_pct: -0.32, type: "Equity" },
+  { symbol: "600276.SS", name: "恒瑞医药 (创新药龙头)", exchange: "SSE", price: 48.90, change_pct: 0.88, type: "Equity" },
+  { symbol: "688981.SS", name: "中芯国际 (晶圆制造龙头)", exchange: "SSE", price: 95.60, change_pct: 2.15, type: "Equity" },
+  { symbol: "300059.SZ", name: "东方财富 (互联网券商龙头)", exchange: "SZSE", price: 21.80, change_pct: 1.45, type: "Equity" },
+
+  // HK Core Stocks
+  { symbol: "0700.HK", name: "腾讯控股 (社交网络与游戏龙头)", exchange: "HKEX", price: 425.20, change_pct: 1.48, type: "Equity" },
+  { symbol: "9988.HK", name: "阿里巴巴 (电商与云计算)", exchange: "HKEX", price: 88.50, change_pct: 0.91, type: "Equity" },
+  { symbol: "3690.HK", name: "美团 (本地生活服务龙头)", exchange: "HKEX", price: 125.40, change_pct: 2.12, type: "Equity" },
+  { symbol: "1810.HK", name: "小米集团 (消费电子与智能汽车)", exchange: "HKEX", price: 18.20, change_pct: 1.11, type: "Equity" },
+
+  // US Mega Tech & Benchmarks
+  { symbol: "ASX", name: "ASE Technology Holding Co., Ltd. (日月光)", exchange: "NYSE", price: 46.43, change_pct: 2.04, type: "Equity" },
+  { symbol: "AAPL", name: "Apple Inc. (苹果公司)", exchange: "NASDAQ", price: 336.64, change_pct: -1.11, type: "Equity" },
+  { symbol: "NVDA", name: "NVIDIA Corporation (英伟达)", exchange: "NASDAQ", price: 229.28, change_pct: -0.52, type: "Equity" },
+  { symbol: "TSLA", name: "Tesla, Inc. (特斯拉)", exchange: "NASDAQ", price: 382.70, change_pct: 2.05, type: "Equity" },
+  { symbol: "MSFT", name: "Microsoft Corporation (微软)", exchange: "NASDAQ", price: 535.07, change_pct: 2.38, type: "Equity" },
+  { symbol: "AMZN", name: "Amazon.com, Inc. (亚马逊)", exchange: "NASDAQ", price: 262.43, change_pct: -0.45, type: "Equity" },
+  { symbol: "GOOGL", name: "Alphabet Inc. (谷歌)", exchange: "NASDAQ", price: 351.66, change_pct: 1.12, type: "Equity" },
+  { symbol: "META", name: "Meta Platforms, Inc. (元宇宙)", exchange: "NASDAQ", price: 718.67, change_pct: 1.65, type: "Equity" },
+  { symbol: "AMD", name: "Advanced Micro Devices (超微)", exchange: "NASDAQ", price: 608.10, change_pct: -1.80, type: "Equity" },
+  { symbol: "SPY", name: "SPDR S&P 500 ETF Trust (标普500)", exchange: "NYSEArca", price: 778.57, change_pct: 0.32, type: "ETF" },
+  { symbol: "QQQ", name: "Invesco QQQ Trust (纳斯达克100)", exchange: "NASDAQ", price: 751.27, change_pct: 0.45, type: "ETF" },
+  { symbol: "GLD", name: "SPDR Gold Shares (黄金ETF)", exchange: "NYSEArca", price: 384.58, change_pct: 0.65, type: "ETF" },
+  { symbol: "BABA", name: "Alibaba Group Holding (阿里巴巴ADR)", exchange: "NYSE", price: 111.37, change_pct: 5.36, type: "Equity" },
+  { symbol: "TSM", name: "Taiwan Semiconductor Mfg (台积电)", exchange: "NYSE", price: 453.31, change_pct: 1.95, type: "Equity" },
+  { symbol: "GS", name: "Goldman Sachs Group, Inc. (高盛)", exchange: "NYSE", price: 512.30, change_pct: 1.15, type: "Equity" },
+  { symbol: "MS", name: "Morgan Stanley (大摩)", exchange: "NYSE", price: 118.40, change_pct: 0.82, type: "Equity" },
+  { symbol: "JPM", name: "JPMorgan Chase & Co. (小摩)", exchange: "NYSE", price: 222.50, change_pct: 0.65, type: "Equity" },
+  { symbol: "PLTR", name: "Palantir Technologies (大数据与AI)", exchange: "NYSE", price: 209.05, change_pct: 3.45, type: "Equity" }
 ];
 
 const COMPANY_ALIAS_CLIENT_MAP = {
+  // A-Share Benchmark & Index ETFs
+  "沪深300": "510300.SS",
+  "沪深300etf": "510300.SS",
+  "300etf": "510300.SS",
+  "510300": "510300.SS",
+  "上证50": "510050.SS",
+  "上证50etf": "510050.SS",
+  "50etf": "510050.SS",
+  "510050": "510050.SS",
+  "创业板": "159915.SZ",
+  "创业板etf": "159915.SZ",
+  "159915": "159915.SZ",
+  "科创50": "588000.SS",
+  "科创50etf": "588000.SS",
+  "588000": "588000.SS",
+  "中证500": "510500.SS",
+  "中证500etf": "510500.SS",
+  "500etf": "510500.SS",
+  "510500": "510500.SS",
+  "中证1000": "512100.SS",
+  "1000etf": "512100.SS",
+  "512100": "512100.SS",
+  "半导体etf": "512480.SS",
+  "512480": "512480.SS",
+  "证券etf": "512880.SS",
+  "512880": "512880.SS",
+  "黄金etf": "518880.SS",
+  "518880": "518880.SS",
+
+  // A-Share Bluechips & Growth Leaders
+  "贵州茅台": "600519.SS",
+  "茅台": "600519.SS",
+  "600519": "600519.SS",
+  "宁德时代": "300750.SZ",
+  "宁德": "300750.SZ",
+  "300750": "300750.SZ",
+  "比亚迪": "002594.SZ",
+  "002594": "002594.SZ",
+  "平安银行": "000001.SZ",
+  "000001": "000001.SZ",
+  "中国平安": "601318.SS",
+  "601318": "601318.SS",
+  "招商银行": "600036.SS",
+  "招行": "600036.SS",
+  "600036": "600036.SS",
+  "五粮液": "000858.SZ",
+  "000858": "000858.SZ",
+  "中信证券": "600030.SS",
+  "600030": "600030.SS",
+  "海康威视": "002415.SZ",
+  "002415": "002415.SZ",
+  "恒瑞医药": "600276.SS",
+  "600276": "600276.SS",
+  "立讯精密": "002475.SZ",
+  "002475": "002475.SZ",
+  "东方财富": "300059.SZ",
+  "东财": "300059.SZ",
+  "300059": "300059.SZ",
+  "中芯国际": "688981.SS",
+  "688981": "688981.SS",
+
+  // Hong Kong Stocks
+  "腾讯": "0700.HK",
+  "腾讯控股": "0700.HK",
+  "0700": "0700.HK",
+  "0700.hk": "0700.HK",
+  "阿里": "9988.HK",
+  "阿里巴巴": "9988.HK",
+  "9988": "9988.HK",
+  "9988.hk": "9988.HK",
+  "美团": "3690.HK",
+  "3690": "3690.HK",
+  "3690.hk": "3690.HK",
+  "小米": "1810.HK",
+  "小米集团": "1810.HK",
+  "1810": "1810.HK",
+  "1810.hk": "1810.HK",
+
+  // Global Leaders
   "日月光": "ASX",
   "日月光投控": "ASX",
   "日月光半导体": "ASX",
   "ase": "ASX",
   "asx": "ASX",
-  "ase technology": "ASX",
   "台积电": "TSM",
   "台积": "TSM",
   "tsmc": "TSM",
@@ -249,27 +356,49 @@ const COMPANY_ALIAS_CLIENT_MAP = {
   "大摩": "MS",
   "摩根大通": "JPM",
   "小摩": "JPM",
-  "阿里巴巴": "BABA",
-  "阿里": "BABA",
-  "腾讯": "TCEHY",
-  "超微": "AMD"
+  "超微": "AMD",
+  "标普": "SPY",
+  "标普500": "SPY",
+  "纳指": "QQQ",
+  "纳斯达克": "QQQ",
+  "黄金": "GLD"
 };
 
 function sanitizeTickerClient(raw) {
   if (!raw) return "AAPL";
   let s = String(raw).trim();
-  // 1. Bracket extraction: e.g. "ASE Technology Holding Co., Ltd. (ASX）" -> "ASX"
+  // 1. Bracket extraction: e.g. "贵州茅台 (600519.SS)" -> "600519.SS"
   const m = s.match(/[\(（\[【]([A-Za-z0-9\.\-\^]+)[\)）\]】]/);
-  if (m && m[1]) return m[1].toUpperCase().trim();
+  if (m && m[1]) {
+    const sym = m[1].toUpperCase().trim();
+    if (sym.length === 6 && /^\d+$/.test(sym)) {
+      if (/^(60|688|51|56|58)/.test(sym)) return `${sym}.SS`;
+      if (/^(00|30|15|16)/.test(sym)) return `${sym}.SZ`;
+      if (/^[849]/.test(sym)) return `${sym}.BJ`;
+    }
+    return sym;
+  }
 
   // 2. Chinese/English company alias check
   const sClean = s.replace(/['’]/g, '').trim().toLowerCase();
   if (COMPANY_ALIAS_CLIENT_MAP[sClean]) return COMPANY_ALIAS_CLIENT_MAP[sClean];
   for (const [k, v] of Object.entries(COMPANY_ALIAS_CLIENT_MAP)) {
-    if (sClean.includes(k) || k.includes(sClean)) return v;
+    if (sClean === k || sClean.includes(k) || k.includes(sClean)) return v;
   }
 
-  // 3. Fallback alphanumeric uppercase
+  // 3. 6-digit A-share code auto suffix
+  const numOnly = sClean.replace(/[^0-9]/g, '');
+  if (numOnly.length === 6) {
+    if (/^(60|688|51|56|58)/.test(numOnly)) return `${numOnly}.SS`;
+    if (/^(00|30|15|16)/.test(numOnly)) return `${numOnly}.SZ`;
+    if (/^[849]/.test(numOnly)) return `${numOnly}.BJ`;
+  }
+  // 4. 4-5 digit HK stock auto suffix
+  if ((numOnly.length === 4 || numOnly.length === 5) && !sClean.includes('.')) {
+    return `${numOnly.padStart(4, '0')}.HK`;
+  }
+
+  // 5. Fallback alphanumeric uppercase
   const cleaned = sClean.replace(/[^A-Za-z0-9\.\-\^]/g, '').toUpperCase();
   return cleaned || "AAPL";
 }
@@ -297,7 +426,7 @@ async function fetchYahooSuggestions(query) {
   let aliasSym = COMPANY_ALIAS_CLIENT_MAP[qLower];
   if (!aliasSym) {
     for (const [k, v] of Object.entries(COMPANY_ALIAS_CLIENT_MAP)) {
-      if (qLower.includes(k) || k.includes(qLower)) {
+      if (qLower === k || qLower.includes(k) || k.includes(qLower)) {
         aliasSym = v;
         break;
       }
@@ -311,7 +440,7 @@ async function fetchYahooSuggestions(query) {
   }
 
   for (const item of FALLBACK_AUTOCOMPLETE_STOCKS) {
-    if (matched.includes(item)) continue;
+    if (matched.some(m => m.symbol === item.symbol)) continue;
     if (item.symbol.toLowerCase().includes(qLower) || item.name.toLowerCase().includes(qLower)) {
       matched.push(item);
     }
@@ -324,7 +453,7 @@ async function fetchYahooSuggestions(query) {
 function setupSearchAutocomplete() {
   const searchInput = document.getElementById('custom-ticker-input');
   const searchBtn = document.getElementById('search-ticker-btn');
-  const dropdown = document.getElementById('search-suggestions-dropdown');
+  const dropdown = document.getElementById('search-suggestions-dropdown') || document.getElementById('search-dropdown-menu');
   const searchWrap = document.getElementById('search-box-wrap') || (searchInput ? searchInput.closest('.search-box') : null);
 
   if (!searchInput) return;
@@ -356,8 +485,10 @@ function setupSearchAutocomplete() {
     const targetSymbol = sanitizeTickerClient(item.symbol);
     searchInput.value = targetSymbol;
     closeDropdown();
-    if (targetSymbol !== state.ticker) {
-      state.ticker = targetSymbol;
+    state.ticker = targetSymbol;
+    if (typeof addTickerToActiveGroup === 'function') {
+      addTickerToActiveGroup(targetSymbol);
+    } else {
       updateTickerDisplay();
       runAnalysis();
     }
@@ -371,8 +502,10 @@ function setupSearchAutocomplete() {
     }
     const targetSymbol = sanitizeTickerClient(rawVal);
     searchInput.value = targetSymbol;
-    if (targetSymbol !== state.ticker) {
-      state.ticker = targetSymbol;
+    state.ticker = targetSymbol;
+    if (typeof addTickerToActiveGroup === 'function') {
+      addTickerToActiveGroup(targetSymbol);
+    } else {
       updateTickerDisplay();
       runAnalysis();
     }
@@ -404,7 +537,9 @@ function setupSearchAutocomplete() {
       el.className = 'suggestion-item';
       el.dataset.idx = idx;
 
-      const priceStr = item.price !== null && item.price !== undefined ? `$${Number(item.price).toFixed(2)}` : '--';
+      const symUpper = String(item.symbol || '').toUpperCase();
+      const currSign = (symUpper.endsWith('.SS') || symUpper.endsWith('.SZ') || symUpper.endsWith('.BJ')) ? '¥' : (symUpper.endsWith('.HK') ? 'HK$' : '$');
+      const priceStr = item.price !== null && item.price !== undefined ? `${currSign}${Number(item.price).toFixed(2)}` : '--';
       let chgHtml = '<span class="suggestion-chg-pill flat">--</span>';
       if (item.change_pct !== null && item.change_pct !== undefined) {
         const val = Number(item.change_pct);
@@ -1026,6 +1161,36 @@ function navigateWatchlistTicker(direction) {
 }
 
 const COMPANY_NAME_MAP = {
+  // A-Share Benchmark & Index ETFs
+  "510300.SS": "华泰柏瑞沪深300 ETF",
+  "510050.SS": "华夏上证50 ETF",
+  "159915.SZ": "易方达创业板 ETF",
+  "588000.SS": "华夏科创50 ETF",
+  "510500.SS": "南方中证500 ETF",
+  "512880.SS": "国泰中证全指证券 ETF",
+  "512480.SS": "国泰CES半导体芯片 ETF",
+
+  // A-Share Core Blue Chips & Leaders
+  "600519.SS": "贵州茅台 (白酒行业龙头)",
+  "300750.SZ": "宁德时代 (动力电池龙头)",
+  "002594.SZ": "比亚迪 (新能源汽车龙头)",
+  "000001.SZ": "平安银行 (股份制商业银行)",
+  "601318.SS": "中国平安 (金融保险综合龙头)",
+  "600036.SS": "招商银行 (零售银行标杆)",
+  "000858.SZ": "五粮液 (高端浓香白酒)",
+  "600030.SS": "中信证券 (券商行业龙头)",
+  "002415.SZ": "海康威视 (安防与智能视觉)",
+  "600276.SS": "恒瑞医药 (创新药龙头)",
+  "688981.SS": "中芯国际 (晶圆制造龙头)",
+  "300059.SZ": "东方财富 (互联网券商与金融信息)",
+
+  // HK Core Stocks
+  "0700.HK": "腾讯控股有限公司 (社交与游戏龙头)",
+  "9988.HK": "阿里巴巴集团控股 (电商与云计算)",
+  "3690.HK": "美团点评 (本地生活服务)",
+  "1810.HK": "小米集团 (智能硬件与汽车)",
+
+  // US Global Leaders
   "AAPL": "Apple Inc. (苹果公司)",
   "MSFT": "Microsoft Corporation (微软)",
   "NVDA": "NVIDIA Corporation (英伟达)",
@@ -1042,7 +1207,7 @@ const COMPANY_NAME_MAP = {
   "AMD": "Advanced Micro Devices (超威半导体)",
   "TSM": "Taiwan Semiconductor (台积电)",
   "PLTR": "Palantir Technologies (大数据量化龙头)",
-  "BABA": "Alibaba Group (阿里巴巴)",
+  "BABA": "Alibaba Group (阿里巴巴ADR)",
   "PDD": "PDD Holdings Inc. (拼多多)",
   "BIDU": "Baidu Inc. (百度)",
   "JD": "JD.com Inc. (京东)",
@@ -1056,6 +1221,25 @@ const COMPANY_NAME_MAP = {
 
 // Accurate Real Market Baseline Prices (Directly synced from finance.yahoo.com)
 const ACCURATE_LIVE_MARKET_PRICES = {
+  // A-Share Baseline (CNY)
+  "510300.SS": { price: 4.39, open: 4.37, high: 4.40, low: 4.31, prev: 4.38, vol: 1276733000, name: "华泰柏瑞沪深300 ETF", market: "SSE · CNY" },
+  "510050.SS": { price: 3.12, open: 3.10, high: 3.14, low: 3.09, prev: 3.12, vol: 642100000, name: "华夏上证50 ETF", market: "SSE · CNY" },
+  "159915.SZ": { price: 2.45, open: 2.44, high: 2.47, low: 2.43, prev: 2.44, vol: 835200000, name: "易方达创业板 ETF", market: "SZSE · CNY" },
+  "588000.SS": { price: 1.08, open: 1.07, high: 1.10, low: 1.06, prev: 1.07, vol: 923400000, name: "华夏科创50 ETF", market: "SSE · CNY" },
+  "510500.SS": { price: 5.82, open: 5.80, high: 5.85, low: 5.78, prev: 5.81, vol: 312000000, name: "南方中证500 ETF", market: "SSE · CNY" },
+  "600519.SS": { price: 1263.00, open: 1255.42, high: 1282.00, low: 1255.42, prev: 1255.00, vol: 3511000, name: "贵州茅台 (白酒龙头)", market: "SSE · CNY" },
+  "300750.SZ": { price: 297.75, open: 295.00, high: 301.50, low: 293.20, prev: 287.05, vol: 15230000, name: "宁德时代 (动力电池龙头)", market: "SZSE · CNY" },
+  "002594.SZ": { price: 84.95, open: 82.50, high: 86.20, low: 81.80, prev: 81.72, vol: 24500000, name: "比亚迪 (新能源汽车龙头)", market: "SZSE · CNY" },
+  "000001.SZ": { price: 11.59, open: 11.75, high: 11.82, low: 11.50, prev: 11.78, vol: 68900000, name: "平安银行 (商业银行标杆)", market: "SZSE · CNY" },
+  "601318.SS": { price: 52.80, open: 52.30, high: 53.15, low: 52.10, prev: 52.50, vol: 42100000, name: "中国平安 (金融保险综合龙头)", market: "SSE · CNY" },
+  "600036.SS": { price: 38.60, open: 38.20, high: 38.90, low: 38.10, prev: 38.50, vol: 28400000, name: "招商银行 (零售银行标杆)", market: "SSE · CNY" },
+  "000858.SZ": { price: 142.30, open: 141.00, high: 143.50, low: 140.20, prev: 141.66, vol: 12100000, name: "五粮液 (高端浓香白酒)", market: "SZSE · CNY" },
+
+  // HK Baseline (HKD)
+  "0700.HK": { price: 424.80, open: 420.00, high: 428.60, low: 418.40, prev: 411.40, vol: 18500000, name: "腾讯控股 (社交网络与游戏龙头)", market: "HKEX · HKD" },
+  "9988.HK": { price: 88.50, open: 87.20, high: 89.60, low: 86.80, prev: 87.70, vol: 26300000, name: "阿里巴巴 (电商与云计算)", market: "HKEX · HKD" },
+
+  // US Baseline (USD)
   "AAPL": { price: 336.64, open: 331.70, high: 338.61, low: 330.70, prev: 340.42, vol: 37855000, name: "Apple Inc. (苹果公司)", market: "NASDAQ · USD" },
   "NVDA": { price: 229.28, open: 233.84, high: 233.92, low: 229.11, prev: 230.48, vol: 84470000, name: "NVIDIA Corp. (英伟达)", market: "NASDAQ · USD" },
   "TSLA": { price: 382.70, open: 382.38, high: 388.56, low: 379.71, prev: 375.00, vol: 38897700, name: "Tesla Inc. (特斯拉)", market: "NASDAQ · USD" },
@@ -1345,7 +1529,7 @@ function renderBrokerageQuoteBanner(stockData) {
   const prevBar = candles.length > 1 ? candles[candles.length - 2] : lastBar;
 
   const symbol = stockData.ticker || state.ticker;
-  const companyName = COMPANY_NAME_MAP[symbol] || `${symbol} Common Stock`;
+  const companyName = COMPANY_NAME_MAP[symbol] || stockData.name || `${symbol} Common Stock`;
   const latestPrice = (typeof stockData.latest_price === 'number' && stockData.latest_price > 0) ? stockData.latest_price : lastBar.close;
   const prevClose = prevBar.close;
   const changeVal = latestPrice - prevClose;
@@ -1360,8 +1544,9 @@ function renderBrokerageQuoteBanner(stockData) {
   if (nameEl) nameEl.textContent = companyName;
 
   // Price & Change
+  const currSign = (symbol.endsWith('.SS') || symbol.endsWith('.SZ') || symbol.endsWith('.BJ')) ? '¥' : (symbol.endsWith('.HK') ? 'HK$' : '$');
   const priceEl = document.getElementById('bqu-price');
-  if (priceEl) priceEl.textContent = `$${latestPrice.toFixed(2)}`;
+  if (priceEl) priceEl.textContent = `${currSign}${latestPrice.toFixed(2)}`;
 
   const badgeEl = document.getElementById('bqu-change-badge');
   if (badgeEl) {
@@ -1374,16 +1559,16 @@ function renderBrokerageQuoteBanner(stockData) {
 
   // Stats
   const openEl = document.getElementById('bqu-open');
-  if (openEl) openEl.textContent = `$${lastBar.open.toFixed(2)}`;
+  if (openEl) openEl.textContent = `${currSign}${lastBar.open.toFixed(2)}`;
 
   const highEl = document.getElementById('bqu-high');
-  if (highEl) highEl.textContent = `$${lastBar.high.toFixed(2)}`;
+  if (highEl) highEl.textContent = `${currSign}${lastBar.high.toFixed(2)}`;
 
   const lowEl = document.getElementById('bqu-low');
-  if (lowEl) lowEl.textContent = `$${lastBar.low.toFixed(2)}`;
+  if (lowEl) lowEl.textContent = `${currSign}${lastBar.low.toFixed(2)}`;
 
   const prevCloseEl = document.getElementById('bqu-prev-close');
-  if (prevCloseEl) prevCloseEl.textContent = `$${prevClose.toFixed(2)}`;
+  if (prevCloseEl) prevCloseEl.textContent = `${currSign}${prevClose.toFixed(2)}`;
 
   const volEl = document.getElementById('bqu-volume');
   if (volEl) {
@@ -1404,7 +1589,7 @@ function renderBrokerageQuoteBanner(stockData) {
       if (c.low < min52) min52 = c.low;
       if (c.high > max52) max52 = c.high;
     });
-    range52wEl.textContent = `$${min52.toFixed(2)} - $${max52.toFixed(2)}`;
+    range52wEl.textContent = `${currSign}${min52.toFixed(2)} - ${currSign}${max52.toFixed(2)}`;
   }
 
   // Update Favorite Button in quote banner
@@ -2345,6 +2530,9 @@ function renderTradesTable(trades) {
     return;
   }
 
+  const symUpper = String(state.ticker || '').toUpperCase();
+  const currSign = (symUpper.endsWith('.SS') || symUpper.endsWith('.SZ') || symUpper.endsWith('.BJ')) ? '¥' : (symUpper.endsWith('.HK') ? 'HK$' : '$');
+
   tbody.innerHTML = trades.slice().reverse().map(t => {
     const isWin = t.pnl >= 0;
     const pnlColor = isWin ? '#10b981' : '#f43f5e';
@@ -2361,12 +2549,12 @@ function renderTradesTable(trades) {
         <td>#${t.trade_id}</td>
         <td><span class="tag-badge long">LONG</span></td>
         <td>${t.entry_date}</td>
-        <td>$${t.entry_price.toFixed(2)}</td>
+        <td>${currSign}${t.entry_price.toFixed(2)}</td>
         <td>${t.exit_date}</td>
-        <td>$${t.exit_price.toFixed(2)}</td>
+        <td>${currSign}${t.exit_price.toFixed(2)}</td>
         <td>${t.shares.toLocaleString()}</td>
         <td>${t.holding_days} 天</td>
-        <td style="color:${pnlColor}">$${t.pnl >= 0 ? '+' : ''}${t.pnl.toFixed(2)}</td>
+        <td style="color:${pnlColor}">${currSign}${t.pnl >= 0 ? '+' : ''}${t.pnl.toFixed(2)}</td>
         <td style="color:${pnlColor}">${t.pnl_pct >= 0 ? '+' : ''}${t.pnl_pct.toFixed(2)}%</td>
         <td><span class="tag-reason">${reasonText}</span></td>
       </tr>

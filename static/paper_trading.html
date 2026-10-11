@@ -61,8 +61,9 @@
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
-          <input type="text" id="custom-ticker-input" placeholder="输入代码快速对盘 (如 AAPL, NVDA)..." autocomplete="off" spellcheck="false">
-          <div class="search-dropdown-menu" id="search-dropdown-menu"></div>
+          <input type="text" id="custom-ticker-input" placeholder="输入代码或名称 (如 茅台, 600519, AAPL)..." autocomplete="off" spellcheck="false">
+          <button id="search-ticker-btn" class="btn-search">切换</button>
+          <div class="search-suggestions-dropdown hidden" id="search-suggestions-dropdown"></div>
         </div>
 
         <div class="server-status-pill">

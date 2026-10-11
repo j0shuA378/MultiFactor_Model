@@ -193,18 +193,84 @@
       btnSaveCfg.addEventListener('click', handleSaveConfig);
     }
 
-    // Search Box Quick Prefill
+    // Search Box Quick Prefill & Ticker Switch
+    function sanitizePaperTicker(raw) {
+      if (!raw) return "AAPL";
+      let s = String(raw).trim();
+      const m = s.match(/[\(（\[【]([A-Za-z0-9\.\-\^]+)[\)）\]】]/);
+      if (m && m[1]) {
+        const sym = m[1].toUpperCase().trim();
+        if (sym.length === 6 && /^\d+$/.test(sym)) {
+          if (/^(60|688|51|56|58)/.test(sym)) return `${sym}.SS`;
+          if (/^(00|30|15|16)/.test(sym)) return `${sym}.SZ`;
+          if (/^[849]/.test(sym)) return `${sym}.BJ`;
+        }
+        return sym;
+      }
+      const sLower = s.toLowerCase();
+      const aliases = {
+        '贵州茅台': '600519.SS', '茅台': '600519.SS', '600519': '600519.SS',
+        '宁德时代': '300750.SZ', '宁德': '300750.SZ', '300750': '300750.SZ',
+        '比亚迪': '002594.SZ', '002594': '002594.SZ',
+        '平安银行': '000001.SZ', '000001': '000001.SZ',
+        '中国平安': '601318.SS', '601318': '601318.SS',
+        '招商银行': '600036.SS', '600036': '600036.SS',
+        '中信证券': '600030.SS', '600030': '600030.SS',
+        '沪深300': '510300.SS', '300etf': '510300.SS', '510300': '510300.SS',
+        '上证50': '510050.SS', '50etf': '510050.SS', '510050': '510050.SS',
+        '中证500': '510500.SS', '500etf': '510500.SS', '510500': '510500.SS',
+        '中证1000': '512100.SS', '1000etf': '512100.SS', '512100': '512100.SS',
+        '创业板指': '159915.SZ', '创业板etf': '159915.SZ', '159915': '159915.SZ',
+        '腾讯': '0700.HK', '腾讯控股': '0700.HK', '0700': '0700.HK',
+        '阿里巴巴': '9988.HK', '阿里': '9988.HK', '9988': '9988.HK', 'baba': 'BABA',
+        '美团': '3690.HK', '3690': '3690.HK',
+        '苹果': 'AAPL', '特斯拉': 'TSLA', '微软': 'MSFT', '英伟达': 'NVDA', '谷歌': 'GOOGL',
+        '亚马逊': 'AMZN', 'Meta': 'META', '脸书': 'META', '标普': 'SPY', '标普500': 'SPY',
+        '纳指': 'QQQ', '纳斯达克': 'QQQ'
+      };
+      if (aliases[sLower]) return aliases[sLower];
+      for (const [k, v] of Object.entries(aliases)) {
+        if (sLower === k || sLower.includes(k) || k.includes(sLower)) return v;
+      }
+      const numOnly = sLower.replace(/[^0-9]/g, '');
+      if (numOnly.length === 6) {
+        if (/^(60|688|51|56|58)/.test(numOnly)) return `${numOnly}.SS`;
+        if (/^(00|30|15|16)/.test(numOnly)) return `${numOnly}.SZ`;
+        if (/^[849]/.test(numOnly)) return `${numOnly}.BJ`;
+      }
+      if ((numOnly.length === 4 || numOnly.length === 5) && !sLower.includes('.')) {
+        return `${numOnly.padStart(4, '0')}.HK`;
+      }
+      const cleaned = sLower.replace(/[^a-z0-9\.\-\^]/g, '').toUpperCase();
+      return cleaned || "AAPL";
+    }
+
     const searchInput = document.getElementById('custom-ticker-input');
+    const searchBtn = document.getElementById('search-ticker-btn');
+
+    const handleSwitchSearchTicker = () => {
+      if (!searchInput) return;
+      const raw = searchInput.value.trim();
+      if (!raw) return;
+      const val = sanitizePaperTicker(raw);
+      searchInput.value = val;
+      const orderInput = document.getElementById('order-input-ticker');
+      if (orderInput) orderInput.value = val;
+      showNotification(`已切换对盘标的: ${val}`);
+    };
+
     if (searchInput) {
       searchInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
-          const val = searchInput.value.trim().toUpperCase();
-          if (val) {
-            const orderInput = document.getElementById('order-input-ticker');
-            if (orderInput) orderInput.value = val;
-            showNotification(`已切换对盘标的: ${val}`);
-          }
+          e.preventDefault();
+          handleSwitchSearchTicker();
         }
+      });
+    }
+    if (searchBtn) {
+      searchBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        handleSwitchSearchTicker();
       });
     }
   }

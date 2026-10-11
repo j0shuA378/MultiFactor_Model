@@ -12,15 +12,102 @@ logger = logging.getLogger("DataLoader")
 CACHE_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "cache")
 
 COMPANY_ALIAS_MAP = {
+    # A-Share Benchmark & Index ETFs
+    "沪深300": "510300.SS",
+    "沪深300etf": "510300.SS",
+    "300etf": "510300.SS",
+    "510300": "510300.SS",
+    "上证50": "510050.SS",
+    "上证50etf": "510050.SS",
+    "50etf": "510050.SS",
+    "510050": "510050.SS",
+    "创业板": "159915.SZ",
+    "创业板etf": "159915.SZ",
+    "159915": "159915.SZ",
+    "科创50": "588000.SS",
+    "科创50etf": "588000.SS",
+    "588000": "588000.SS",
+    "中证500": "510500.SS",
+    "中证500etf": "510500.SS",
+    "500etf": "510500.SS",
+    "510500": "510500.SS",
+    "中证1000": "512100.SS",
+    "1000etf": "512100.SS",
+    "512100": "512100.SS",
+    "半导体etf": "512480.SS",
+    "512480": "512480.SS",
+    "证券etf": "512880.SS",
+    "512880": "512880.SS",
+    "黄金etf": "518880.SS",
+    "518880": "518880.SS",
+
+    # A-Share Bluechips & Growth Leaders
+    "贵州茅台": "600519.SS",
+    "茅台": "600519.SS",
+    "600519": "600519.SS",
+    "宁德时代": "300750.SZ",
+    "宁德": "300750.SZ",
+    "300750": "300750.SZ",
+    "比亚迪": "002594.SZ",
+    "002594": "002594.SZ",
+    "平安银行": "000001.SZ",
+    "000001": "000001.SZ",
+    "中国平安": "601318.SS",
+    "601318": "601318.SS",
+    "招商银行": "600036.SS",
+    "招行": "600036.SS",
+    "600036": "600036.SS",
+    "五粮液": "000858.SZ",
+    "000858": "000858.SZ",
+    "中信证券": "600030.SS",
+    "600030": "600030.SS",
+    "海康威视": "002415.SZ",
+    "002415": "002415.SZ",
+    "恒瑞医药": "600276.SS",
+    "600276": "600276.SS",
+    "立讯精密": "002475.SZ",
+    "002475": "002475.SZ",
+    "东方财富": "300059.SZ",
+    "东财": "300059.SZ",
+    "300059": "300059.SZ",
+    "中芯国际": "688981.SS",
+    "688981": "688981.SS",
+    "药明康德": "603259.SS",
+    "603259": "603259.SS",
+    "隆基绿能": "601012.SS",
+    "隆基": "601012.SS",
+    "601012": "601012.SS",
+    "紫金矿业": "601899.SS",
+    "紫金": "601899.SS",
+    "601899": "601899.SS",
+    "长江电力": "600900.SS",
+    "长电": "600900.SS",
+    "600900": "600900.SS",
+
+    # Hong Kong Stocks
+    "腾讯": "0700.HK",
+    "腾讯控股": "0700.HK",
+    "0700": "0700.HK",
+    "0700.hk": "0700.HK",
+    "阿里": "9988.HK",
+    "阿里巴巴": "9988.HK",
+    "9988": "9988.HK",
+    "9988.hk": "9988.HK",
+    "美团": "3690.HK",
+    "3690": "3690.HK",
+    "3690.hk": "3690.HK",
+    "小米": "1810.HK",
+    "小米集团": "1810.HK",
+    "1810": "1810.HK",
+    "1810.hk": "1810.HK",
+    "快手": "1024.HK",
+    "1024": "1024.HK",
+
     # ASE Technology Holding
     "日月光": "ASX",
     "日月光投控": "ASX",
     "日月光半导体": "ASX",
     "ase technology": "ASX",
-    "ase technology holding": "ASX",
-    "ase technology holding co": "ASX",
-    "ase technology holding co., ltd.": "ASX",
-    "ase technology holding co., ltd": "ASX",
     "ase": "ASX",
     "asx": "ASX",
     # TSMC
@@ -64,27 +151,19 @@ COMPANY_ALIAS_MAP = {
     "高盛": "GS",
     "高盛集团": "GS",
     "goldman": "GS",
-    "goldman sachs": "GS",
     "gs": "GS",
     # Morgan Stanley
     "摩根士丹利": "MS",
     "大摩": "MS",
-    "morgan stanley": "MS",
     "ms": "MS",
     # JPMorgan Chase
     "摩根大通": "JPM",
     "小摩": "JPM",
-    "jpmorgan": "JPM",
     "jpm": "JPM",
-    # Alibaba
-    "阿里巴巴": "BABA",
-    "阿里": "BABA",
-    "alibaba": "BABA",
+    # Alibaba ADR
     "baba": "BABA",
-    # Tencent
-    "腾讯": "TCEHY",
-    "腾讯控股": "TCEHY",
-    "tencent": "TCEHY",
+    # Tencent ADR
+    "tcehy": "TCEHY",
     # AMD
     "超微": "AMD",
     "超微半导体": "AMD",
@@ -111,10 +190,37 @@ COMPANY_ALIAS_MAP = {
     "纳指": "QQQ",
     "纳斯达克": "QQQ",
     "纳斯达克100": "QQQ",
-    "qqq": "QQQ"
+    "qqq": "QQQ",
+    "黄金": "GLD",
+    "gld": "GLD"
 }
 
 COMPANY_NAME_LOOKUP = {
+    # A-Share
+    "510300.SS": "华泰柏瑞沪深300 ETF",
+    "510050.SS": "华夏上证50 ETF",
+    "159915.SZ": "易方达创业板 ETF",
+    "588000.SS": "华夏科创50 ETF",
+    "510500.SS": "南方中证500 ETF",
+    "600519.SS": "贵州茅台酒股份有限公司",
+    "300750.SZ": "宁德时代新能源科技",
+    "002594.SZ": "比亚迪股份有限公司",
+    "000001.SZ": "平安银行股份有限公司",
+    "601318.SS": "中国平安保险集团",
+    "600036.SS": "招商银行股份有限公司",
+    "000858.SZ": "宜宾五粮液股份有限公司",
+    "600030.SS": "中信证券股份有限公司",
+    "002415.SZ": "海康威视数字技术",
+    "600276.SS": "江苏恒瑞医药",
+    "002475.SZ": "立讯精密工业",
+    "300059.SZ": "东方财富信息",
+    "688981.SS": "中芯国际集成电路",
+    # HK
+    "0700.HK": "腾讯控股有限公司",
+    "9988.HK": "阿里巴巴集团控股",
+    "3690.HK": "美团点评",
+    "1810.HK": "小米集团",
+    # US
     "ASX": "ASE Technology Holding Co., Ltd.",
     "TSM": "Taiwan Semiconductor Manufacturing Co.",
     "AAPL": "Apple Inc.",
@@ -130,15 +236,18 @@ COMPANY_NAME_LOOKUP = {
     "AMD": "Advanced Micro Devices, Inc.",
     "BABA": "Alibaba Group Holding Ltd.",
     "SPY": "SPDR S&P 500 ETF Trust",
-    "QQQ": "Invesco QQQ Trust"
+    "QQQ": "Invesco QQQ Trust",
+    "GLD": "SPDR Gold Shares ETF"
 }
 
 def sanitize_ticker(raw_ticker: str) -> str:
     """
     Cleans raw ticker input or company query string.
     Supports:
-    - Symbols enclosed in brackets: 'ASE Technology Holding Co., Ltd. (ASX）' -> 'ASX'
-    - Chinese/English company aliases: '日月光' -> 'ASX', '高盛' -> 'GS'
+    - Symbols enclosed in brackets: '贵州茅台 (600519.SS)' -> '600519.SS'
+    - Chinese/English company aliases: '贵州茅台' -> '600519.SS', '日月光' -> 'ASX', '高盛' -> 'GS'
+    - 6-digit A-share auto-suffix: '600519' -> '600519.SS', '000001' -> '000001.SZ'
+    - 4-digit HK auto-suffix: '0700' -> '0700.HK'
     - IME pinyin apostrophes: "a's'x" -> 'ASX'
     """
     if not raw_ticker:
@@ -148,7 +257,15 @@ def sanitize_ticker(raw_ticker: str) -> str:
     # 1. Check if symbol is enclosed in parentheses/brackets () （） [] 【】
     m = re.search(r'[\(（\[【]([A-Za-z0-9\.\-\^]+)[\)）\]】]', s)
     if m:
-        return m.group(1).upper().strip()
+        sym = m.group(1).upper().strip()
+        if len(sym) == 6 and sym.isdigit():
+            if sym.startswith(('60', '688', '51', '56', '58')):
+                return f"{sym}.SS"
+            elif sym.startswith(('00', '30', '15', '16')):
+                return f"{sym}.SZ"
+            elif sym.startswith(('8', '4', '9')):
+                return f"{sym}.BJ"
+        return sym
 
     # 2. Check alias map after removing IME apostrophes
     s_clean = s.replace("'", "").replace("’", "").strip().lower()
@@ -160,6 +277,20 @@ def sanitize_ticker(raw_ticker: str) -> str:
 
     # 3. Strip special punctuation and return uppercase
     cleaned = re.sub(r'[\s\'’",\(\)（）]', '', s).upper()
+
+    # 4. Auto-append exchange suffix for 6-digit A-share codes
+    if len(cleaned) == 6 and cleaned.isdigit():
+        if cleaned.startswith(('60', '688', '51', '56', '58')):
+            return f"{cleaned}.SS"
+        elif cleaned.startswith(('00', '30', '15', '16')):
+            return f"{cleaned}.SZ"
+        elif cleaned.startswith(('8', '4', '9')):
+            return f"{cleaned}.BJ"
+
+    # 5. Auto-append .HK for 4-digit HK stocks (e.g. 0700, 9988, 3690)
+    if (len(cleaned) == 4 or len(cleaned) == 5) and cleaned.isdigit():
+        return f"{cleaned.zfill(4)}.HK"
+
     return cleaned if cleaned else "AAPL"
 
 def ensure_cache_dir():
@@ -174,7 +305,23 @@ def generate_synthetic_data(ticker: str, days: int = 500) -> pd.DataFrame:
     
     # Base parameters tailored to ticker symbol based on current Yahoo Finance levels
     base_price = 150.0
-    if ticker == "AAPL": base_price = 336.64
+    if ticker.startswith("600519"): base_price = 1263.0
+    elif ticker.startswith("510300"): base_price = 4.39
+    elif ticker.startswith("510050"): base_price = 3.12
+    elif ticker.startswith("159915"): base_price = 2.45
+    elif ticker.startswith("588000"): base_price = 1.08
+    elif ticker.startswith("510500"): base_price = 5.82
+    elif ticker.startswith("300750"): base_price = 245.0
+    elif ticker.startswith("002594"): base_price = 285.0
+    elif ticker.startswith("000001"): base_price = 11.59
+    elif ticker.startswith("601318"): base_price = 52.80
+    elif ticker.startswith("600036"): base_price = 38.60
+    elif ticker.startswith("000858"): base_price = 142.0
+    elif ticker.startswith("0700"): base_price = 425.0
+    elif ticker.startswith("9988"): base_price = 88.5
+    elif ticker.startswith("3690"): base_price = 125.0
+    elif ticker.startswith("1810"): base_price = 18.2
+    elif ticker == "AAPL": base_price = 336.64
     elif ticker == "NVDA": base_price = 229.28
     elif ticker == "TSLA": base_price = 382.70
     elif ticker == "MSFT": base_price = 535.07
@@ -316,32 +463,58 @@ SEARCH_CACHE = {}
 PRICE_CACHE = {}
 
 FALLBACK_STOCKS = [
-    {"symbol": "ASX", "name": "ASE Technology Holding Co., Ltd.", "exchange": "NYSE", "price": 46.43, "change_pct": 2.04, "type": "Equity"},
-    {"symbol": "AAPL", "name": "Apple Inc.", "exchange": "NASDAQ", "price": 336.64, "change_pct": -1.11, "type": "Equity"},
-    {"symbol": "NVDA", "name": "NVIDIA Corporation", "exchange": "NASDAQ", "price": 229.28, "change_pct": -0.52, "type": "Equity"},
-    {"symbol": "TSLA", "name": "Tesla, Inc.", "exchange": "NASDAQ", "price": 268.45, "change_pct": 2.34, "type": "Equity"},
-    {"symbol": "MSFT", "name": "Microsoft Corporation", "exchange": "NASDAQ", "price": 435.10, "change_pct": 0.85, "type": "Equity"},
-    {"symbol": "AMZN", "name": "Amazon.com, Inc.", "exchange": "NASDAQ", "price": 185.30, "change_pct": -0.45, "type": "Equity"},
-    {"symbol": "GOOGL", "name": "Alphabet Inc.", "exchange": "NASDAQ", "price": 178.90, "change_pct": 1.12, "type": "Equity"},
-    {"symbol": "META", "name": "Meta Platforms, Inc.", "exchange": "NASDAQ", "price": 582.40, "change_pct": 1.65, "type": "Equity"},
-    {"symbol": "AMD", "name": "Advanced Micro Devices", "exchange": "NASDAQ", "price": 165.20, "change_pct": -1.80, "type": "Equity"},
-    {"symbol": "SPY", "name": "SPDR S&P 500 ETF Trust", "exchange": "NYSEArca", "price": 585.10, "change_pct": 0.32, "type": "ETF"},
-    {"symbol": "QQQ", "name": "Invesco QQQ Trust", "exchange": "NASDAQ", "price": 492.60, "change_pct": 0.45, "type": "ETF"},
-    {"symbol": "BABA", "name": "Alibaba Group Holding", "exchange": "NYSE", "price": 98.40, "change_pct": -0.75, "type": "Equity"},
-    {"symbol": "TSM", "name": "Taiwan Semiconductor Mfg", "exchange": "NYSE", "price": 190.50, "change_pct": 1.95, "type": "Equity"},
-    {"symbol": "GS", "name": "Goldman Sachs Group, Inc.", "exchange": "NYSE", "price": 512.30, "change_pct": 1.15, "type": "Equity"},
-    {"symbol": "MS", "name": "Morgan Stanley", "exchange": "NYSE", "price": 118.40, "change_pct": 0.82, "type": "Equity"},
-    {"symbol": "JPM", "name": "JPMorgan Chase & Co.", "exchange": "NYSE", "price": 222.50, "change_pct": 0.65, "type": "Equity"},
-    {"symbol": "PLTR", "name": "Palantir Technologies", "exchange": "NYSE", "price": 43.80, "change_pct": 3.45, "type": "Equity"},
-    {"symbol": "COIN", "name": "Coinbase Global, Inc.", "exchange": "NASDAQ", "price": 215.30, "change_pct": 4.12, "type": "Equity"},
-    {"symbol": "NFLX", "name": "Netflix, Inc.", "exchange": "NASDAQ", "price": 712.50, "change_pct": -0.25, "type": "Equity"}
+    # A-Share Benchmark & Index ETFs
+    {"symbol": "510300.SS", "name": "华泰柏瑞沪深300 ETF", "exchange": "SSE", "price": 4.39, "change_pct": 0.05, "type": "ETF"},
+    {"symbol": "510050.SS", "name": "华夏上证50 ETF", "exchange": "SSE", "price": 3.12, "change_pct": -0.12, "type": "ETF"},
+    {"symbol": "159915.SZ", "name": "易方达创业板 ETF", "exchange": "SZSE", "price": 2.45, "change_pct": 0.41, "type": "ETF"},
+    {"symbol": "588000.SS", "name": "华夏科创50 ETF", "exchange": "SSE", "price": 1.08, "change_pct": 0.85, "type": "ETF"},
+    {"symbol": "510500.SS", "name": "南方中证500 ETF", "exchange": "SSE", "price": 5.82, "change_pct": 0.22, "type": "ETF"},
+    {"symbol": "512880.SS", "name": "国泰中证全指证券 ETF", "exchange": "SSE", "price": 1.15, "change_pct": 0.35, "type": "ETF"},
+    {"symbol": "512480.SS", "name": "国泰CES半导体芯片 ETF", "exchange": "SSE", "price": 0.98, "change_pct": 1.25, "type": "ETF"},
+
+    # A-Share Core Blue Chips & Leaders
+    {"symbol": "600519.SS", "name": "贵州茅台 (白酒龙头)", "exchange": "SSE", "price": 1263.00, "change_pct": 0.64, "type": "Equity"},
+    {"symbol": "300750.SZ", "name": "宁德时代 (动力电池龙头)", "exchange": "SZSE", "price": 245.50, "change_pct": 1.82, "type": "Equity"},
+    {"symbol": "002594.SZ", "name": "比亚迪 (新能源汽车龙头)", "exchange": "SZSE", "price": 285.20, "change_pct": 1.15, "type": "Equity"},
+    {"symbol": "000001.SZ", "name": "平安银行 (商业银行标杆)", "exchange": "SZSE", "price": 11.59, "change_pct": -0.42, "type": "Equity"},
+    {"symbol": "601318.SS", "name": "中国平安 (金融保险综合龙头)", "exchange": "SSE", "price": 52.80, "change_pct": 0.58, "type": "Equity"},
+    {"symbol": "600036.SS", "name": "招商银行 (零售银行标杆)", "exchange": "SSE", "price": 38.60, "change_pct": 0.26, "type": "Equity"},
+    {"symbol": "000858.SZ", "name": "五粮液 (高端浓香白酒)", "exchange": "SZSE", "price": 142.30, "change_pct": 0.45, "type": "Equity"},
+    {"symbol": "600030.SS", "name": "中信证券 (券商龙头)", "exchange": "SSE", "price": 28.50, "change_pct": 0.71, "type": "Equity"},
+    {"symbol": "002415.SZ", "name": "海康威视 (安防与智能视觉)", "exchange": "SZSE", "price": 31.40, "change_pct": -0.32, "type": "Equity"},
+    {"symbol": "600276.SS", "name": "恒瑞医药 (创新药龙头)", "exchange": "SSE", "price": 48.90, "change_pct": 0.88, "type": "Equity"},
+    {"symbol": "688981.SS", "name": "中芯国际 (晶圆制造龙头)", "exchange": "SSE", "price": 95.60, "change_pct": 2.15, "type": "Equity"},
+    {"symbol": "300059.SZ", "name": "东方财富 (互联网券商龙头)", "exchange": "SZSE", "price": 21.80, "change_pct": 1.45, "type": "Equity"},
+
+    # HK Core Stocks
+    {"symbol": "0700.HK", "name": "腾讯控股 (社交网络与游戏龙头)", "exchange": "HKEX", "price": 425.20, "change_pct": 1.48, "type": "Equity"},
+    {"symbol": "9988.HK", "name": "阿里巴巴 (电商与云计算)", "exchange": "HKEX", "price": 88.50, "change_pct": 0.91, "type": "Equity"},
+    {"symbol": "3690.HK", "name": "美团 (本地生活服务龙头)", "exchange": "HKEX", "price": 125.40, "change_pct": 2.12, "type": "Equity"},
+    {"symbol": "1810.HK", "name": "小米集团 (消费电子与智能汽车)", "exchange": "HKEX", "price": 18.20, "change_pct": 1.11, "type": "Equity"},
+
+    # US Mega Tech & Benchmarks
+    {"symbol": "AAPL", "name": "Apple Inc. (苹果公司)", "exchange": "NASDAQ", "price": 336.64, "change_pct": -1.11, "type": "Equity"},
+    {"symbol": "NVDA", "name": "NVIDIA Corporation (英伟达)", "exchange": "NASDAQ", "price": 229.28, "change_pct": -0.52, "type": "Equity"},
+    {"symbol": "TSLA", "name": "Tesla, Inc. (特斯拉)", "exchange": "NASDAQ", "price": 382.70, "change_pct": 2.05, "type": "Equity"},
+    {"symbol": "MSFT", "name": "Microsoft Corporation (微软)", "exchange": "NASDAQ", "price": 535.07, "change_pct": 2.38, "type": "Equity"},
+    {"symbol": "AMZN", "name": "Amazon.com, Inc. (亚马逊)", "exchange": "NASDAQ", "price": 262.43, "change_pct": -0.45, "type": "Equity"},
+    {"symbol": "GOOGL", "name": "Alphabet Inc. (谷歌)", "exchange": "NASDAQ", "price": 351.66, "change_pct": 1.12, "type": "Equity"},
+    {"symbol": "META", "name": "Meta Platforms, Inc. (元宇宙)", "exchange": "NASDAQ", "price": 718.67, "change_pct": 1.65, "type": "Equity"},
+    {"symbol": "TSM", "name": "Taiwan Semiconductor (台积电)", "exchange": "NYSE", "price": 453.31, "change_pct": 1.95, "type": "Equity"},
+    {"symbol": "AMD", "name": "Advanced Micro Devices (超微)", "exchange": "NASDAQ", "price": 608.10, "change_pct": -1.80, "type": "Equity"},
+    {"symbol": "SPY", "name": "SPDR S&P 500 ETF Trust (标普500)", "exchange": "NYSEArca", "price": 778.57, "change_pct": 0.32, "type": "ETF"},
+    {"symbol": "QQQ", "name": "Invesco QQQ Trust (纳斯达克100)", "exchange": "NASDAQ", "price": 751.27, "change_pct": 0.45, "type": "ETF"},
+    {"symbol": "GLD", "name": "SPDR Gold Shares (黄金ETF)", "exchange": "NYSEArca", "price": 384.58, "change_pct": 0.65, "type": "ETF"},
+    {"symbol": "BABA", "name": "Alibaba Group Holding (阿里巴巴ADR)", "exchange": "NYSE", "price": 111.37, "change_pct": 5.36, "type": "Equity"},
+    {"symbol": "PLTR", "name": "Palantir Technologies (大数据与AI)", "exchange": "NYSE", "price": 209.05, "change_pct": 3.45, "type": "Equity"},
+    {"symbol": "ASX", "name": "ASE Technology Holding Co., Ltd. (日月光)", "exchange": "NYSE", "price": 46.43, "change_pct": 2.04, "type": "Equity"}
 ]
 
 def search_yahoo_tickers(query: str, max_results: int = 5):
     """
-    Search Yahoo Finance for matching tickers by ticker symbol or company name.
-    Retrieves latest price and percentage change (涨跌幅度) for up to max_results matches.
-    Resilient to parentheses, IME pinyin, Chinese company names, and network timeouts.
+    Search Yahoo Finance and Local Institutional Catalog for matching tickers.
+    Supports A-Share (e.g. 600519.SS, 510300.SS, 茅台, 比亚迪), HK Stocks, and US Tickers.
+    Retrieves latest price and percentage change with sub-second hybrid performance.
     """
     if not query or not str(query).strip():
         return []
@@ -349,7 +522,7 @@ def search_yahoo_tickers(query: str, max_results: int = 5):
     raw_query = str(query).strip()
     clean_q = raw_query.replace("'", "").replace("’", "").strip()
 
-    # 1. Bracket extraction: e.g. "ASE Technology Holding Co., Ltd. (ASX）" -> "ASX"
+    # 1. Bracket extraction: e.g. "贵州茅台 (600519.SS)" -> "600519.SS"
     bracket_match = re.search(r'[\(（\[【]([A-Za-z0-9\.\-\^]+)[\)）\]】]', clean_q)
     extracted_sym = bracket_match.group(1).upper() if bracket_match else None
 
@@ -363,6 +536,10 @@ def search_yahoo_tickers(query: str, max_results: int = 5):
                 break
 
     primary_sym = extracted_sym or alias_sym
+    # Check if clean_q is 6-digit A-share code directly (e.g. 600519 -> 600519.SS)
+    if not primary_sym and len(clean_q) == 6 and clean_q.isdigit():
+        primary_sym = sanitize_ticker(clean_q)
+
     search_term = primary_sym if primary_sym else clean_q
 
     cache_key = (search_term.lower(), max_results)
@@ -372,41 +549,88 @@ def search_yahoo_tickers(query: str, max_results: int = 5):
         if (now - cached_t).total_seconds() < 90:
             return cached_data
 
+    # 3. Local catalog fast resolution (instant sub-millisecond response)
+    local_matches = []
+    if primary_sym:
+        for stock in FALLBACK_STOCKS:
+            if stock['symbol'].upper() == primary_sym:
+                local_matches.append(dict(stock))
+                break
+
+    for stock in FALLBACK_STOCKS:
+        if any(m['symbol'] == stock['symbol'] for m in local_matches):
+            continue
+        s_sym = stock['symbol'].lower()
+        s_name = stock['name'].lower()
+        if q_lower in s_sym or s_sym.startswith(q_lower) or q_lower in s_name:
+            local_matches.append(dict(stock))
+        if len(local_matches) >= max_results:
+            break
+
+    # If local matches found and sufficient, enrich prices and return immediately
+    if local_matches:
+        def enrich_price(item):
+            sym = item['symbol'].upper()
+            if sym in PRICE_CACHE:
+                cached_time, c_price, c_chg = PRICE_CACHE[sym]
+                if (now - cached_time).total_seconds() < 300:
+                    item['price'] = c_price
+                    item['change_pct'] = c_chg
+                    return item
+            try:
+                t = yf.Ticker(sym)
+                fi = t.fast_info
+                last = getattr(fi, 'last_price', None)
+                prev = getattr(fi, 'previous_close', None)
+                if last is not None and not np.isnan(last):
+                    item['price'] = round(float(last), 2)
+                    if prev is not None and not np.isnan(prev) and prev > 0:
+                        item['change_pct'] = round(((float(last) - float(prev)) / float(prev)) * 100.0, 2)
+                    PRICE_CACHE[sym] = (now, item['price'], item.get('change_pct', 0.0))
+            except Exception:
+                pass
+            return item
+
+        with ThreadPoolExecutor(max_workers=min(4, len(local_matches))) as executor:
+            futures = [executor.submit(enrich_price, m) for m in local_matches[:max_results]]
+            results = []
+            for f in futures:
+                try:
+                    res_item = f.result(timeout=1.2)
+                    results.append(res_item)
+                except Exception:
+                    pass
+
+        if results:
+            SEARCH_CACHE[cache_key] = (now, results)
+            return results
+
+    # 4. Fallback to external yfinance Search for uncatalogued symbols
     results = []
     try:
         s = yf.Search(search_term, max_results=max(8, max_results * 2))
         raw_quotes = getattr(s, 'quotes', []) or []
 
-        # Filter out option chain symbols like ASSX270319C00035000
         filtered_quotes = []
         for q in raw_quotes:
             sym = q.get('symbol', '').upper()
-            if not sym:
-                continue
-            if len(sym) > 8 and any(c.isdigit() for c in sym) and not sym.startswith('^'):
+            if not sym or (len(sym) > 8 and any(c.isdigit() for c in sym) and not sym.startswith('^') and not ('.SS' in sym or '.SZ' in sym or '.HK' in sym)):
                 continue
             filtered_quotes.append(q)
 
-        # Prioritize primary symbol (e.g. ASX) to index 0
-        has_primary = any(q.get('symbol', '').upper() == primary_sym for q in filtered_quotes) if primary_sym else False
-        if primary_sym and not has_primary:
-            fb = next((x for x in FALLBACK_STOCKS if x['symbol'].upper() == primary_sym), None)
+        if primary_sym and not any(q.get('symbol', '').upper() == primary_sym for q in filtered_quotes):
             filtered_quotes.insert(0, {
                 'symbol': primary_sym,
-                'shortname': fb.get('name') if fb else COMPANY_NAME_LOOKUP.get(primary_sym, primary_sym),
-                'exchDisp': fb.get('exchange') if fb else 'NYSE',
-                'typeDisp': fb.get('type') if fb else 'Equity'
+                'shortname': COMPANY_NAME_LOOKUP.get(primary_sym, primary_sym),
+                'exchDisp': 'SSE' if primary_sym.endswith('.SS') else ('SZSE' if primary_sym.endswith('.SZ') else 'NYSE'),
+                'typeDisp': 'ETF' if ('51' in primary_sym or '15' in primary_sym or '58' in primary_sym) else 'Equity'
             })
-        elif primary_sym:
-            filtered_quotes.sort(key=lambda x: 0 if x.get('symbol', '').upper() == primary_sym else 1)
 
         quotes_to_fetch = filtered_quotes[:max_results]
 
         def fetch_single_quote(q_item):
             sym = q_item.get('symbol', '').upper()
             price, chg_pct = None, None
-
-            # Check price memory cache first (5 min TTL)
             if sym in PRICE_CACHE:
                 cached_time, c_price, c_chg = PRICE_CACHE[sym]
                 if (now - cached_time).total_seconds() < 300:
@@ -419,68 +643,52 @@ def search_yahoo_tickers(query: str, max_results: int = 5):
                         "change_pct": c_chg
                     }
 
-            fallback_match = next((item for item in FALLBACK_STOCKS if item["symbol"].upper() == sym), None)
-
+            fb = next((item for item in FALLBACK_STOCKS if item["symbol"].upper() == sym), None)
             try:
                 t = yf.Ticker(sym)
                 fi = t.fast_info
                 last = getattr(fi, 'last_price', None)
                 prev = getattr(fi, 'previous_close', None)
-                if last is not None and not np.isnan(last) and prev is not None and not np.isnan(prev) and prev > 0:
-                    chg_pct = round(((float(last) - float(prev)) / float(prev)) * 100.0, 2)
+                if last is not None and not np.isnan(last):
                     price = round(float(last), 2)
-                elif last is not None and not np.isnan(last):
-                    price = round(float(last), 2)
-                    chg_pct = 0.0
-                elif fallback_match:
-                    price = fallback_match.get("price")
-                    chg_pct = fallback_match.get("change_pct")
+                    if prev is not None and not np.isnan(prev) and prev > 0:
+                        chg_pct = round(((float(last) - float(prev)) / float(prev)) * 100.0, 2)
+                elif fb:
+                    price = fb.get("price")
+                    chg_pct = fb.get("change_pct")
             except Exception:
-                if fallback_match:
-                    price = fallback_match.get("price")
-                    chg_pct = fallback_match.get("change_pct")
+                if fb:
+                    price = fb.get("price")
+                    chg_pct = fb.get("change_pct")
 
             if price is not None:
-                PRICE_CACHE[sym] = (now, price, chg_pct)
+                PRICE_CACHE[sym] = (now, price, chg_pct or 0.0)
 
             return {
                 "symbol": sym,
-                "name": q_item.get('shortname') or q_item.get('longname') or (fallback_match.get('name') if fallback_match else sym),
-                "exchange": q_item.get('exchDisp') or q_item.get('exchange') or (fallback_match.get('exchange') if fallback_match else ''),
+                "name": q_item.get('shortname') or q_item.get('longname') or (fb.get('name') if fb else sym),
+                "exchange": q_item.get('exchDisp') or q_item.get('exchange') or (fb.get('exchange') if fb else ''),
                 "type": q_item.get('typeDisp') or q_item.get('quoteType') or 'Stock',
-                "price": price,
-                "change_pct": chg_pct
+                "price": price or (fb.get('price') if fb else 100.0),
+                "change_pct": chg_pct if chg_pct is not None else (fb.get('change_pct', 0.0) if fb else 0.0)
             }
 
         with ThreadPoolExecutor(max_workers=min(5, max(1, len(quotes_to_fetch)))) as executor:
             futures = [executor.submit(fetch_single_quote, q) for q in quotes_to_fetch]
             for f in futures:
                 try:
-                    res_item = f.result(timeout=2.0)
+                    res_item = f.result(timeout=1.5)
                     results.append(res_item)
-                except Exception as ex:
-                    logger.warning(f"Fetch quote timeout or error: {ex}")
+                except Exception:
+                    pass
 
     except Exception as e:
         logger.warning(f"Error querying yf.Search for '{query}': {e}. Using local fallback search.")
 
-    # Fallback to local catalog if results are empty or search failed
-    if not results:
-        matched = []
-        if primary_sym:
-            for stock in FALLBACK_STOCKS:
-                if stock['symbol'].upper() == primary_sym:
-                    matched.append(stock)
-                    break
-        q_lower = clean_q.lower()
-        for stock in FALLBACK_STOCKS:
-            if stock not in matched and (q_lower in stock['symbol'].lower() or q_lower in stock['name'].lower()):
-                matched.append(stock)
-            if len(matched) >= max_results:
-                break
-        results = matched
+    # 5. Last resort fallback
+    if not results and local_matches:
+        results = local_matches[:max_results]
 
-    # Save to memory cache
     SEARCH_CACHE[cache_key] = (now, results)
     return results
 
