@@ -1280,7 +1280,7 @@
     // Benchmark Dashed Line
     ctx.save();
     ctx.setLineDash([4, 4]);
-    ctx.strokeStyle = '#cbd5e1';
+    ctx.strokeStyle = '#DDD9CD';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     history.forEach((pt, idx) => {
@@ -1293,10 +1293,10 @@
     ctx.stroke();
     ctx.restore();
 
-    // Portfolio Equity Line & Gradient
+    // Portfolio Equity Line & Gradient (Claude Terracotta)
     const gradient = ctx.createLinearGradient(0, padding.top, 0, padding.top + chartH);
-    gradient.addColorStop(0, 'rgba(0, 82, 204, 0.22)');
-    gradient.addColorStop(1, 'rgba(0, 82, 204, 0.00)');
+    gradient.addColorStop(0, 'rgba(217, 119, 87, 0.22)');
+    gradient.addColorStop(1, 'rgba(217, 119, 87, 0.00)');
 
     ctx.beginPath();
     history.forEach((pt, idx) => {
@@ -1306,7 +1306,7 @@
       else ctx.lineTo(x, y);
     });
 
-    ctx.strokeStyle = '#0052cc';
+    ctx.strokeStyle = '#D97757';
     ctx.lineWidth = 2.5;
     ctx.stroke();
 
@@ -1323,14 +1323,14 @@
 
       ctx.beginPath();
       ctx.arc(lastX, lastY, 4.5, 0, Math.PI * 2);
-      ctx.fillStyle = '#0052cc';
+      ctx.fillStyle = '#D97757';
       ctx.fill();
       ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 2;
       ctx.stroke();
     }
 
-    ctx.fillStyle = '#94a3b8';
+    ctx.fillStyle = '#787774';
     ctx.font = '10.5px "JetBrains Mono", monospace';
     ctx.textAlign = 'center';
 

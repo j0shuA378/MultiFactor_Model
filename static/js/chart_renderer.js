@@ -7,21 +7,22 @@
  */
 
 const INSTITUTIONAL_PALETTE = {
-  blue: '#0052cc',        // Goldman/Invesco Signature Royal Navy-Blue
-  green: '#16a34a',       // Institutional Profit Green (Forest Green)
-  red: '#dc2626',         // Institutional Loss Red (Crimson)
-  orange: '#d97706',      // Warm Amber (Gold/Bronze)
-  teal: '#0284c7',        // Sky Slate
-  purple: '#6366f1',      // Refined Indigo
-  gray: '#64748b',        // Slate Gray Benchmark
-  grayLight: '#94a3b8',   // Light Slate
-  grid: '#f1f5f9',        // Light reference grid lines
-  gridBorder: '#e2e8f0',  // Chart baseline
-  axisText: '#64748b',    // Clear dark slate text
-  darkText: '#0f172a',    // Deep Navy-Charcoal Text
-  crosshair: 'rgba(15, 23, 42, 0.4)', // Crosshair
-  fontSans: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-  fontMono: '"JetBrains Mono", "SF Mono", Menlo, Consolas, monospace'
+  blue: '#D97757',        // Anthropic Claude Terracotta
+  green: '#237852',       // Claude Naturalist Sage Profit Green
+  red: '#C53929',         // Claude Naturalist Crimson Loss Red
+  orange: '#C97D30',      // Warm Ochre / Amber
+  teal: '#2B7A78',        // Literary Teal
+  purple: '#7E57C2',      // Refined Violet
+  gray: '#787774',        // Warm Graphite Benchmark
+  grayLight: '#DDD9CD',   // Warm Stone
+  grid: '#F3F1EA',        // Soft Warm Reference Grid Lines
+  gridBorder: '#E8E6DC',  // Warm Baseline
+  axisText: '#787774',    // Clear Warm Graphite Text
+  darkText: '#141413',    // Claude Carbon Ink
+  crosshair: 'rgba(20, 20, 19, 0.35)', // Crosshair
+  fontSans: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+  fontMono: '"JetBrains Mono", "SF Mono", Menlo, Consolas, monospace',
+  fontSerif: "'Newsreader', Georgia, 'Times New Roman', serif"
 };
 
 class CandlestickChart {
