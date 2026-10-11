@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=20261011_v4">
 </head>
 <body data-page="workspace">
   <div class="tv-workspace-layout">
@@ -25,7 +25,7 @@
         <!-- Stock Search Box -->
         <div class="tv-search-box" id="search-box-wrap">
           <svg class="art-icon tv-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" id="custom-ticker-input" class="tv-search-input" placeholder="代码/名称 (如 NVDA, 茅台)..." autocomplete="off" spellcheck="false">
+          <input type="text" id="custom-ticker-input" class="tv-search-input" placeholder="代码/名称 (如 NVDA)..." autocomplete="off" spellcheck="false">
           <button id="search-ticker-btn" class="tv-search-btn" type="button" title="切换分析标的">切换</button>
           <div class="search-suggestions-dropdown hidden" id="search-suggestions-dropdown"></div>
         </div>
@@ -142,7 +142,7 @@
       <div class="tv-top-right">
         <button id="run-backtest-btn" class="tv-btn-run" title="执行当前模型回测与信号标定">
           <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          <span>运行模型 (Run)</span>
+          <span>运行回测</span>
         </button>
 
         <a href="paper_trading.html" class="tv-strat-select-btn" title="进入实盘模拟交易">
@@ -1020,8 +1020,8 @@
     </div>
   </div>
 
-  <script src="js/chart_renderer.js"></script>
-  <script src="js/fundamentals_data.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/chart_renderer.js?v=20261011_v4"></script>
+  <script src="js/fundamentals_data.js?v=20261011_v4"></script>
+  <script src="js/app.js?v=20261011_v4"></script>
 </body>
 </html>

@@ -4988,16 +4988,18 @@ html, body {
   border-bottom: 1px solid #e2e8f0;
   padding: 0 12px;
   flex-shrink: 0;
-  gap: 12px;
+  gap: 8px;
   z-index: 50;
   box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+  white-space: nowrap;
 }
 
 .tv-top-left {
   display: flex;
   align-items: center;
-  gap: 10px;
-  min-width: 0;
+  gap: 8px;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .tv-brand {
@@ -5007,8 +5009,10 @@ html, body {
   text-decoration: none;
   font-weight: 800;
   color: #0f172a;
-  font-size: 15px;
+  font-size: 14.5px;
   letter-spacing: -0.02em;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .tv-brand-tag {
@@ -5019,6 +5023,7 @@ html, body {
   background: #eff6ff;
   color: #0052cc;
   border: 1px solid #bfdbfe;
+  flex-shrink: 0;
 }
 
 .tv-search-box {
@@ -5029,17 +5034,20 @@ html, body {
   border: 1px solid #cbd5e1;
   border-radius: 6px;
   padding: 0 6px 0 8px;
-  height: 32px;
-  width: 280px;
+  height: 30px;
+  width: 250px;
+  min-width: 220px;
+  flex-shrink: 0;
   gap: 6px;
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .tv-search-box:focus-within {
   border-color: #0052cc;
   background: #ffffff;
   box-shadow: 0 0 0 2px rgba(0, 82, 204, 0.12);
-  width: 320px;
+  width: 280px;
 }
 
 .tv-search-icon {
@@ -5055,20 +5063,22 @@ html, body {
   border: none;
   background: transparent;
   outline: none;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 600;
   color: #0f172a;
   padding: 0;
+  white-space: nowrap;
 }
 
 .tv-search-input::placeholder {
   color: #94a3b8;
   font-weight: 500;
+  font-size: 11px;
 }
 
 .tv-search-btn {
-  flex-shrink: 0;
-  white-space: nowrap;
+  flex-shrink: 0 !important;
+  white-space: nowrap !important;
   height: 22px;
   padding: 0 8px;
   border-radius: 4px;
@@ -5082,6 +5092,7 @@ html, body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  line-height: 1;
 }
 
 .tv-search-btn:hover {
@@ -5098,6 +5109,8 @@ html, body {
   border-left: 1px solid #e2e8f0;
   border-right: 1px solid #e2e8f0;
   height: 28px;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .tv-ticker-code {
@@ -5152,54 +5165,115 @@ html, body {
 .tv-top-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .tv-strat-select-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 10px;
-  border-radius: 6px;
-  border: 1px solid #cbd5e1;
-  background: #f8fafc;
-  font-size: 12px;
-  font-weight: 600;
-  color: #334155;
-  cursor: pointer;
-  transition: all 0.18s ease;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 0 10px !important;
+  height: 28px !important;
+  border-radius: 6px !important;
+  border: 1px solid #cbd5e1 !important;
+  background: #f8fafc !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #334155 !important;
+  cursor: pointer !important;
+  transition: all 0.18s ease !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  line-height: 1 !important;
+  text-decoration: none !important;
 }
 
 .tv-strat-select-btn:hover {
-  background: #f1f5f9;
-  border-color: #94a3b8;
+  background: #f1f5f9 !important;
+  border-color: #94a3b8 !important;
 }
 
 .tv-strat-select-btn.active {
-  background: #eff6ff;
-  border-color: #0052cc;
-  color: #0052cc;
+  background: #eff6ff !important;
+  border-color: #0052cc !important;
+  color: #0052cc !important;
+}
+
+.tv-strat-select-btn span {
+  white-space: nowrap !important;
+  display: inline-block !important;
 }
 
 .tv-btn-run {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: #0052cc;
-  color: #ffffff;
-  border: none;
-  border-radius: 6px;
-  padding: 6px 14px;
-  font-size: 12.5px;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0, 82, 204, 0.3);
-  transition: all 0.18s ease;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  background: #0052cc !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 6px !important;
+  padding: 0 12px !important;
+  height: 28px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  box-shadow: 0 1px 3px rgba(0, 82, 204, 0.3) !important;
+  transition: all 0.18s ease !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  line-height: 1 !important;
 }
 
 .tv-btn-run:hover {
-  background: #0747a6;
+  background: #0747a6 !important;
   transform: translateY(-1px);
+}
+
+.tv-btn-run span {
+  white-space: nowrap !important;
+  display: inline-block !important;
+}
+
+/* System status dot & text anti-wrap */
+.system-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 1;
+  min-width: 0;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+}
+
+.system-status .status-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Responsive Top Bar: Gracefully hide non-critical metadata on compact viewports */
+@media (max-width: 1440px) {
+  #ass-name,
+  #ass-exchange {
+    display: none !important;
+  }
+}
+
+@media (max-width: 1240px) {
+  .system-status {
+    display: none !important;
+  }
+  .tv-search-box {
+    width: 210px;
+  }
+  .tv-search-box:focus-within {
+    width: 240px;
+  }
 }
 
 /* Strategy Dropdown Selector (TradingView Style) */
