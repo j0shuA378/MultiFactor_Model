@@ -311,12 +311,14 @@ body {
   background: #ffffff;
   border: 1px solid var(--border-input);
   border-radius: var(--radius-sm);
-  padding: 4px 8px 4px 10px;
+  padding: 3px 6px 3px 10px;
   transition: all 0.2s ease;
   position: relative;
-  width: 220px;
-  min-width: 160px;
-  max-width: 260px;
+  width: 320px;
+  min-width: 240px;
+  max-width: 380px;
+  height: 34px;
+  box-sizing: border-box;
   flex-shrink: 1;
   box-shadow: var(--shadow-sm);
 }
@@ -334,19 +336,36 @@ body {
   flex-shrink: 0;
 }
 
-.search-box input {
-  background: transparent;
-  border: none;
-  outline: none;
-  color: var(--text-primary);
-  font-family: var(--font-sans);
-  font-size: 12px;
-  flex: 1;
-  min-width: 130px;
+.search-box input,
+.search-box input[type="text"],
+.search-box input#custom-ticker-input {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  color: var(--text-primary) !important;
+  font-family: var(--font-sans) !important;
+  font-size: 12.5px !important;
+  padding: 0 6px 0 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 100% !important;
+  line-height: normal !important;
+  flex: 1 1 auto !important;
 }
 
-.search-box input::placeholder {
-  color: var(--text-muted);
+.search-box input[type="text"]:focus,
+.search-box input#custom-ticker-input:focus {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.search-box input::placeholder,
+.search-box input[type="text"]::placeholder {
+  color: var(--text-muted) !important;
+  font-size: 11.5px !important;
 }
 
 .btn-search {
@@ -354,12 +373,17 @@ body {
   border: 1px solid var(--border-subtle);
   color: var(--text-secondary);
   border-radius: var(--radius-xs);
-  padding: 3px 8px;
-  font-size: 11px;
+  padding: 0 10px;
+  font-size: 11.5px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
   flex-shrink: 0;
+  height: 24px;
+  line-height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-search:hover {

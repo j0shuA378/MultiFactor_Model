@@ -247,6 +247,105 @@
 
     const searchInput = document.getElementById('custom-ticker-input');
     const searchBtn = document.getElementById('search-ticker-btn');
+    const dropdown = document.getElementById('search-suggestions-dropdown');
+    const searchWrap = document.getElementById('search-box-wrap') || (searchInput ? searchInput.closest('.search-box') : null);
+
+    const closeDropdown = () => {
+      if (dropdown) dropdown.classList.add('hidden');
+    };
+
+    const paperCandidates = [
+      { symbol: "510300.SS", name: "华泰柏瑞沪深300 ETF", exchange: "SSE", price: 4.39, change_pct: 0.05, type: "ETF" },
+      { symbol: "600519.SS", name: "贵州茅台 (白酒龙头)", exchange: "SSE", price: 1263.00, change_pct: 0.64, type: "Equity" },
+      { symbol: "300750.SZ", name: "宁德时代 (动力电池龙头)", exchange: "SZSE", price: 245.50, change_pct: 1.82, type: "Equity" },
+      { symbol: "002594.SZ", name: "比亚迪 (新能源汽车)", exchange: "SZSE", price: 285.20, change_pct: 1.15, type: "Equity" },
+      { symbol: "000001.SZ", name: "平安银行 (商业银行标杆)", exchange: "SZSE", price: 11.59, change_pct: -0.42, type: "Equity" },
+      { symbol: "0700.HK", name: "腾讯控股 (社交网络与游戏龙头)", exchange: "HKEX", price: 425.20, change_pct: 1.48, type: "Equity" },
+      { symbol: "AAPL", name: "Apple Inc. (苹果公司)", exchange: "NASDAQ", price: 336.64, change_pct: -1.11, type: "Equity" },
+      { symbol: "NVDA", name: "NVIDIA Corp. (英伟达)", exchange: "NASDAQ", price: 229.28, change_pct: -0.52, type: "Equity" },
+      { symbol: "TSLA", name: "Tesla, Inc. (特斯拉)", exchange: "NASDAQ", price: 382.70, change_pct: 2.05, type: "Equity" },
+      { symbol: "SPY", name: "SPDR S&P 500 ETF (标普500)", exchange: "NYSEArca", price: 778.57, change_pct: 0.32, type: "ETF" },
+      { symbol: "QQQ", name: "Invesco QQQ Trust (纳指100)", exchange: "NASDAQ", price: 751.27, change_pct: 0.45, type: "ETF" }
+    ];
+
+    const renderPaperSuggestions = (items, isCandidatePool = false) => {
+      if (!dropdown) return;
+      dropdown.innerHTML = '';
+      if (!items || items.length === 0) {
+        dropdown.innerHTML = `<div class="suggestion-empty">未匹配到标的，直接按回车可尝试自动转换</div>`;
+        dropdown.classList.remove('hidden');
+        return;
+      }
+
+      const header = document.createElement('div');
+      header.className = 'suggestion-header';
+      header.innerHTML = isCandidatePool 
+        ? `<span>🔥 热门备选标的 (点击快速对盘)</span><span class="suggestion-source-tag">Candidate Pool</span>`
+        : `<span>标的检索候选列表</span><span class="suggestion-source-tag">Live Quotes</span>`;
+      dropdown.appendChild(header);
+
+      items.slice(0, 6).forEach(item => {
+        const el = document.createElement('div');
+        el.className = 'suggestion-item';
+        const symUpper = item.symbol.toUpperCase();
+        const currSign = (symUpper.endsWith('.SS') || symUpper.endsWith('.SZ') || symUpper.endsWith('.BJ')) ? '¥' : (symUpper.endsWith('.HK') ? 'HK$' : '$');
+        const priceStr = item.price ? `${currSign}${Number(item.price).toFixed(2)}` : '--';
+        let chgHtml = '<span class="suggestion-chg-pill flat">--</span>';
+        if (item.change_pct !== undefined && item.change_pct !== null) {
+          const val = Number(item.change_pct);
+          chgHtml = `<span class="suggestion-chg-pill ${val >= 0 ? 'pos' : 'neg'}">${val >= 0 ? '+' : ''}${val.toFixed(2)}%</span>`;
+        }
+
+        el.innerHTML = `
+          <div class="suggestion-left">
+            <span class="suggestion-symbol-badge">${item.symbol}</span>
+            <div class="suggestion-info">
+              <span class="suggestion-name" title="${item.name}">${item.name}</span>
+              <span class="suggestion-meta">${item.exchange || 'MARKET'} · ${item.type || 'Stock'}</span>
+            </div>
+          </div>
+          <div class="suggestion-right">
+            <span class="suggestion-price">${priceStr}</span>
+            ${chgHtml}
+          </div>
+        `;
+
+        el.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          const sym = item.symbol;
+          if (searchInput) searchInput.value = sym;
+          const orderInput = document.getElementById('order-input-ticker');
+          if (orderInput) orderInput.value = sym;
+          closeDropdown();
+          showNotification(`已切换对盘标的: ${sym} (${item.name})`);
+        });
+
+        dropdown.appendChild(el);
+      });
+
+      dropdown.classList.remove('hidden');
+    };
+
+    const showPaperDropdown = () => {
+      const q = searchInput ? searchInput.value.trim().toLowerCase() : '';
+      if (!q) {
+        renderPaperSuggestions(paperCandidates, true);
+      } else {
+        const direct = sanitizePaperTicker(q);
+        const filtered = paperCandidates.filter(c => c.symbol.toLowerCase().includes(q) || c.name.toLowerCase().includes(q));
+        if (direct && !filtered.some(f => f.symbol.toUpperCase() === direct.toUpperCase())) {
+          filtered.unshift({
+            symbol: direct,
+            name: aliases[q] || direct,
+            exchange: direct.endsWith('.SS') ? 'SSE' : (direct.endsWith('.SZ') ? 'SZSE' : (direct.endsWith('.HK') ? 'HKEX' : 'US')),
+            price: null,
+            change_pct: null,
+            type: 'Equity'
+          });
+        }
+        renderPaperSuggestions(filtered, false);
+      }
+    };
 
     const handleSwitchSearchTicker = () => {
       if (!searchInput) return;
@@ -256,14 +355,23 @@
       searchInput.value = val;
       const orderInput = document.getElementById('order-input-ticker');
       if (orderInput) orderInput.value = val;
+      closeDropdown();
       showNotification(`已切换对盘标的: ${val}`);
     };
 
     if (searchInput) {
+      searchInput.addEventListener('focus', showPaperDropdown);
+      searchInput.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showPaperDropdown();
+      });
+      searchInput.addEventListener('input', showPaperDropdown);
       searchInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
           e.preventDefault();
           handleSwitchSearchTicker();
+        } else if (e.key === 'Escape') {
+          closeDropdown();
         }
       });
     }
@@ -273,6 +381,11 @@
         handleSwitchSearchTicker();
       });
     }
+    document.addEventListener('click', (e) => {
+      if (searchWrap && !searchWrap.contains(e.target)) {
+        closeDropdown();
+      }
+    });
   }
 
   // --- Client-Side Offline Engine (GitHub Pages Mode) ---

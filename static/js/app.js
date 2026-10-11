@@ -403,51 +403,127 @@ function sanitizeTickerClient(raw) {
   return cleaned || "AAPL";
 }
 
-async function fetchYahooSuggestions(query) {
-  if (!query) return [];
-  const cleanQ = query.replace(/['’]/g, '').trim();
+function enrichCandidateQuote(item) {
+  if (!item || !item.symbol) return item;
+  const sym = String(item.symbol).toUpperCase();
+  const live = ACCURATE_LIVE_MARKET_PRICES[sym];
+  if (live && live.price !== undefined && live.price !== null) {
+    const prev = Number(live.prev) || Number(live.price);
+    const chg = prev > 0 ? ((Number(live.price) - prev) / prev * 100) : (item.change_pct || 0);
+    return {
+      ...item,
+      symbol: sym,
+      name: item.name || live.name || COMPANY_NAME_MAP[sym] || sym,
+      price: Number(live.price),
+      change_pct: Number(chg.toFixed(2))
+    };
+  }
+  return {
+    ...item,
+    symbol: sym,
+    name: item.name || COMPANY_NAME_MAP[sym] || sym,
+    price: item.price !== undefined ? Number(item.price) : null,
+    change_pct: item.change_pct !== undefined ? Number(item.change_pct) : null
+  };
+}
 
-  // Check if brackets contain ticker
-  const bracketMatch = cleanQ.match(/[\(（\[【]([A-Za-z0-9\.\-\^]+)[\)）\]】]/);
-  const searchQ = bracketMatch ? bracketMatch[1] : cleanQ;
+function getPopularCandidateSuggestions() {
+  const POPULAR_KEYS = [
+    "510300.SS", // 华泰柏瑞沪深300 ETF
+    "600519.SS", // 贵州茅台
+    "300750.SZ", // 宁德时代
+    "002594.SZ", // 比亚迪
+    "000001.SZ", // 平安银行
+    "0700.HK",   // 腾讯控股
+    "9988.HK",   // 阿里巴巴
+    "AAPL",      // 苹果公司
+    "NVDA",      // 英伟达
+    "TSLA",      // 特斯拉
+    "SPY",       // 标普500 ETF
+    "QQQ"        // 纳指100 ETF
+  ];
 
-  try {
-    const res = await fetch(`/api/search?q=${encodeURIComponent(searchQ)}`);
-    const json = await res.json();
-    if (json.status === 'success' && Array.isArray(json.data) && json.data.length > 0) {
-      return json.data.slice(0, 5);
+  const list = [];
+  POPULAR_KEYS.forEach(sym => {
+    const stock = FALLBACK_AUTOCOMPLETE_STOCKS.find(s => s.symbol.toUpperCase() === sym);
+    if (stock) {
+      list.push(enrichCandidateQuote(stock));
+    } else {
+      const live = ACCURATE_LIVE_MARKET_PRICES[sym];
+      list.push(enrichCandidateQuote({
+        symbol: sym,
+        name: live?.name || COMPANY_NAME_MAP[sym] || sym,
+        exchange: sym.endsWith('.SS') ? 'SSE' : (sym.endsWith('.SZ') ? 'SZSE' : (sym.endsWith('.HK') ? 'HKEX' : 'NASDAQ')),
+        type: sym.includes('ETF') || ['SPY', 'QQQ', '510300.SS'].includes(sym) ? 'ETF' : 'Equity',
+        price: live?.price || 100.0,
+        change_pct: 0.0
+      }));
     }
-  } catch (err) {
-    console.warn("Backend /api/search unavailable or timed out, using fallback catalog:", err);
+  });
+  return list.slice(0, 8);
+}
+
+function getLocalMatchingSuggestions(query) {
+  if (!query || !query.trim()) {
+    return getPopularCandidateSuggestions();
   }
 
-  // Fallback matching with alias support
-  const qLower = searchQ.toLowerCase().trim();
-  let aliasSym = COMPANY_ALIAS_CLIENT_MAP[qLower];
+  const rawClean = query.replace(/['’]/g, '').trim();
+  // 1. Bracket extraction: e.g. "贵州茅台 (600519.SS)" -> "600519.SS"
+  const m = rawClean.match(/[\(（\[【]([A-Za-z0-9\.\-\^]+)[\)）\]】]/);
+  const qClean = (m ? m[1] : rawClean).toLowerCase();
+
+  // 2. Direct alias check
+  let aliasSym = COMPANY_ALIAS_CLIENT_MAP[qClean];
   if (!aliasSym) {
     for (const [k, v] of Object.entries(COMPANY_ALIAS_CLIENT_MAP)) {
-      if (qLower === k || qLower.includes(k) || k.includes(qLower)) {
+      if (qClean === k || qClean.includes(k) || k.includes(qClean)) {
         aliasSym = v;
         break;
       }
     }
   }
 
-  const matched = [];
-  if (aliasSym) {
-    const primary = FALLBACK_AUTOCOMPLETE_STOCKS.find(s => s.symbol.toUpperCase() === aliasSym);
-    if (primary) matched.push(primary);
-  }
-
-  for (const item of FALLBACK_AUTOCOMPLETE_STOCKS) {
-    if (matched.some(m => m.symbol === item.symbol)) continue;
-    if (item.symbol.toLowerCase().includes(qLower) || item.name.toLowerCase().includes(qLower)) {
-      matched.push(item);
+  // 3. 6-digit A-share or 4-digit HK auto-suffix
+  const numOnly = qClean.replace(/[^0-9]/g, '');
+  if (!aliasSym) {
+    if (numOnly.length === 6) {
+      if (/^(60|688|51|56|58)/.test(numOnly)) aliasSym = `${numOnly}.SS`;
+      else if (/^(00|30|15|16)/.test(numOnly)) aliasSym = `${numOnly}.SZ`;
+      else if (/^[849]/.test(numOnly)) aliasSym = `${numOnly}.BJ`;
+    } else if ((numOnly.length === 4 || numOnly.length === 5) && !qClean.includes('.')) {
+      aliasSym = `${numOnly.padStart(4, '0')}.HK`;
     }
-    if (matched.length >= 5) break;
   }
 
-  return matched.slice(0, 5);
+  const results = [];
+  if (aliasSym) {
+    const symUpper = aliasSym.toUpperCase();
+    const primary = FALLBACK_AUTOCOMPLETE_STOCKS.find(s => s.symbol.toUpperCase() === symUpper);
+    if (primary) {
+      results.push(enrichCandidateQuote(primary));
+    } else {
+      results.push(enrichCandidateQuote({
+        symbol: symUpper,
+        name: COMPANY_NAME_MAP[symUpper] || symUpper,
+        exchange: symUpper.endsWith('.SS') ? 'SSE' : (symUpper.endsWith('.SZ') ? 'SZSE' : (symUpper.endsWith('.HK') ? 'HKEX' : 'US')),
+        type: 'Equity'
+      }));
+    }
+  }
+
+  // 4. Fuzzy match across local catalog
+  for (const item of FALLBACK_AUTOCOMPLETE_STOCKS) {
+    if (results.some(r => r.symbol.toUpperCase() === item.symbol.toUpperCase())) continue;
+    const symLower = item.symbol.toLowerCase();
+    const nameLower = (item.name || '').toLowerCase();
+    if (symLower.includes(qClean) || nameLower.includes(qClean)) {
+      results.push(enrichCandidateQuote(item));
+    }
+    if (results.length >= 6) break;
+  }
+
+  return results.slice(0, 6);
 }
 
 function setupSearchAutocomplete() {
@@ -461,6 +537,7 @@ function setupSearchAutocomplete() {
   let searchDebounceTimer = null;
   let currentSuggestions = [];
   let selectedIndex = -1;
+  let activeSearchAbort = null;
 
   const closeDropdown = () => {
     if (dropdown) dropdown.classList.add('hidden');
@@ -490,49 +567,58 @@ function setupSearchAutocomplete() {
       addTickerToActiveGroup(targetSymbol);
     } else {
       updateTickerDisplay();
-      runAnalysis();
+      if (typeof runAnalysis === 'function') runAnalysis();
     }
+    showStatus(`已切换分析标的: ${targetSymbol} (${COMPANY_NAME_MAP[targetSymbol] || item.name || targetSymbol})`);
   };
 
   const executeSearch = () => {
     const rawVal = searchInput.value.trim();
     if (!rawVal) {
-      closeDropdown();
+      showCandidatesDropdown();
       return;
     }
     const targetSymbol = sanitizeTickerClient(rawVal);
     searchInput.value = targetSymbol;
+    closeDropdown();
     state.ticker = targetSymbol;
     if (typeof addTickerToActiveGroup === 'function') {
       addTickerToActiveGroup(targetSymbol);
     } else {
       updateTickerDisplay();
-      runAnalysis();
+      if (typeof runAnalysis === 'function') runAnalysis();
     }
-    closeDropdown();
+    showStatus(`已切换分析标的: ${targetSymbol} (${COMPANY_NAME_MAP[targetSymbol] || targetSymbol})`);
   };
 
-  const renderSuggestions = (items, query) => {
+  const renderSuggestions = (items, query, isCandidatesPool = false) => {
     if (!dropdown) return;
     dropdown.innerHTML = '';
     currentSuggestions = items || [];
     selectedIndex = -1;
 
     if (!items || items.length === 0) {
-      dropdown.innerHTML = `<div class="suggestion-empty">未匹配到 "${query}" 相关的 Yahoo 金融标的</div>`;
+      dropdown.innerHTML = `<div class="suggestion-empty">未匹配到 "${query}" 相关的金融标的，直接按回车可尝试自动推断代码</div>`;
       dropdown.classList.remove('hidden');
       return;
     }
 
     const header = document.createElement('div');
     header.className = 'suggestion-header';
-    header.innerHTML = `
-      <span>Yahoo 金融标的候选 (最多5项)</span>
-      <span class="suggestion-source-tag">Live Quotes</span>
-    `;
+    if (isCandidatesPool) {
+      header.innerHTML = `
+        <span>🔥 热门备选标的推荐 (点击直接切换)</span>
+        <span class="suggestion-source-tag">Candidate Pool</span>
+      `;
+    } else {
+      header.innerHTML = `
+        <span>金融标的候选列表 (共 ${items.length} 项)</span>
+        <span class="suggestion-source-tag">Live Quotes</span>
+      `;
+    }
     dropdown.appendChild(header);
 
-    items.slice(0, 5).forEach((item, idx) => {
+    items.slice(0, 6).forEach((item, idx) => {
       const el = document.createElement('div');
       el.className = 'suggestion-item';
       el.dataset.idx = idx;
@@ -557,7 +643,7 @@ function setupSearchAutocomplete() {
           <span class="suggestion-symbol-badge">${item.symbol}</span>
           <div class="suggestion-info">
             <span class="suggestion-name" title="${item.name}">${item.name}</span>
-            <span class="suggestion-meta">${item.exchange || ''} · ${item.type || 'Stock'}</span>
+            <span class="suggestion-meta">${item.exchange || 'MARKET'} · ${item.type || 'Stock'}</span>
           </div>
         </div>
         <div class="suggestion-right">
@@ -582,30 +668,70 @@ function setupSearchAutocomplete() {
     dropdown.classList.remove('hidden');
   };
 
-  // Input event with debounce
-  searchInput.addEventListener('input', () => {
-    clearTimeout(searchDebounceTimer);
+  const showCandidatesDropdown = () => {
     const q = searchInput.value.trim();
     if (!q) {
-      closeDropdown();
+      const candidates = getPopularCandidateSuggestions();
+      renderSuggestions(candidates, '', true);
+    } else {
+      const matches = getLocalMatchingSuggestions(q);
+      renderSuggestions(matches, q, false);
+    }
+  };
+
+  // Instant display on focus and click
+  searchInput.addEventListener('focus', showCandidatesDropdown);
+  searchInput.addEventListener('click', (e) => {
+    e.stopPropagation();
+    showCandidatesDropdown();
+  });
+
+  // Input event with instant local response (<1ms) and resilient background remote merge
+  searchInput.addEventListener('input', () => {
+    clearTimeout(searchDebounceTimer);
+    if (activeSearchAbort) {
+      activeSearchAbort.abort();
+      activeSearchAbort = null;
+    }
+
+    const q = searchInput.value.trim();
+    if (!q) {
+      const candidates = getPopularCandidateSuggestions();
+      renderSuggestions(candidates, '', true);
       return;
     }
 
-    // Show loading spinner
-    if (dropdown) {
-      dropdown.innerHTML = `
-        <div class="suggestion-loading">
-          <div class="suggestion-spinner"></div>
-          <span>正在从 Yahoo Finance 检索标的与实时涨跌...</span>
-        </div>
-      `;
-      dropdown.classList.remove('hidden');
-    }
+    // Step 1: Immediate local response (<1ms)
+    const localMatches = getLocalMatchingSuggestions(q);
+    renderSuggestions(localMatches, q, false);
 
+    // Step 2: Background remote search with strict 800ms timeout
     searchDebounceTimer = setTimeout(async () => {
-      const results = await fetchYahooSuggestions(q);
-      renderSuggestions(results, q);
-    }, 220);
+      activeSearchAbort = new AbortController();
+      const timeoutId = setTimeout(() => {
+        if (activeSearchAbort) activeSearchAbort.abort();
+      }, 800);
+
+      try {
+        const cleanQ = q.replace(/['’]/g, '').trim();
+        const res = await fetch(`/api/search?q=${encodeURIComponent(cleanQ)}`, { signal: activeSearchAbort.signal });
+        clearTimeout(timeoutId);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.status === 'success' && Array.isArray(json.data) && json.data.length > 0) {
+            const merged = [...localMatches];
+            json.data.forEach(item => {
+              if (!merged.some(m => m.symbol.toUpperCase() === item.symbol.toUpperCase())) {
+                merged.push(enrichCandidateQuote(item));
+              }
+            });
+            renderSuggestions(merged.slice(0, 6), q, false);
+          }
+        }
+      } catch (err) {
+        // Silently ignore remote errors; local matching is already active and displayed
+      }
+    }, 180);
   });
 
   // Keyboard navigation
@@ -631,14 +757,6 @@ function setupSearchAutocomplete() {
       }
     } else if (e.key === 'Escape') {
       closeDropdown();
-    }
-  });
-
-  // Re-open on focus if text present
-  searchInput.addEventListener('focus', () => {
-    const q = searchInput.value.trim();
-    if (q && currentSuggestions.length > 0 && dropdown) {
-      dropdown.classList.remove('hidden');
     }
   });
 
@@ -1945,8 +2063,13 @@ function collectBacktestParams() {
   };
 }
 
+let pendingAnalysisTicker = null;
+
 async function runAnalysis() {
-  if (state.isLoading) return;
+  if (state.isLoading) {
+    pendingAnalysisTicker = state.ticker;
+    return;
+  }
   setLoadingState(true);
 
   try {
@@ -1960,6 +2083,12 @@ async function runAnalysis() {
     showStatus(`回测发生异常: ${err.message}`, true);
   } finally {
     setLoadingState(false);
+    if (pendingAnalysisTicker && pendingAnalysisTicker !== state.ticker) {
+      const next = pendingAnalysisTicker;
+      pendingAnalysisTicker = null;
+      state.ticker = next;
+      runAnalysis();
+    }
   }
 }
 
