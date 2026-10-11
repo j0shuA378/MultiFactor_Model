@@ -160,10 +160,17 @@
             <span class="tab-desc">唐奇安20日突破 · ATR(N)风险头寸 · 2N动态移动止损</span>
           </div>
         </button>
+        <button class="strat-tab" data-strat="chan">
+          <span class="tab-icon">📐</span>
+          <div class="tab-content">
+            <span class="tab-title">缠论中枢与形态量化</span>
+            <span class="tab-desc">K线包含合并 · 顶底分型严格笔 · 中枢演化 · 趋势背驰与一二三类买卖点</span>
+          </div>
+        </button>
         <button class="strat-tab active" data-strat="compare">
           <span class="tab-icon">⚔️</span>
           <div class="tab-content">
-            <span class="tab-title">三大策略横向对决</span>
+            <span class="tab-title">多策略横向对决</span>
             <span class="tab-desc">同周期回测对比 · 夏普比率 / 最大回撤 / 收益曲线叠图</span>
           </div>
         </button>
@@ -593,11 +600,12 @@
           <div class="chart-container-card">
             <div class="chart-header">
               <div class="chart-title-group">
-                <h3 class="chart-title">三大策略同台竞技净值曲线叠加对比 (Head-to-Head Equity Curves)</h3>
+                <h3 class="chart-title">多策略同台竞技净值曲线叠加对比 (Head-to-Head Equity Curves)</h3>
                 <div class="legend-row">
                   <span class="legend-item"><span class="legend-line line-momentum"></span>多因子动量策略</span>
                   <span class="legend-item"><span class="legend-line line-ml"></span>机器学习预测模型</span>
                   <span class="legend-item"><span class="legend-line line-turtle"></span>海龟法则与网格</span>
+                  <span class="legend-item"><span class="legend-line line-chan"></span>缠论形态与中枢</span>
                   <span class="legend-item"><span class="legend-line line-benchmark"></span>基准 (SPY/买入持有)</span>
                 </div>
               </div>
@@ -610,7 +618,7 @@
           <!-- Comparison Table -->
           <div class="trades-card">
             <div class="trades-card-header">
-              <h3 class="trades-card-title">三大策略全维度量化指标深度对比矩阵</h3>
+              <h3 class="trades-card-title">四大策略全维度量化指标深度对比矩阵</h3>
             </div>
             <div class="table-container">
               <table class="trades-table comparison-table" id="comparison-matrix-table">

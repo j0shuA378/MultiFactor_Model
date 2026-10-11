@@ -1610,6 +1610,7 @@ input[type="text"]:focus,
 .line-momentum { background-color: var(--accent-orange); }
 .line-ml { background-color: var(--accent-cyan); }
 .line-turtle { background-color: var(--color-bull); }
+.line-chan { background-color: #a855f7; }
 .line-prediction-buy { background-color: #16a34a; }
 .line-prediction-tp  { background-color: #0284c7; }
 .line-prediction-sl  { background-color: #dc2626; }

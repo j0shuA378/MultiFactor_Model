@@ -1888,6 +1888,8 @@ function switchStrategy(strat, triggerAnalysis = true) {
   } else if (strat === 'turtle') {
     if (groupTurtle) groupTurtle.classList.remove('hidden');
     if (heading) heading.textContent = '海龟法则与网格风控参数';
+  } else if (strat === 'chan') {
+    if (heading) heading.textContent = '缠论形态与中枢参数设定';
   } else if (strat === 'compare') {
     if (heading) heading.textContent = '横向对决通用参数设定';
   }
@@ -2340,6 +2342,11 @@ function computeTradePrediction(candles, signals, trades, meta, strategyKey, met
   } else if (strategyKey === 'turtle') {
     alphaText = `唐奇安突破轨: $${bbUpper.toFixed(2)}`;
     sizeText = 'ATR 波动率平价';
+  } else if (strategyKey === 'chan') {
+    alphaText = '缠论中枢: [ZD, ZG] 震荡区间';
+    sizeText = '中枢下轨防守 (1B/2B/3B)';
+    buyReason = '缠论3B中枢突破回踩 / 2B二买确认';
+    confidence = 86;
   }
 
   const ticker = state.ticker || '当前标的';
@@ -2382,7 +2389,8 @@ function renderTradePredictionDock(pred) {
   const stratNames = {
     momentum: '多因子 Alpha (Barra)',
     ml: '机器学习预测 (ML/AI)',
-    turtle: 'CTA波动率平价 (Turtle)'
+    turtle: 'CTA波动率平价 (Turtle)',
+    chan: '缠论形态中枢 (Chan Theory)'
   };
   const stratTag = document.getElementById('dock-strategy-tag');
   if (stratTag) stratTag.textContent = stratNames[state.strategy] || '量化策略引擎';
@@ -2459,12 +2467,14 @@ async function runComparison() {
     const mRes = runClientSimulation(hist, { capital, ticker: state.ticker, period: state.period, strategy: 'momentum' });
     const mlRes = runClientSimulation(hist, { capital, ticker: state.ticker, period: state.period, strategy: 'ml' });
     const ttRes = runClientSimulation(hist, { capital, ticker: state.ticker, period: state.period, strategy: 'turtle' });
+    const chanRes = runClientSimulation(hist, { capital, ticker: state.ticker, period: state.period, strategy: 'chan' });
     json = {
       status: 'success',
       results: [
         { strategy_key: 'momentum', strategy_name: '多因子动量模型 (Barra Style)', metrics: mRes.metrics, equity_curve: mRes.equity_curve, trades: mRes.trades },
         { strategy_key: 'ml', strategy_name: '机器学习动态集成 (LightGBM+LSTM)', metrics: mlRes.metrics, equity_curve: mlRes.equity_curve, trades: mlRes.trades },
-        { strategy_key: 'turtle', strategy_name: '海龟波动率通道突破', metrics: ttRes.metrics, equity_curve: ttRes.equity_curve, trades: ttRes.trades }
+        { strategy_key: 'turtle', strategy_name: '海龟波动率通道突破', metrics: ttRes.metrics, equity_curve: ttRes.equity_curve, trades: ttRes.trades },
+        { strategy_key: 'chan', strategy_name: '缠论形态中枢 (Chan Theory)', metrics: chanRes.metrics, equity_curve: chanRes.equity_curve, trades: chanRes.trades }
       ]
     };
   }
@@ -2477,7 +2487,8 @@ async function runComparison() {
   const colors = {
     momentum: '#f59e0b',
     ml: '#00f2fe',
-    turtle: '#10b981'
+    turtle: '#10b981',
+    chan: '#a855f7'
   };
 
   const seriesList = [];
@@ -3016,8 +3027,8 @@ function runClientSimulation(stockData, payload) {
   let shares = 0;
 
   const strat = payload.strategy || 'momentum';
-  const periodBuy = strat === 'turtle' ? 36 : (strat === 'ml' ? 24 : 30);
-  const buyMod = strat === 'turtle' ? 14 : (strat === 'ml' ? 7 : 10);
+  const periodBuy = strat === 'turtle' ? 36 : (strat === 'ml' ? 24 : (strat === 'chan' ? 28 : 30));
+  const buyMod = strat === 'turtle' ? 14 : (strat === 'ml' ? 7 : (strat === 'chan' ? 12 : 10));
   const sellMod = 0;
 
   candles.forEach((c, i) => {

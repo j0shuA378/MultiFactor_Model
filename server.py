@@ -17,6 +17,7 @@ from core.prediction_engine import generate_trade_prediction
 from strategies.factor_momentum import MultiFactorMomentumStrategy
 from strategies.ml_predictor import MLPredictorStrategy
 from strategies.turtle_grid import TurtleGridStrategy
+from strategies.chan_strategy import ChanTheoryStrategy
 from strategies.portfolio_allocator import blend_multi_strategy_portfolio
 from core.paper_trading_engine import paper_engine, is_us_market_open
 
@@ -45,7 +46,8 @@ def sanitize_json(obj):
 STRATEGY_MAP = {
     "momentum": MultiFactorMomentumStrategy,
     "ml": MLPredictorStrategy,
-    "turtle": TurtleGridStrategy
+    "turtle": TurtleGridStrategy,
+    "chan": ChanTheoryStrategy
 }
 
 # Dedicated Independent Page Routes
@@ -238,6 +240,41 @@ def api_stock_quote():
     except Exception as e:
         logger.error(f"Error fetching quote for {ticker}: {e}")
         return jsonify({"status": "error", "message": str(e), "ticker": ticker}), 500
+
+@app.route("/api/chan/analysis", methods=["GET"])
+def api_chan_analysis():
+    """
+    Returns full Chan Theory morphology and dynamics analysis:
+    merged bars, fractals, bis, zhongshus, and buy/sell points.
+    Query params: ticker, period
+    """
+    ticker = sanitize_ticker(request.args.get("ticker", "AAPL"))
+    period = request.args.get("period", "1y").lower().strip()
+    try:
+        df = fetch_stock_data(ticker, period)
+        from core.chan_theory import run_chan_analysis
+        result = run_chan_analysis(df)
+        active_zs = result.get("active_zhongshu")
+        return jsonify({
+            "status": "success",
+            "ticker": ticker,
+            "period": period,
+            "merged_bars": result.get("merged_bars_count", 0),
+            "fractals": result.get("fractals_count", 0),
+            "bis": result.get("bis_count", 0),
+            "zhongshus": result.get("zhongshus_count", 0),
+            "tags": result.get("tags", {}),
+            "active_zhongshu": {
+                "zg": active_zs.zg,
+                "zd": active_zs.zd,
+                "gg": active_zs.gg,
+                "dd": active_zs.dd,
+                "bi_count": active_zs.bi_count
+            } if active_zs else None
+        })
+    except Exception as e:
+        logger.error(f"Error in Chan analysis for {ticker}: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route("/api/backtest", methods=["POST"])
 def api_backtest():

@@ -153,7 +153,6 @@ def generate_trade_prediction(
                 confidence = int(prob_val * 100.0)
                 alpha_score_str = f"ML 上涨概率: {confidence}%"
                 forecast_return_str = f"+{round((prob_val - 0.45) * 8.0, 1)}% (ROC-AUC {meta_dict.get('roc_auc', 0.65)})"
-    elif strategy_key == "turtle":
         entry_ups = meta_dict.get("entry_upper", {})
         if entry_ups:
             last_up = list(entry_ups.values())[-1]
@@ -162,6 +161,25 @@ def generate_trade_prediction(
         else:
             alpha_score_str = f"唐奇安上轨突破线: ${last_close:.2f}"
         suggested_size_str = "ATR(N) 风险单元头寸 (1% 风险预算)"
+    elif strategy_key == "chan":
+        from core.chan_theory import run_chan_analysis
+        chan_data = run_chan_analysis(df)
+        active_zs = chan_data.get("active_zhongshu")
+        tags = chan_data.get("tags", {})
+        if active_zs:
+            zg = float(active_zs.zg)
+            zd = float(active_zs.zd)
+            alpha_score_str = f"缠论中枢区间: [${zd:.2f}, ${zg:.2f}]"
+            suggested_size_str = "分仓律 (30%底仓 / 40%回踩确认 / 30%主升)"
+            if last_close >= zg:
+                expected_buy = round(zg, 2)
+                buy_reason = f"缠论第 3 类买点 (3B) 突破中枢上沿 ${zg:.2f} 回抽不破"
+            else:
+                expected_buy = round(zd, 2)
+                buy_reason = f"缠论中枢下沿 [${zd:.2f}, ${zg:.2f}] 企稳分型介入"
+        else:
+            alpha_score_str = "缠论走势分类中"
+            suggested_size_str = "严格分型控仓"
 
     # 6. Actionable Commentary
     ticker_name = df.attrs.get("ticker", "当前标的")

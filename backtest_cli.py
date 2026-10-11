@@ -22,6 +22,7 @@ from core.backtest_engine import BacktestEngine
 from strategies.factor_momentum import MultiFactorMomentumStrategy
 from strategies.ml_predictor import MLPredictorStrategy
 from strategies.turtle_grid import TurtleGridStrategy
+from strategies.chan_strategy import ChanTheoryStrategy
 
 def format_color(text: str, color_code: str) -> str:
     """Helper for terminal color formatting"""
@@ -66,7 +67,7 @@ def print_metrics_table(metrics: dict, title: str):
     print("-" * 65)
 
 def print_comparison_matrix(results: list):
-    print(format_color("\n===================== 三大策略横向对决矩阵 =====================", "1;35"))
+    print(format_color("\n===================== 多策略横向对决矩阵 (Multi-Strategy Matrix) =====================", "1;35"))
     headers = ["策略名称", "累计收益", "年化CAGR", "夏普比率", "最大回撤", "胜率", "总交易", "盈亏比"]
     header_str = f"{headers[0]:<18} {headers[1]:<12} {headers[2]:<12} {headers[3]:<10} {headers[4]:<12} {headers[5]:<10} {headers[6]:<8} {headers[7]:<8}"
     print(format_color(header_str, "1;37"))
@@ -130,7 +131,7 @@ def print_recent_trades(trades: list, limit: int = 5):
 def main():
     parser = argparse.ArgumentParser(description="AlphaQuant 股票量化多模型回测系统")
     parser.add_argument("--ticker", type=str, default="NVDA", help="股票代码 (如 AAPL, NVDA, TSLA, SPY)")
-    parser.add_argument("--strategy", type=str, choices=["momentum", "ml", "turtle", "all"], default="all", help="交易模型策略")
+    parser.add_argument("--strategy", type=str, choices=["momentum", "ml", "turtle", "chan", "all"], default="all", help="交易模型策略")
     parser.add_argument("--period", type=str, choices=["6mo", "1y", "2y", "3y", "5y"], default="2y", help="回测时间跨度")
     parser.add_argument("--execution-mode", type=str, choices=["next_open", "same_close"], default="next_open", help="撮合成交模式: next_open (次日开盘实盘时序, 杜绝未来函数) 或 same_close")
     parser.add_argument("--capital", type=float, default=100000.0, help="初始回测资金 (美元)")
@@ -154,6 +155,8 @@ def main():
         strategies_to_run.append((MLPredictorStrategy, "机器学习预测模型 (ML AI)"))
     if args.strategy in ["turtle", "all"]:
         strategies_to_run.append((TurtleGridStrategy, "海龟法则与网格 (Turtle/Grid)"))
+    if args.strategy in ["chan", "all"]:
+        strategies_to_run.append((ChanTheoryStrategy, "缠论形态中枢 (Chan Theory)"))
 
     for strat_cls, name in strategies_to_run:
         print(f"\n[*] 正在运行策略模型: {format_color(name, '1;36')} ...")
