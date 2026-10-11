@@ -451,17 +451,17 @@ body {
   background: #1E293B;
 }
 
-/* Institutional Search Suggestions Dropdown (Yahoo Finance Exact Style) */
+/* Institutional Search Suggestions Dropdown (TradingView & Yahoo Finance Integrated Light Style) */
 .search-suggestions-dropdown {
   position: absolute;
   top: calc(100% + 6px);
-  right: 0;
-  width: 440px;
-  max-width: 95vw;
-  background: #111622;
-  border: 1px solid #232c3d;
+  left: 0;
+  width: 420px;
+  max-width: min(440px, calc(100vw - 32px));
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
   border-radius: 8px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 12px 32px -4px rgba(15, 23, 42, 0.16), 0 4px 8px -2px rgba(15, 23, 42, 0.08);
   padding: 6px 4px 8px 4px;
   z-index: 1000;
   display: flex;
@@ -482,48 +482,50 @@ body {
 }
 
 .suggestion-header {
-  padding: 8px 12px 6px 12px;
+  padding: 6px 10px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid #f1f5f9;
   margin-bottom: 4px;
 }
 
 .suggestion-header-title {
-  font-size: 13.5px;
+  font-size: 11.5px;
   font-weight: 700;
-  color: #ffffff;
-  letter-spacing: 0.2px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 .suggestion-header-link {
-  font-size: 12px;
-  font-weight: 500;
-  color: #93c5fd;
-  text-decoration: underline;
+  font-size: 11px;
+  font-weight: 600;
+  color: #0052cc;
+  text-decoration: none;
   cursor: pointer;
   transition: color 0.15s;
 }
 
 .suggestion-header-link:hover {
-  color: #bfdbfe;
+  text-decoration: underline;
+  color: #0747a6;
 }
 
 .suggestion-item {
   display: flex;
   flex-direction: column;
-  padding: 8px 12px;
-  border-radius: 4px;
+  padding: 7px 10px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: background 0.12s ease;
+  transition: all 0.12s ease;
   text-decoration: none;
 }
 
 .suggestion-item:hover,
 .suggestion-item.highlighted {
-  background: #23488c !important;
+  background: #eff6ff !important;
 }
 
 .suggestion-row-top {
@@ -535,18 +537,34 @@ body {
 
 .suggestion-symbol {
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 700;
-  color: #ffffff;
-  letter-spacing: 0.3px;
+  color: #0f172a;
+  letter-spacing: 0.2px;
+}
+
+.suggestion-item:hover .suggestion-symbol,
+.suggestion-item.highlighted .suggestion-symbol {
+  color: #0052cc;
 }
 
 .suggestion-type {
-  font-size: 12px;
-  font-weight: 600;
-  color: #94a3b8;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #0052cc;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 4px;
+  padding: 1px 5px;
   text-transform: uppercase;
   letter-spacing: 0.2px;
+}
+
+.suggestion-item:hover .suggestion-type,
+.suggestion-item.highlighted .suggestion-type {
+  background: #0052cc;
+  color: #ffffff;
+  border-color: #0052cc;
 }
 
 .suggestion-row-bottom {
@@ -554,49 +572,44 @@ body {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  margin-top: 3px;
+  margin-top: 2px;
 }
 
 .suggestion-name {
-  font-size: 12px;
-  font-weight: 400;
-  color: #94a3b8;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #64748b;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 80%;
 }
 
+.suggestion-item:hover .suggestion-name,
+.suggestion-item.highlighted .suggestion-name {
+  color: #334155;
+}
+
 .suggestion-exchange {
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 10.5px;
+  font-weight: 600;
   color: #94a3b8;
   text-transform: uppercase;
   flex-shrink: 0;
   margin-left: 8px;
 }
 
-.suggestion-item:hover .suggestion-type,
-.suggestion-item.highlighted .suggestion-type {
-  color: #cbd5e1;
-}
-
-.suggestion-item:hover .suggestion-name,
-.suggestion-item.highlighted .suggestion-name {
-  color: #f1f5f9;
-}
-
 .suggestion-item:hover .suggestion-exchange,
 .suggestion-item.highlighted .suggestion-exchange {
-  color: #cbd5e1;
+  color: #64748b;
 }
 
 .suggestion-loading,
 .suggestion-empty {
-  padding: 18px 14px;
+  padding: 16px 12px;
   text-align: center;
-  font-size: 12px;
-  color: #94a3b8;
+  font-size: 11.5px;
+  color: #64748b;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -5015,9 +5028,10 @@ html, body {
   background: #f8fafc;
   border: 1px solid #cbd5e1;
   border-radius: 6px;
-  padding: 0 8px;
+  padding: 0 6px 0 8px;
   height: 32px;
-  width: 220px;
+  width: 280px;
+  gap: 6px;
   transition: all 0.2s ease;
 }
 
@@ -5025,17 +5039,55 @@ html, body {
   border-color: #0052cc;
   background: #ffffff;
   box-shadow: 0 0 0 2px rgba(0, 82, 204, 0.12);
-  width: 260px;
+  width: 320px;
+}
+
+.tv-search-icon {
+  width: 14px;
+  height: 14px;
+  color: #94a3b8;
+  flex-shrink: 0;
 }
 
 .tv-search-input {
+  flex: 1;
+  min-width: 0;
   border: none;
   background: transparent;
   outline: none;
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 600;
-  width: 100%;
   color: #0f172a;
+  padding: 0;
+}
+
+.tv-search-input::placeholder {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.tv-search-btn {
+  flex-shrink: 0;
+  white-space: nowrap;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 4px;
+  background: #eff6ff;
+  color: #0052cc;
+  font-weight: 600;
+  font-size: 11px;
+  border: 1px solid #bfdbfe;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tv-search-btn:hover {
+  background: #0052cc;
+  color: #ffffff;
+  border-color: #0052cc;
 }
 
 .tv-ticker-hero {
