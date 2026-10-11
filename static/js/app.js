@@ -132,11 +132,14 @@ function initEventHandlers() {
 
   if (copyBtn) {
     copyBtn.addEventListener('click', () => {
-      const cmd = document.getElementById('cli-command-preview').textContent;
-      navigator.clipboard.writeText(cmd).then(() => {
-        copyBtn.textContent = "已复制!";
-        setTimeout(() => copyBtn.textContent = "复制命令", 2000);
-      });
+      const previewEl = document.getElementById('cli-command-preview');
+      const cmd = previewEl ? previewEl.textContent : '';
+      if (cmd && navigator.clipboard) {
+        navigator.clipboard.writeText(cmd).then(() => {
+          copyBtn.textContent = "已复制!";
+          setTimeout(() => copyBtn.textContent = "复制命令", 2000);
+        });
+      }
     });
   }
 
@@ -2295,37 +2298,42 @@ function renderFactorDiagnostics(meta, metrics) {
 function renderMLDiagnostics(meta) {
   const container = document.getElementById('feature-importance-bars');
   const tagsContainer = document.getElementById('ml-meta-tags');
-  if (!container || !meta) return;
-
-  tagsContainer.innerHTML = `
-    <span class="ml-tag">模型: ${meta.model_type}</span>
-    <span class="ml-tag">训练样本: ${meta.train_samples}</span>
-    <span class="ml-tag">测试样本: ${meta.test_samples}</span>
-  `;
-
-  document.getElementById('ml-acc-val').textContent = `${meta.accuracy}%`;
-  document.getElementById('ml-prec-val').textContent = `${meta.precision}%`;
-  document.getElementById('ml-rec-val').textContent = `${meta.recall}%`;
-
-  container.innerHTML = '';
-  const features = meta.feature_importances || [];
-  const maxImp = features.length > 0 ? features[0].importance : 1;
-
-  features.slice(0, 6).forEach(f => {
-    const pct = ((f.importance / maxImp) * 100).toFixed(1);
-    const item = document.createElement('div');
-    item.className = 'feature-bar-item';
-    item.innerHTML = `
-      <div class="feature-meta">
-        <span>${f.feature}</span>
-        <span>${(f.importance * 100).toFixed(2)}%</span>
-      </div>
-      <div class="feature-track">
-        <div class="feature-fill" style="width: ${pct}%"></div>
-      </div>
+  if (tagsContainer) {
+    tagsContainer.innerHTML = `
+      <span class="ml-tag">模型: ${meta.model_type || 'Random Forest'}</span>
+      <span class="ml-tag">训练样本: ${meta.train_samples || 0}</span>
+      <span class="ml-tag">测试样本: ${meta.test_samples || 0}</span>
     `;
-    container.appendChild(item);
-  });
+  }
+
+  const accEl = document.getElementById('ml-acc-val');
+  if (accEl) accEl.textContent = `${meta.accuracy ?? '--'}%`;
+  const precEl = document.getElementById('ml-prec-val');
+  if (precEl) precEl.textContent = `${meta.precision ?? '--'}%`;
+  const recEl = document.getElementById('ml-rec-val');
+  if (recEl) recEl.textContent = `${meta.recall ?? '--'}%`;
+
+  if (container) {
+    container.innerHTML = '';
+    const features = meta.feature_importances || [];
+    const maxImp = features.length > 0 ? features[0].importance : 1;
+
+    features.slice(0, 6).forEach(f => {
+      const pct = ((f.importance / maxImp) * 100).toFixed(1);
+      const item = document.createElement('div');
+      item.className = 'feature-bar-item';
+      item.innerHTML = `
+        <div class="feature-meta">
+          <span>${f.feature}</span>
+          <span>${(f.importance * 100).toFixed(2)}%</span>
+        </div>
+        <div class="feature-track">
+          <div class="feature-fill" style="width: ${pct}%"></div>
+        </div>
+      `;
+      container.appendChild(item);
+    });
+  }
 }
 
 function renderTradesTable(trades) {

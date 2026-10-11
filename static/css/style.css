@@ -7,54 +7,63 @@
    ========================================================================== */
 
 :root {
-  /* Claude Inspired Editorial Warmth Canvas & Surfaces */
-  --bg-page: #FAF9F5;         /* Anthropic Warm Ivory Canvas */
-  --bg-card: #FFFFFF;         /* Crisp Warm Surface */
-  --bg-header: #FAF9F5;       /* Matching Warm Ivory Header */
-  --bg-ribbon: #FAF9F5;       /* Matching Warm Ribbon */
-  --bg-sidebar: #FAF9F5;      /* Warm Sidebar Background */
-  --bg-subtle: #F5F4ED;       /* Warm Parchment Tint */
-  --bg-elevated: #F0EEE6;     /* Elevated Container Layer */
-  --bg-pill: #F0EEE6;         /* Segmented Pill Base */
-  --bg-pill-hover: #EBE8DE;
+  /* Clean White Institutional Canvas & Surfaces */
+  --bg-page: #FFFFFF;         /* Pure Clean White Canvas */
+  --bg-card: #FFFFFF;         /* Crisp Card Surface */
+  --bg-header: #FFFFFF;       /* Crisp White Header */
+  --bg-ribbon: #F8FAFC;       /* Subtle Ribbon Surface */
+  --bg-sidebar: #F8FAFC;      /* Clean Sidebar Background */
+  --bg-subtle: #F1F5F9;       /* Light Slate Tint */
+  --bg-elevated: #F8FAFC;     /* Elevated Container Layer */
+  --bg-pill: #F1F5F9;         /* Segmented Pill Base */
+  --bg-pill-hover: #E2E8F0;
   --bg-input: #FFFFFF;
   
-  /* Hairline Warm Stone Borders */
-  --border-subtle: #E8E6DC;   /* Hairline Stone Border */
-  --border-card: #E8E6DC;
-  --border-input: #DDD9CD;
-  --border-focus: #D97757;    /* Claude Terracotta Focus */
-  --border-dark: #B0AEA5;
+  /* Crisp High-Contrast Borders */
+  --border-subtle: #E2E8F0;   /* Clean Slate Border */
+  --border-card: #E2E8F0;
+  --border-input: #CBD5E1;
+  --border-focus: #2563EB;    /* Indicative Blue Focus */
+  --border-dark: #94A3B8;
   
   /* Ink & Typography Hierarchy */
-  --text-primary: #141413;    /* Claude Warm Deep Slate / Carbon Ink */
-  --text-secondary: #4D4C48;  /* Refined Graphite Body */
-  --text-muted: #787774;      /* Gentle Slate Muted */
-  --text-dimmed: #9E9D97;     /* Subdued Slate */
+  --text-primary: #0F172A;    /* Crisp Obsidian Black */
+  --text-secondary: #334155;  /* Slate Dark Body */
+  --text-muted: #64748B;      /* Medium Slate Muted */
+  --text-dimmed: #94A3B8;     /* Light Slate */
   
-  /* Claude Signature Terracotta & Complementary Accents */
-  --accent-blue: #D97757;     /* Anthropic Terracotta Accent (Primary Brand) */
-  --accent-blue-hover: #C6613F;
-  --accent-blue-light: #FAF0EB; /* Terracotta Light Tint */
-  --accent-terracotta: #D97757;
-  --accent-navy: #141413;     /* Deep Ink */
-  --accent-cyan: #2B7A78;     /* Literary Deep Teal */
-  --accent-teal: #1E3A3A;
-  --accent-orange: #C97D30;   /* Ochre / Warm Amber */
-  --accent-purple: #7E57C2;   /* Editorial Violet */
+  /* Distinctive Indicative Palette: Black, Orange, Blue */
+  --accent-black: #0F172A;    /* Institutional Black */
+  
+  /* Indicative Vibrant Orange (Primary CTA, Buy Signals, Important Alerts) */
+  --accent-orange: #FF6600;     /* High-Visibility Trading Orange */
+  --accent-orange-hover: #EA580C;
+  --accent-orange-light: #FFF7ED; /* Light Orange Tint */
+  --accent-orange-border: #FDBA74;
+  --accent-terracotta: #FF6600;
+  
+  /* Indicative Cobalt Blue (Active States, Selected Tabs, Navigation, Metric Focus) */
+  --accent-blue: #2563EB;       /* Vibrant Cobalt Blue */
+  --accent-blue-hover: #1D4ED8;
+  --accent-blue-light: #EFF6FF; /* Light Blue Tint */
+  --accent-blue-border: #93C5FD;
+  --accent-navy: #1E3A8A;
+  --accent-cyan: #0284C7;
+  --accent-teal: #0D9488;
+  --accent-purple: #7C3AED;
 
   /* Naturalist Financial Indicators */
-  --color-bull: #237852;      /* Claude Forest / Sage Green */
-  --color-bull-bg: #EAF5EE;
-  --color-bull-text: #1A5E3F;
-  --color-bear: #C53929;      /* Claude Crimson Brick Red */
-  --color-bear-bg: #FCEEEB;
-  --color-bear-text: #9E2517;
+  --color-bull: #059669;      /* Crisp Financial Emerald Green */
+  --color-bull-bg: #ECFDF5;
+  --color-bull-text: #065F46;
+  --color-bear: #DC2626;      /* Crisp Financial Crimson Red */
+  --color-bear-bg: #FEF2F2;
+  --color-bear-text: #991B1B;
 
-  /* Typography Stack */
-  --font-serif: 'Newsreader', Georgia, 'Times New Roman', serif;
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-mono: 'JetBrains Mono', "SF Mono", Menlo, Monaco, Consolas, monospace;
+  /* Typography Stack: Tiempos / Galaxie Copernicus + Styrene + Fira Code / Fira Mono */
+  --font-serif: "Tiempos Headline", "Tiempos Text", "Tiempos", "Galaxie Copernicus", "Copernicus", Georgia, "Times New Roman", serif;
+  --font-sans: "Styrene A", "Styrene B", "Styrene", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "Fira Code", "Fira Mono", Menlo, Consolas, "DejaVu Sans Mono", "Courier New", monospace;
 
   /* Geometry & Soft Paper Shadows */
   --radius-xs: 4px;
@@ -172,12 +181,12 @@ body {
   width: 36px;
   height: 36px;
   border-radius: 9px;
-  background: linear-gradient(135deg, #E28468 0%, #D97757 50%, #C6613F 100%);
+  background: linear-gradient(135deg, #FF7A00 0%, #FF6600 50%, #EA580C 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  box-shadow: 0 2px 8px rgba(217, 119, 87, 0.28);
+  box-shadow: 0 2px 8px rgba(255, 102, 0, 0.28);
   flex-shrink: 0;
 }
 
@@ -210,9 +219,9 @@ body {
   font-family: var(--font-sans);
   font-size: 9px;
   font-weight: 700;
-  background: #FAF0EB;
-  color: var(--accent-blue);
-  border: 1px solid #F2C8B8;
+  background: var(--accent-orange-light);
+  color: var(--accent-orange);
+  border: 1px solid var(--accent-orange-border);
   padding: 1px 6px;
   border-radius: var(--radius-xs);
   letter-spacing: 0.5px;
@@ -265,10 +274,11 @@ body {
 }
 
 .nav-page-link.active {
-  background: #ffffff;
+  background: var(--accent-blue-light);
   color: var(--accent-blue);
+  border: 1px solid var(--accent-blue-border);
   font-weight: 600;
-  box-shadow: 0 1px 3px rgba(20, 20, 19, 0.06);
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.12);
 }
 
 .nav-page-badge {
@@ -1138,10 +1148,10 @@ body {
   max-width: 220px;
 }
 
-/* Claude Signature Primary Action Button */
+/* Indicative Primary Action Button */
 .btn-primary-action {
-  background: var(--accent-blue);
-  border: 1px solid #C6613F;
+  background: var(--accent-orange);
+  border: 1px solid var(--accent-orange-hover);
   color: #ffffff;
   padding: 9px 20px;
   border-radius: var(--radius-sm);
@@ -1151,15 +1161,15 @@ body {
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(217, 119, 87, 0.28);
+  box-shadow: 0 2px 8px rgba(255, 102, 0, 0.28);
   transition: all 0.15s ease;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .btn-primary-action:hover {
-  background: #C6613F;
-  box-shadow: 0 4px 12px rgba(217, 119, 87, 0.35);
+  background: var(--accent-orange-hover);
+  box-shadow: 0 4px 12px rgba(255, 102, 0, 0.35);
   transform: translateY(-1px);
 }
 
@@ -1484,11 +1494,12 @@ input[type="text"]:focus,
 }
 
 .kpi-value {
-  font-family: var(--font-serif);
-  font-size: 28px;
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: 26px;
+  font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.02em;
+  font-feature-settings: "tnum" 1;
 }
 
 .kpi-value.positive {
@@ -1950,8 +1961,10 @@ input[type="text"]:focus,
 
 .dock-action-btn.active {
   background: var(--accent-blue-light);
-  border-color: #F2C8B8;
+  border-color: var(--accent-blue-border, #93C5FD);
   color: var(--accent-blue);
+}
+
 @media (max-width: 1180px) {
   .kline-workbench-grid {
     grid-template-columns: 1fr;
@@ -2800,6 +2813,13 @@ canvas {
 .bgt-arrow {
   width: 14px;
   height: 14px;
+  min-width: 14px;
+  min-height: 14px;
+  max-width: 14px;
+  max-height: 14px;
+  flex-shrink: 0;
+  display: inline-block;
+  vertical-align: middle;
   color: var(--text-muted);
   transition: transform 0.2s ease;
 }
@@ -3060,11 +3080,12 @@ canvas {
 }
 
 .bqu-current-price {
-  font-family: var(--font-serif);
+  font-family: var(--font-mono);
   font-size: 32px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.02em;
+  font-feature-settings: "tnum" 1;
   padding: 1px 6px;
   border-radius: var(--radius-xs);
   transition: color 0.3s ease, background-color 0.4s ease, transform 0.2s ease;
@@ -3468,13 +3489,15 @@ canvas {
 }
 
 .btn-paper-action.primary {
-  background: var(--accent-blue);
+  background: var(--accent-orange);
   color: #ffffff;
-  border-color: var(--accent-blue);
+  border-color: var(--accent-orange-hover);
+  box-shadow: 0 2px 6px rgba(255, 102, 0, 0.22);
 }
 
 .btn-paper-action.primary:hover {
-  background: var(--accent-blue-hover);
+  background: var(--accent-orange-hover);
+  box-shadow: 0 4px 10px rgba(255, 102, 0, 0.3);
 }
 
 .btn-paper-action.danger {
