@@ -9,7 +9,16 @@ from flask_cors import CORS
 # Add workspace directory to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from core.data_loader import fetch_stock_data, fetch_realtime_quote, get_preset_tickers, search_yahoo_tickers, sanitize_ticker, get_ticker_metadata
+from core.data_loader import (
+    fetch_stock_data,
+    fetch_realtime_quote,
+    get_preset_tickers,
+    search_yahoo_tickers,
+    sanitize_ticker,
+    get_ticker_metadata,
+    fetch_stock_fundamentals,
+    get_screener_catalog
+)
 from core.config_manager import load_config, save_config, apply_preset, reset_to_defaults, INSTITUTIONAL_PRESETS
 from core.indicators import add_all_indicators
 from core.backtest_engine import BacktestEngine
@@ -240,6 +249,42 @@ def api_stock_quote():
     except Exception as e:
         logger.error(f"Error fetching quote for {ticker}: {e}")
         return jsonify({"status": "error", "message": str(e), "ticker": ticker}), 500
+
+@app.route("/api/stock/fundamentals", methods=["GET"])
+def api_stock_fundamentals():
+    """
+    Step 2 Endpoint:
+    Returns complete institutional fundamentals, financials, valuation multiples,
+    Wall Street analyst target price consensus, and dividend schedules.
+    Query params: ticker
+    """
+    ticker = sanitize_ticker(request.args.get("ticker", "AAPL"))
+    try:
+        data = fetch_stock_fundamentals(ticker)
+        return jsonify(sanitize_json(data))
+    except Exception as e:
+        logger.error(f"Error in api_stock_fundamentals for {ticker}: {e}")
+        return jsonify({"status": "error", "message": str(e), "ticker": ticker}), 500
+
+@app.route("/api/screener", methods=["GET"])
+def api_screener():
+    """
+    Step 1 Endpoint:
+    Returns curated multi-market stock universe for 选股大厅 (Screener).
+    Query params: category (all, us_tech, etf_gold, china_hk, a_shares, high_dividend)
+    """
+    category = request.args.get("category", "all").strip().lower()
+    try:
+        catalog = get_screener_catalog(category)
+        return jsonify({
+            "status": "success",
+            "category": category,
+            "count": len(catalog),
+            "stocks": catalog
+        })
+    except Exception as e:
+        logger.error(f"Error in api_screener: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route("/api/chan/analysis", methods=["GET"])
 def api_chan_analysis():

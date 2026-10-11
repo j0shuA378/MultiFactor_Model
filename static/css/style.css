@@ -3929,3 +3929,737 @@ input:checked + .slider:before {
   transform: translateX(18px);
 }
 
+/* ==========================================================================
+   Application Software-Grade Workflow Design System
+   Workflow: 1. 选股 (Screener) -> 2. 股票档案与基本面 (Fundamentals)
+            -> 3. 策略选择 (Strategy) -> 4. 策略执行与回测 (Execution)
+   ========================================================================== */
+
+/* 1. Top Application Workspace Switcher */
+.app-workspace-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-subtle);
+  padding: 4px 6px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+}
+
+.nav-workspace-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+
+.nav-workspace-btn:hover {
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--text-primary);
+}
+
+.nav-workspace-btn.active {
+  background: #FFFFFF;
+  color: var(--accent-blue);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+  border: 1px solid var(--border-card);
+}
+
+.nwb-icon {
+  font-size: 14px;
+}
+
+.badge-screener { background: #EFF6FF; color: #1D4ED8; font-weight: 700; }
+.badge-fund     { background: #FEF7EB; color: #B45309; font-weight: 700; }
+.badge-strat    { background: #ECFDF5; color: #047857; font-weight: 700; }
+
+/* 2. Global Active Stock Sticky Strip */
+.active-stock-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #FFFFFF;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 8px 24px;
+  gap: 16px;
+  flex-wrap: wrap;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+  position: sticky;
+  top: 56px;
+  z-index: 90;
+}
+
+.ass-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ass-ticker {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.ass-name {
+  font-size: 13.5px;
+  color: var(--text-muted);
+  font-weight: 500;
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ass-exchange {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-subtle);
+}
+
+.ass-price-box {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-left: 6px;
+}
+
+.ass-price {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.ass-change {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+}
+
+.ass-change.positive {
+  color: var(--color-bull);
+  background: var(--color-bull-bg);
+}
+
+.ass-change.negative {
+  color: var(--color-bear);
+  background: var(--color-bear-bg);
+}
+
+.ass-center-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ass-pill {
+  font-size: 11.5px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+  font-family: var(--font-mono);
+}
+
+.ass-pill.active-strat-pill {
+  background: #EFF6FF;
+  color: var(--accent-blue);
+  border-color: #BFDBFE;
+  font-weight: 600;
+}
+
+.ass-right-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ass-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: #FFFFFF;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ass-btn:hover {
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+  border-color: var(--border-dark);
+}
+
+.ass-btn.highlight {
+  background: var(--accent-orange);
+  color: #FFFFFF;
+  border-color: var(--accent-orange);
+  box-shadow: 0 1px 3px rgba(255, 102, 0, 0.25);
+}
+
+.ass-btn.highlight:hover {
+  background: var(--accent-orange-hover);
+  border-color: var(--accent-orange-hover);
+}
+
+/* 3. Screener View (选股大厅) */
+.workspace-screener-view {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.screener-hero-banner {
+  background: linear-gradient(135deg, #F8FAFC 0%, #FFFFFF 100%);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  padding: 24px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+}
+
+.shb-title-group h2 {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.shb-title-group p {
+  font-size: 13.5px;
+  color: var(--text-muted);
+  max-width: 680px;
+  line-height: 1.5;
+}
+
+.screener-toolbar-card {
+  background: #FFFFFF;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+}
+
+.screener-categories-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sc-pill {
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 9999px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sc-pill:hover {
+  background: var(--bg-pill-hover);
+  color: var(--text-primary);
+}
+
+.sc-pill.active {
+  background: var(--accent-black);
+  color: #FFFFFF;
+  border-color: var(--accent-black);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.15);
+}
+
+.screener-filter-inputs-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.screener-search-wrap {
+  position: relative;
+  flex: 1;
+  max-width: 420px;
+}
+
+.screener-search-wrap input {
+  width: 100%;
+  padding: 8px 14px 8px 36px;
+  font-size: 13px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-input);
+  background: #FFFFFF;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.screener-search-wrap input:focus {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.screener-search-icon {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 15px;
+  height: 15px;
+  color: var(--text-dimmed);
+}
+
+.screener-sort-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ssg-label {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.ssg-select {
+  padding: 6px 12px;
+  font-size: 12.5px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-input);
+  background: #FFFFFF;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  cursor: pointer;
+}
+
+.screener-table-container {
+  background: #FFFFFF;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.screener-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  text-align: left;
+}
+
+.screener-table thead th {
+  background: var(--bg-subtle);
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  white-space: nowrap;
+}
+
+.screener-table tbody tr {
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background-color 0.12s ease;
+  cursor: pointer;
+}
+
+.screener-table tbody tr:hover {
+  background-color: var(--bg-subtle);
+}
+
+.screener-table tbody td {
+  padding: 14px 16px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.st-ticker-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.st-sym-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.st-symbol {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.st-badge {
+  font-size: 10.5px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--bg-subtle);
+  color: var(--accent-blue);
+  font-weight: 600;
+  border: 1px solid #DBEAFE;
+}
+
+.st-name {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.st-price {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.st-change {
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+.st-action-btn {
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  background: var(--accent-blue-light);
+  color: var(--accent-blue);
+  border: 1px solid var(--accent-blue-border);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.st-action-btn:hover {
+  background: var(--accent-blue);
+  color: #FFFFFF;
+}
+
+/* 4. Fundamentals & Financials View (股票基本面与财务档案) */
+.workspace-fundamentals-view {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.fund-hero-card {
+  background: #FFFFFF;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  padding: 24px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+}
+
+.fhc-left h2 {
+  font-family: var(--font-serif);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.fhc-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.fhc-right-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-launch-strategy-cta {
+  padding: 10px 22px;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  background: var(--accent-orange);
+  color: #FFFFFF;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(255, 102, 0, 0.3);
+  transition: all 0.18s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-launch-strategy-cta:hover {
+  background: var(--accent-orange-hover);
+  transform: translateY(-1px);
+}
+
+.fund-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 1024px) {
+  .fund-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.fund-card {
+  background: #FFFFFF;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+}
+
+.fund-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 12px;
+}
+
+.fund-card-title {
+  font-family: var(--font-serif);
+  font-size: 16.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fund-card-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+}
+
+.fund-metrics-2x3-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px 18px;
+}
+
+.fund-metric-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fmb-label {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.fmb-val {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.fmb-sub {
+  font-size: 11px;
+  color: var(--text-dimmed);
+}
+
+/* 52-week Range Bar */
+.range-52w-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 14px;
+  background: var(--bg-subtle);
+  border-radius: var(--radius-sm);
+  margin-top: 4px;
+}
+
+.r52-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11.5px;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+.r52-track {
+  width: 100%;
+  height: 6px;
+  background: #CBD5E1;
+  border-radius: 3px;
+  position: relative;
+}
+
+.r52-thumb {
+  position: absolute;
+  top: -4px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent-blue);
+  border: 2px solid #FFFFFF;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transform: translateX(-50%);
+}
+
+/* Analyst Target Gauge */
+.target-gauge-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 18px;
+  background: #F8FAFC;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+}
+
+.tgb-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tgb-mean-target {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.tgb-upside {
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-xs);
+}
+
+.tgb-recomm-badge {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 4px;
+  background: #ECFDF5;
+  color: #065F46;
+  border: 1px solid #A7F3D0;
+}
+
+/* Company Description Card */
+.fund-summary-card {
+  grid-column: 1 / -1;
+  background: #FFFFFF;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fsc-text {
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.fsc-footer {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  font-size: 12px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 10px;
+}
+
+/* Strategy Workbench Parameter Drawer Toggle */
+.btn-toggle-param-drawer {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  background: #FFFFFF;
+  border: 1px solid var(--border-subtle);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-toggle-param-drawer:hover {
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+  border-color: var(--border-dark);
+}
+
+

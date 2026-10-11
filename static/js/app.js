@@ -8,7 +8,11 @@ const state = {
   period: '1y',
   strategy: 'momentum',
   capital: 100000,
+  currentWorkspaceView: 'strategy',
   stockData: null,
+  fundamentalsData: null,
+  screenerData: null,
+  screenerCategory: 'all',
   backtestResult: null,
   comparisonResult: null,
   isLoading: false
@@ -27,12 +31,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (page) state.strategy = page;
   initCharts();
   initEventHandlers();
+  initAppWorkspaceWorkflow();
   loadPresets();
   loadGlobalConfig();
   if (page) {
     switchStrategy(page, false);
   }
   await syncYahooFinanceQuotes();
+  loadStockFundamentals(state.ticker);
   runAnalysis();
 });
 
@@ -1850,6 +1856,12 @@ function updateTickerDisplay() {
   if (klineTitle) klineTitle.textContent = `${state.ticker} 历史行情与交易信号标定 (Candlestick & Signals)`;
   updateActivePresetChip();
   updateFavoriteStarButton();
+
+  if (!state.fundamentalsData || state.fundamentalsData?.profile?.symbol !== state.ticker) {
+    if (typeof loadStockFundamentals === 'function') {
+      loadStockFundamentals(state.ticker);
+    }
+  }
 }
 
 function updateActivePresetChip() {
@@ -1868,6 +1880,12 @@ function switchStrategy(strat, triggerAnalysis = true) {
     if (t.dataset.strat === strat) t.classList.add('active');
     else t.classList.remove('active');
   });
+
+  // Keep Active Stock Strip Strategy Pill updated
+  const assStratPill = document.getElementById('ass-strat-pill');
+  if (assStratPill && typeof getStrategyDisplayName === 'function') {
+    assStratPill.textContent = `当前策略: ${getStrategyDisplayName(state.strategy)}`;
+  }
 
   // Switch parameter cards
   const groupMomentum = document.getElementById('params-momentum');
@@ -1914,6 +1932,481 @@ function switchStrategy(strat, triggerAnalysis = true) {
   if (triggerAnalysis) {
     runAnalysis();
   }
+}
+
+// ==========================================================================
+// Application Software-Grade Workflow Engine
+// 1. 选股 (Screener) -> 2. 股票档案与基本面 (Fundamentals)
+// -> 3. 选择交易策略 (Strategy) -> 4. 显示当前策略下的信息 (Dashboard)
+// ==========================================================================
+
+function getStrategyDisplayName(strat) {
+  const map = {
+    momentum: '机构多因子动量 (Barra)',
+    ml: '机器学习预测 (ML/AI)',
+    turtle: '海龟法则与动态网格',
+    chan: '缠论中枢形态量化',
+    compare: '四大策略横向对决'
+  };
+  return map[strat] || '量化策略引擎';
+}
+
+function initAppWorkspaceWorkflow() {
+  // Top Application Workspace Tabs: Screener, Fundamentals, Strategy, Compare
+  document.querySelectorAll('.app-workspace-nav .nav-workspace-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const view = btn.dataset.view;
+      if (view) {
+        e.preventDefault();
+        switchWorkspaceView(view);
+      }
+    });
+  });
+
+  // Active Stock Strip Quick Buttons
+  const assBtnScreener = document.getElementById('ass-btn-screener');
+  if (assBtnScreener) {
+    assBtnScreener.addEventListener('click', () => switchWorkspaceView('screener'));
+  }
+  const assBtnFund = document.getElementById('ass-btn-fund');
+  if (assBtnFund) {
+    assBtnFund.addEventListener('click', () => switchWorkspaceView('fundamentals'));
+  }
+  const assBtnStrat = document.getElementById('ass-btn-strat');
+  if (assBtnStrat) {
+    assBtnStrat.addEventListener('click', () => switchWorkspaceView('strategy'));
+  }
+
+  // Fundamentals Page CTA Button to Strategy
+  const fundToStratBtn = document.getElementById('fund-btn-to-strategy');
+  if (fundToStratBtn) {
+    fundToStratBtn.addEventListener('click', () => switchWorkspaceView('strategy'));
+  }
+
+  // Screener Category Pills
+  const catPills = document.querySelectorAll('#screener-categories-row .sc-pill');
+  catPills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      catPills.forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      const cat = pill.dataset.category || 'all';
+      state.screenerCategory = cat;
+      loadScreenerData(cat);
+    });
+  });
+
+  // Screener Search Input Filter
+  const screenerSearch = document.getElementById('screener-keyword-input');
+  if (screenerSearch) {
+    screenerSearch.addEventListener('input', (e) => {
+      filterScreenerTable(e.target.value);
+    });
+  }
+
+  // Screener Sort Dropdown
+  const screenerSort = document.getElementById('screener-sort-select');
+  if (screenerSort) {
+    screenerSort.addEventListener('change', () => {
+      renderScreenerTable();
+    });
+  }
+}
+
+function switchWorkspaceView(viewName) {
+  state.currentWorkspaceView = viewName;
+
+  // 1. Update navigation button active state
+  document.querySelectorAll('.app-workspace-nav .nav-workspace-btn').forEach(btn => {
+    if (btn.dataset.view === viewName) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+
+  // 2. Hide/Show views
+  const screenerView = document.getElementById('workspace-screener-view');
+  const fundamentalsView = document.getElementById('workspace-fundamentals-view');
+  const strategyView = document.getElementById('workspace-strategy-view');
+  const ribbonBar = document.getElementById('market-ribbon-bar');
+
+  if (screenerView) screenerView.classList.add('hidden');
+  if (fundamentalsView) fundamentalsView.classList.add('hidden');
+  if (strategyView) strategyView.classList.add('hidden');
+
+  if (viewName === 'screener') {
+    if (screenerView) screenerView.classList.remove('hidden');
+    if (ribbonBar) ribbonBar.classList.add('hidden');
+    loadScreenerData(state.screenerCategory || 'all');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else if (viewName === 'fundamentals') {
+    if (fundamentalsView) fundamentalsView.classList.remove('hidden');
+    if (ribbonBar) ribbonBar.classList.remove('hidden');
+    loadStockFundamentals(state.ticker);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else if (viewName === 'strategy') {
+    if (strategyView) strategyView.classList.remove('hidden');
+    if (ribbonBar) ribbonBar.classList.remove('hidden');
+    if (state.strategy === 'compare') {
+      switchStrategy('momentum', true);
+    } else {
+      const singleView = document.getElementById('single-strategy-view');
+      const compareView = document.getElementById('comparison-view');
+      if (singleView) singleView.classList.remove('hidden');
+      if (compareView) compareView.classList.add('hidden');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else if (viewName === 'compare') {
+    if (strategyView) strategyView.classList.remove('hidden');
+    if (ribbonBar) ribbonBar.classList.remove('hidden');
+    switchStrategy('compare', true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+async function loadStockFundamentals(ticker) {
+  if (!ticker) ticker = state.ticker;
+  try {
+    const res = await fetch(`/api/stock/fundamentals?ticker=${encodeURIComponent(ticker)}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.status === 'success') {
+        state.fundamentalsData = data;
+        renderFundamentalsUI(data);
+        return data;
+      }
+    }
+  } catch (e) {
+    console.warn(`[Fundamentals] API unavailable for ${ticker}, using local fallback:`, e);
+  }
+  const fallback = generateFallbackFundamentals(ticker);
+  state.fundamentalsData = fallback;
+  renderFundamentalsUI(fallback);
+  return fallback;
+}
+
+function renderFundamentalsUI(data) {
+  if (!data || !data.profile) return;
+  const p = data.profile;
+  const po = data.price_overview || {};
+  const v = data.valuation || {};
+  const f = data.financials || {};
+  const a = data.analyst || {};
+  const d = data.dividends || {};
+
+  // 1. Update Global Active Stock Strip
+  const assTicker = document.getElementById('ass-ticker');
+  if (assTicker) assTicker.textContent = p.symbol;
+  const assName = document.getElementById('ass-name');
+  if (assName) assName.textContent = p.name;
+  const assExch = document.getElementById('ass-exchange');
+  if (assExch) assExch.textContent = p.exchange || 'US';
+
+  const assPrice = document.getElementById('ass-price');
+  if (assPrice) assPrice.textContent = `$${Number(po.current_price || 0).toFixed(2)}`;
+
+  const assChange = document.getElementById('ass-change');
+  if (assChange) {
+    const chgPct = Number(po.change_pct || 0);
+    const chgVal = Number(po.change || 0);
+    assChange.className = `ass-change ${chgPct >= 0 ? 'positive' : 'negative'}`;
+    assChange.textContent = `${chgPct >= 0 ? '+' : ''}${chgPct.toFixed(2)}% (${chgVal >= 0 ? '+' : ''}$${chgVal.toFixed(2)})`;
+  }
+
+  const assPePill = document.getElementById('ass-pe-pill');
+  if (assPePill) {
+    assPePill.textContent = v.trailing_pe ? `市盈率 P/E: ${v.trailing_pe}x` : '市盈率: N/A';
+  }
+
+  const assTargetPill = document.getElementById('ass-target-pill');
+  if (assTargetPill) {
+    assTargetPill.textContent = a.target_mean_price ? `机构目标价: $${a.target_mean_price.toFixed(2)} (${a.recommendation_display || '买入'})` : '机构目标: 适度配置';
+  }
+
+  const assDivPill = document.getElementById('ass-div-pill');
+  if (assDivPill) {
+    assDivPill.textContent = d.ex_dividend_date && d.ex_dividend_date !== '暂无分红记录' ? `除息日: ${d.ex_dividend_date} (${d.dividend_yield_pct}%)` : '分红: 无派息/ETF';
+  }
+
+  const assStratPill = document.getElementById('ass-strat-pill');
+  if (assStratPill) {
+    assStratPill.textContent = `当前策略: ${getStrategyDisplayName(state.strategy)}`;
+  }
+
+  // 2. Fundamentals Hero Card
+  const fhSymbol = document.getElementById('fund-hero-symbol');
+  if (fhSymbol) fhSymbol.textContent = p.symbol;
+  const fhName = document.getElementById('fund-hero-name');
+  if (fhName) fhName.textContent = p.name;
+  const fhType = document.getElementById('fund-hero-quote-type');
+  if (fhType) fhType.textContent = (p.quote_type || 'Equity').toUpperCase();
+  const fhExch = document.getElementById('fund-hero-exchange');
+  if (fhExch) fhExch.textContent = p.exchange || 'US';
+  const fhSector = document.getElementById('fund-hero-sector');
+  if (fhSector) fhSector.textContent = p.sector || '综合行业';
+  const fhIndustry = document.getElementById('fund-hero-industry');
+  if (fhIndustry) fhIndustry.textContent = p.industry || p.quote_type;
+  const fhPrice = document.getElementById('fund-hero-price');
+  if (fhPrice) fhPrice.textContent = `$${Number(po.current_price || 0).toFixed(2)}`;
+  const fhChange = document.getElementById('fund-hero-change');
+  if (fhChange) {
+    const chgPct = Number(po.change_pct || 0);
+    fhChange.className = `ass-change ${chgPct >= 0 ? 'positive' : 'negative'}`;
+    fhChange.textContent = `${chgPct >= 0 ? '+' : ''}${chgPct.toFixed(2)}%`;
+  }
+
+  // 3. Valuation Card
+  const setText = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val !== null && val !== undefined && val !== '' ? val : '--';
+  };
+  setText('fm-mktcap', po.market_cap_fmt || '--');
+  setText('fm-entval', po.enterprise_value_fmt || '--');
+  setText('fm-pe', v.trailing_pe ? `${v.trailing_pe}x` : 'N/A');
+  setText('fm-fwd-pe', v.forward_pe ? `${v.forward_pe}x` : 'N/A');
+  setText('fm-pb', v.price_to_book ? `${v.price_to_book}x` : 'N/A');
+  setText('fm-beta', v.beta ? v.beta.toFixed(2) : '1.00');
+  setText('fm-52l', `$${Number(v.fifty_two_week_low || 0).toFixed(2)}`);
+  setText('fm-52h', `$${Number(v.fifty_two_week_high || 0).toFixed(2)}`);
+  const pos52 = Math.max(0, Math.min(100, Number(v.range_52w_position_pct || 50)));
+  setText('fm-52pos', `${pos52.toFixed(1)}%`);
+  const thumb = document.getElementById('fm-52thumb');
+  if (thumb) thumb.style.left = `${pos52}%`;
+
+  // 4. Financials Card
+  setText('fm-rev', f.revenue_fmt || '--');
+  setText('fm-netinc', f.net_income_fmt || '--');
+  setText('fm-grossm', f.gross_margins_pct ? `${f.gross_margins_pct}%` : '--');
+  setText('fm-profm', f.profit_margins_pct ? `${f.profit_margins_pct}%` : '--');
+  setText('fm-roe', f.return_on_equity_pct ? `${f.return_on_equity_pct}%` : '--');
+  setText('fm-fcf', f.free_cashflow_fmt || '--');
+  setText('fm-debt', f.debt_to_equity ? `${f.debt_to_equity}%` : 'N/A');
+  setText('fm-rev-growth', `YoY: ${f.revenue_growth_pct > 0 ? '+' : ''}${f.revenue_growth_pct || 0}%`);
+  setText('fm-inc-growth', `YoY: ${f.earnings_growth_pct > 0 ? '+' : ''}${f.earnings_growth_pct || 0}%`);
+
+  // 5. Analyst Target Card
+  setText('fm-target-mean', a.target_mean_price ? `$${a.target_mean_price.toFixed(2)}` : 'N/A');
+  setText('fm-target-low', a.target_low_price ? `$${a.target_low_price.toFixed(2)}` : 'N/A');
+  setText('fm-target-high', a.target_high_price ? `$${a.target_high_price.toFixed(2)}` : 'N/A');
+  setText('fm-target-curr', `$${Number(po.current_price || 0).toFixed(2)}`);
+  const upVal = Number(a.upside_potential_pct || 0);
+  const upEl = document.getElementById('fm-target-upside');
+  if (upEl) {
+    upEl.className = `tgb-upside ${upVal >= 0 ? 'positive' : 'negative'}`;
+    upEl.textContent = `${upVal >= 0 ? '+' : ''}${upVal.toFixed(2)}%`;
+  }
+  setText('fm-recomm-badge', a.recommendation_display || '买入 (Buy)');
+  setText('fm-analyst-count', `${a.number_of_analysts || 0} 位分析师预测`);
+
+  // 6. Dividend Card
+  setText('fm-exdiv', d.ex_dividend_date || '暂无分红记录');
+  setText('fm-divyield', `${Number(d.dividend_yield_pct || 0).toFixed(2)}%`);
+  setText('fm-divrate', `$${Number(d.dividend_rate || 0).toFixed(2)} / 股`);
+  setText('fm-payout', `${Number(d.payout_ratio_pct || 0).toFixed(1)}%`);
+
+  // 7. Profile Card
+  setText('fm-country-city', `${p.country || '全球'} · ${p.city || '核心枢纽'}`);
+  setText('fm-summary-text', p.summary || '暂无业务简介');
+  const webEl = document.getElementById('fm-website');
+  if (webEl) {
+    if (p.website) {
+      webEl.href = p.website;
+      webEl.textContent = p.website.replace('https://', '').replace('http://', '');
+    } else {
+      webEl.textContent = '--';
+      webEl.removeAttribute('href');
+    }
+  }
+  setText('fm-employees', p.employees ? p.employees.toLocaleString() : '--');
+}
+
+async function loadScreenerData(category = 'all') {
+  try {
+    const res = await fetch(`/api/screener?category=${encodeURIComponent(category)}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.status === 'success' && Array.isArray(data.stocks)) {
+        state.screenerData = data.stocks;
+        renderScreenerTable();
+        return;
+      }
+    }
+  } catch (e) {
+    console.warn('[Screener] API error, falling back:', e);
+  }
+  state.screenerData = getClientScreenerCatalog(category);
+  renderScreenerTable();
+}
+
+function renderScreenerTable() {
+  const tbody = document.getElementById('screener-table-body');
+  if (!tbody || !state.screenerData) return;
+
+  let list = [...state.screenerData];
+  const kw = (document.getElementById('screener-keyword-input')?.value || '').trim().toLowerCase();
+  if (kw) {
+    list = list.filter(s =>
+      s.symbol.toLowerCase().includes(kw) ||
+      s.name.toLowerCase().includes(kw) ||
+      (s.sector && s.sector.toLowerCase().includes(kw))
+    );
+  }
+
+  const sortVal = document.getElementById('screener-sort-select')?.value || 'market_cap_desc';
+  list.sort((a, b) => {
+    if (sortVal === 'change_desc') return b.change_pct - a.change_pct;
+    if (sortVal === 'change_asc') return a.change_pct - b.change_pct;
+    if (sortVal === 'target_upside_desc') return (b.target_upside_pct || 0) - (a.target_upside_pct || 0);
+    if (sortVal === 'pe_asc') return (a.pe || 999) - (b.pe || 999);
+    if (sortVal === 'div_desc') return (b.div_yield_pct || 0) - (a.div_yield_pct || 0);
+    return 0; // default
+  });
+
+  if (list.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="11" class="empty-state">未找到匹配 "${kw}" 的股票或ETF标的</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map(stock => {
+    const isPos = stock.change_pct >= 0;
+    const isUp = (stock.target_upside_pct || 0) >= 0;
+    return `
+      <tr data-symbol="${stock.symbol}">
+        <td>
+          <div class="st-ticker-cell">
+            <div class="st-sym-row">
+              <span class="st-symbol">${stock.symbol}</span>
+              <span class="st-badge">${stock.badge || stock.category_label}</span>
+            </div>
+            <span class="st-name">${stock.name}</span>
+          </div>
+        </td>
+        <td><span class="ass-pill">${stock.category_label}</span></td>
+        <td style="font-size:12.5px; color:var(--text-secondary);">${stock.sector}</td>
+        <td class="st-price">$${Number(stock.price || 0).toFixed(2)}</td>
+        <td>
+          <span class="st-change ${isPos ? 'positive' : 'negative'}">
+            ${isPos ? '+' : ''}${Number(stock.change_pct || 0).toFixed(2)}%
+          </span>
+        </td>
+        <td style="font-family:var(--font-mono); font-weight:600;">${stock.market_cap_fmt || '--'}</td>
+        <td style="font-family:var(--font-mono);">${stock.pe ? `${stock.pe.toFixed(1)}x` : '--'}</td>
+        <td><span class="ass-pill" style="background:#ECFDF5; color:#065F46; font-weight:600;">${stock.analyst_rating}</span></td>
+        <td style="font-family:var(--font-mono); font-weight:700; color:${isUp ? '#10b981' : '#f43f5e'};">
+          ${isUp ? '+' : ''}${Number(stock.target_upside_pct || 0).toFixed(1)}%
+        </td>
+        <td style="font-family:var(--font-mono);">${stock.div_yield_pct > 0 ? `${Number(stock.div_yield_pct).toFixed(2)}%` : '--'}</td>
+        <td>
+          <button class="st-action-btn" type="button" onclick="selectStockAndNavigate('${stock.symbol}')">进入个股与策略 →</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  tbody.querySelectorAll('tr').forEach(tr => {
+    tr.addEventListener('click', (e) => {
+      if (e.target.tagName === 'BUTTON') return;
+      const sym = tr.dataset.symbol;
+      if (sym) selectStockAndNavigate(sym);
+    });
+  });
+}
+
+function filterScreenerTable(keyword) {
+  renderScreenerTable();
+}
+
+function selectStockAndNavigate(ticker) {
+  if (!ticker) return;
+  state.ticker = ticker.toUpperCase();
+  const searchInput = document.getElementById('custom-ticker-input');
+  if (searchInput) searchInput.value = state.ticker;
+
+  // Switch to Fundamentals View (Step 2)
+  switchWorkspaceView('fundamentals');
+  loadStockFundamentals(state.ticker);
+  runAnalysis();
+}
+window.selectStockAndNavigate = selectStockAndNavigate;
+
+function generateFallbackFundamentals(ticker) {
+  const sym = String(ticker || 'AAPL').toUpperCase();
+  return {
+    status: 'success',
+    ticker: sym,
+    profile: {
+      symbol: sym,
+      name: COMPANY_NAME_MAP[sym] || `${sym} Asset`,
+      exchange: sym.endsWith('.SS') ? 'SSE' : (sym.endsWith('.SZ') ? 'SZSE' : (sym.endsWith('.HK') ? 'HKEX' : 'NASDAQ')),
+      quote_type: 'Equity',
+      sector: '综合行业 (Diversified)',
+      industry: '核心产业',
+      country: 'Global',
+      city: 'Hub',
+      website: 'https://finance.yahoo.com',
+      employees: 50000,
+      summary: `${sym} 是全球金融市场具备广泛流动性的代表性资产。`
+    },
+    price_overview: {
+      current_price: 100.0,
+      prev_close: 100.0,
+      change: 0.0,
+      change_pct: 0.0,
+      market_cap_fmt: '$100.0B',
+      enterprise_value_fmt: '$95.0B'
+    },
+    valuation: {
+      trailing_pe: 25.0,
+      forward_pe: 22.0,
+      price_to_book: 4.5,
+      beta: 1.0,
+      fifty_two_week_high: 120.0,
+      fifty_two_week_low: 80.0,
+      range_52w_position_pct: 50.0
+    },
+    financials: {
+      revenue_fmt: '$50.0B',
+      net_income_fmt: '$10.0B',
+      gross_margins_pct: 45.0,
+      profit_margins_pct: 20.0,
+      return_on_equity_pct: 18.0,
+      debt_to_equity: 30.0,
+      free_cashflow_fmt: '$8.0B',
+      revenue_growth_pct: 8.5,
+      earnings_growth_pct: 12.0
+    },
+    analyst: {
+      target_mean_price: 115.0,
+      target_high_price: 135.0,
+      target_low_price: 95.0,
+      upside_potential_pct: 15.0,
+      recommendation_display: '买入 (Buy)',
+      number_of_analysts: 28
+    },
+    dividends: {
+      dividend_rate: 1.5,
+      dividend_yield_pct: 1.5,
+      ex_dividend_date: '2026-06-15',
+      payout_ratio_pct: 25.0
+    }
+  };
+}
+
+function getClientScreenerCatalog(category = 'all') {
+  const all = [
+    { symbol: 'NVDA', name: 'NVIDIA Corporation (英伟达)', category: 'us_tech', category_label: '美股科技与AI', sector: '半导体 / AI计算', price: 229.28, change_pct: -0.52, market_cap_fmt: '$5.54T', pe: 28.99, analyst_rating: '强力买入', target_upside_pct: 43.37, div_yield_pct: 0.44, badge: 'AI总龙头' },
+    { symbol: 'AAPL', name: 'Apple Inc. (苹果公司)', category: 'us_tech', category_label: '美股科技与AI', sector: '消费电子 / 生态', price: 336.64, change_pct: -1.11, market_cap_fmt: '$4.91T', pe: 38.61, analyst_rating: '买入', target_upside_pct: -2.54, div_yield_pct: 0.32, badge: '消费电子标杆' },
+    { symbol: 'MSFT', name: 'Microsoft Corp. (微软)', category: 'us_tech', category_label: '美股科技与AI', sector: '云计算 / 企服', price: 535.07, change_pct: 2.38, market_cap_fmt: '$3.98T', pe: 36.20, analyst_rating: '强力买入', target_upside_pct: 4.66, div_yield_pct: 0.62, badge: '企业云软件' },
+    { symbol: 'TSLA', name: 'Tesla, Inc. (特斯拉)', category: 'us_tech', category_label: '美股科技与AI', sector: '新能源车 / 自动驾驶', price: 382.70, change_pct: 2.05, market_cap_fmt: '$1.21T', pe: 72.50, analyst_rating: '持有', target_upside_pct: -11.16, div_yield_pct: 0.0, badge: '高波动进攻' },
+    { symbol: 'SPY', name: 'SPDR S&P 500 ETF (标普500)', category: 'etf_gold', category_label: '全球ETF与黄金', sector: '全美大盘宽基', price: 778.57, change_pct: 0.32, market_cap_fmt: '$612.0B', pe: 26.80, analyst_rating: '适度看多', target_upside_pct: 5.32, div_yield_pct: 1.18, badge: '美股基准核心' },
+    { symbol: 'IAUM', name: 'iShares Gold Trust Micro', category: 'etf_gold', category_label: '全球ETF与黄金', sector: '超低费率实物黄金', price: 41.81, change_pct: 1.28, market_cap_fmt: '$7.95B', pe: null, analyst_rating: '看多避险', target_upside_pct: 15.98, div_yield_pct: 0.0, badge: '低费率黄金首选' },
+    { symbol: '600519.SS', name: '贵州茅台 (白酒第一龙头)', category: 'a_shares', category_label: 'A股核心资产', sector: '高端消费 / 酱香白酒', price: 1263.00, change_pct: 0.64, market_cap_fmt: '¥1.59T', pe: 21.50, analyst_rating: '强力买入', target_upside_pct: 46.48, div_yield_pct: 3.25, badge: 'A股市值定海神针' },
+    { symbol: '0700.HK', name: '腾讯控股 (社交网络龙头)', category: 'china_hk', category_label: '港股与中概龙头', sector: '社交娱乐 / 游戏', price: 425.20, change_pct: 1.48, market_cap_fmt: 'HK$4.01T', pe: 22.50, analyst_rating: '强力买入', target_upside_pct: 14.06, div_yield_pct: 0.80, badge: '互联网现金流之王' }
+  ];
+  if (category && category !== 'all') {
+    return all.filter(item => item.category === category);
+  }
+  return all;
 }
 
 async function loadGlobalConfig() {
@@ -2116,6 +2609,12 @@ async function runAnalysis() {
     return;
   }
   setLoadingState(true);
+
+  if (!state.fundamentalsData || state.fundamentalsData?.profile?.symbol !== state.ticker) {
+    if (typeof loadStockFundamentals === 'function') {
+      loadStockFundamentals(state.ticker);
+    }
+  }
 
   try {
     if (state.strategy === 'compare') {

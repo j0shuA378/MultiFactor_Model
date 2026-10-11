@@ -4,6 +4,8 @@ from core.data_loader import (
     search_yahoo_tickers,
     get_ticker_metadata,
     fetch_realtime_quote,
+    fetch_stock_fundamentals,
+    get_screener_catalog,
     FALLBACK_STOCKS
 )
 
@@ -41,6 +43,26 @@ class TestDataLoader(unittest.TestCase):
         self.assertEqual(quote.get("ticker"), "AAPL")
         self.assertIn("price", quote)
         self.assertGreater(quote["price"], 0)
+
+    def test_fetch_stock_fundamentals(self):
+        funds = fetch_stock_fundamentals("AAPL")
+        self.assertIsInstance(funds, dict)
+        self.assertEqual(funds.get("status"), "success")
+        self.assertIn("profile", funds)
+        self.assertEqual(funds["profile"]["symbol"], "AAPL")
+        self.assertIn("valuation", funds)
+        self.assertIn("financials", funds)
+        self.assertIn("analyst", funds)
+        self.assertIn("dividends", funds)
+
+    def test_get_screener_catalog(self):
+        catalog = get_screener_catalog("us_tech")
+        self.assertIsInstance(catalog, list)
+        self.assertGreater(len(catalog), 0)
+        self.assertTrue(any(item["symbol"] == "AAPL" for item in catalog))
+
+        all_catalog = get_screener_catalog("all")
+        self.assertGreater(len(all_catalog), len(catalog))
 
 if __name__ == "__main__":
     unittest.main()
