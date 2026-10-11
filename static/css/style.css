@@ -5150,13 +5150,170 @@ html, body {
   transform: translateY(-1px);
 }
 
-/* 2. Middle Grid: Left Toolbar (42px) + Center Chart (Flex) + Right Dock (380px) */
+/* Strategy Dropdown Selector (TradingView Style) */
+.tv-strat-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.tv-strat-dropdown-trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  height: 30px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1e293b;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+
+.tv-strat-dropdown-trigger:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.tv-strat-trigger-icon {
+  width: 14px;
+  height: 14px;
+  color: #0052cc;
+  flex-shrink: 0;
+}
+
+.tv-strat-trigger-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #64748b;
+}
+
+.tv-strat-trigger-text strong {
+  color: #0052cc;
+  font-weight: 700;
+}
+
+.tv-strat-arrow {
+  width: 12px;
+  height: 12px;
+  color: #64748b;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.tv-strat-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 330px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.15), 0 8px 10px -6px rgba(15, 23, 42, 0.1);
+  padding: 6px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.tv-strat-dropdown-menu.hidden {
+  display: none !important;
+}
+
+.tv-strat-menu-header {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 6px 10px 4px 10px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.tv-strat-menu-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  width: 100%;
+}
+
+.tv-strat-menu-item:hover {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.tv-strat-menu-item.active {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.tsm-icon-box {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #475569;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.tv-strat-menu-item.active .tsm-icon-box {
+  background: #0052cc;
+  color: #ffffff;
+}
+
+.tsm-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.tsm-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.tsm-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.tv-strat-menu-item.active .tsm-title {
+  color: #0052cc;
+}
+
+.tsm-desc {
+  font-size: 10.5px;
+  color: #64748b;
+  margin-top: 2px;
+  line-height: 1.3;
+}
+
+/* 2. Middle Grid: Left Toolbar (44px) + Center Workspace + Right Dock (380px) */
 .tv-middle-grid {
   display: flex;
   flex: 1;
   min-height: 0;
   position: relative;
   overflow: hidden;
+  height: calc(100vh - 46px);
 }
 
 .tv-left-toolbar {
@@ -5169,6 +5326,7 @@ html, body {
   padding: 8px 0;
   gap: 4px;
   flex-shrink: 0;
+  height: 100%;
   z-index: 30;
 }
 
@@ -5205,6 +5363,19 @@ html, body {
 }
 
 /* Center Main Chart Area */
+/* Center Workspace: Houses Main Chart Viewport + Bottom Strategy Tester */
+.tv-center-workspace {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  position: relative;
+  background: #ffffff;
+  overflow: hidden;
+  height: 100%;
+}
+
 .tv-main-chart-area {
   display: flex;
   flex-direction: column;
@@ -5224,7 +5395,50 @@ html, body {
   font-size: 11px;
   background: #ffffff;
   flex-shrink: 0;
-  height: 26px;
+  height: 28px;
+  color: #64748b;
+  overflow: hidden;
+  gap: 12px;
+}
+
+.tv-css-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.tv-css-title {
+  font-weight: 700;
+  color: #0f172a;
+  font-family: var(--font-mono, monospace);
+  flex-shrink: 0;
+}
+
+.tv-css-legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin: 0;
+  padding: 0;
+}
+
+.tv-css-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.tv-css-tooltip {
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
   color: #64748b;
 }
 
@@ -5250,6 +5464,7 @@ html, body {
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
+  height: 100%;
   transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s ease;
   overflow: hidden;
   z-index: 40;
@@ -5436,4 +5651,78 @@ html, body {
 
 .tv-panel-pane.active {
   display: block;
+}
+
+/* Screener Dock Component */
+.tv-screener-search-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.tv-screener-search-input-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  height: 28px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0 8px;
+  transition: all 0.15s ease;
+}
+
+.tv-screener-search-input-box:focus-within {
+  background: #ffffff;
+  border-color: #0052cc;
+  box-shadow: 0 0 0 2px rgba(0, 82, 204, 0.12);
+}
+
+.tv-screener-search-icon {
+  width: 13px;
+  height: 13px;
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.tv-screener-search-input-box input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 11.5px;
+  color: #0f172a;
+  padding: 0;
+  height: 100%;
+}
+
+.tv-screener-sort-select {
+  height: 28px;
+  font-size: 11px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #f8fafc;
+  color: #334155;
+  padding: 0 6px;
+  width: 120px;
+  flex-shrink: 0;
+  outline: none;
+  cursor: pointer;
+}
+
+.tv-screener-sort-select:focus {
+  border-color: #0052cc;
+  background: #ffffff;
+}
+
+.tv-screener-table-wrap {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: calc(100vh - 190px);
 }

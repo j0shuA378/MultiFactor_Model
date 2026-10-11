@@ -60,28 +60,81 @@
         <button class="tv-tf-btn period-btn" data-period="5y">5Y</button>
         <div class="tv-sep"></div>
 
-        <!-- Strategy Quick Switcher -->
-        <div class="tv-strat-picker-row" id="strategy-tabs">
-          <button class="tv-strat-select-btn strat-tab active" data-strat="momentum" title="Barra/AQR 机构多因子动量">
-            <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="3" y1="20" x2="21" y2="20"/></svg>
-            <span>多因子动量</span>
+        <!-- Strategy Dropdown Selector (TradingView Style) -->
+        <div class="tv-strat-dropdown" id="strategy-tabs">
+          <button class="tv-strat-dropdown-trigger" id="tv-strat-dropdown-trigger" type="button" title="切换量化交易模型与策略">
+            <svg class="art-icon tv-strat-trigger-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            </svg>
+            <span class="tv-strat-trigger-text">策略: <strong id="tv-strat-current-label">多因子动量</strong></span>
+            <svg class="tv-strat-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
           </button>
-          <button class="tv-strat-select-btn strat-tab" data-strat="ml" title="机器学习非线性预测">
-            <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.5" fill="currentColor"/><circle cx="15" cy="9" r="1.5" fill="currentColor"/><path d="M9 15h6"/><line x1="12" y1="1" x2="12" y2="4"/><line x1="1" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="23" y2="12"/></svg>
-            <span>机器学习</span>
-          </button>
-          <button class="tv-strat-select-btn strat-tab" data-strat="turtle" title="海龟法则与动态突破">
-            <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 0 0-9 9c0 4.1 2.8 7.6 6.7 8.7l.3 2.3h4l.3-2.3C18.2 19.6 21 16.1 21 12a9 9 0 0 0-9-9z"/><path d="M12 7v10M8 10h8M9 14h6"/></svg>
-            <span>海龟突破</span>
-          </button>
-          <button class="tv-strat-select-btn strat-tab" data-strat="chan" title="缠论中枢与形态量化">
-            <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><polyline points="7 17 11 9 15 15 20 5"/></svg>
-            <span>缠论形态</span>
-          </button>
-          <button class="tv-strat-select-btn strat-tab" data-strat="compare" title="四大策略全景对决">
-            <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" y1="19" x2="19" y2="13"/><line x1="16" y1="16" x2="20" y2="20"/><line x1="19" y1="21" x2="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/><line x1="5" y1="11" x2="11" y2="17"/></svg>
-            <span>策略对决</span>
-          </button>
+
+          <div class="tv-strat-dropdown-menu hidden" id="tv-strat-menu">
+            <div class="tv-strat-menu-header">切换核心量化交易策略</div>
+            <button class="tv-strat-menu-item strat-tab active" data-strat="momentum" type="button">
+              <div class="tsm-icon-box">
+                <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="3" y1="20" x2="21" y2="20"/></svg>
+              </div>
+              <div class="tsm-content">
+                <div class="tsm-title-row">
+                  <span class="tsm-title">多因子动量 (Barra/AQR)</span>
+                  <span class="badge-pro" style="font-size: 9px;">经典量化</span>
+                </div>
+                <div class="tsm-desc">特质波缩放 · 残差动量 · 路径平滑度 · 波动率目标仓位</div>
+              </div>
+            </button>
+            <button class="tv-strat-menu-item strat-tab" data-strat="ml" type="button">
+              <div class="tsm-icon-box">
+                <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.5" fill="currentColor"/><circle cx="15" cy="9" r="1.5" fill="currentColor"/><path d="M9 15h6"/><line x1="12" y1="1" x2="12" y2="4"/><line x1="1" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="23" y2="12"/></svg>
+              </div>
+              <div class="tsm-content">
+                <div class="tsm-title-row">
+                  <span class="tsm-title">机器学习非线性预测</span>
+                  <span class="badge-pro" style="font-size: 9px;">AI驱动</span>
+                </div>
+                <div class="tsm-desc">时序特征工程 · 概率自适应阈值 · 动态调仓</div>
+              </div>
+            </button>
+            <button class="tv-strat-menu-item strat-tab" data-strat="turtle" type="button">
+              <div class="tsm-icon-box">
+                <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a9 9 0 0 0-9 9c0 4.1 2.8 7.6 6.7 8.7l.3 2.3h4l.3-2.3C18.2 19.6 21 16.1 21 12a9 9 0 0 0-9-9z"/><path d="M12 7v10M8 10h8M9 14h6"/></svg>
+              </div>
+              <div class="tsm-content">
+                <div class="tsm-title-row">
+                  <span class="tsm-title">海龟法则与通道突破</span>
+                  <span class="badge-pro" style="font-size: 9px;">趋势跟踪</span>
+                </div>
+                <div class="tsm-desc">唐奇安双通道 · ATR 真实波幅 · 动态金字塔加仓风控</div>
+              </div>
+            </button>
+            <button class="tv-strat-menu-item strat-tab" data-strat="chan" type="button">
+              <div class="tsm-icon-box">
+                <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><polyline points="7 17 11 9 15 15 20 5"/></svg>
+              </div>
+              <div class="tsm-content">
+                <div class="tsm-title-row">
+                  <span class="tsm-title">缠论中枢与形态量化</span>
+                  <span class="badge-pro" style="font-size: 9px; background: #fdf2f8; color: #db2777; border-color: #fbcfe8;">形态几何</span>
+                </div>
+                <div class="tsm-desc">K线包含 · 笔与线段 · 中枢震荡 · 一/二/三类买卖点</div>
+              </div>
+            </button>
+            <button class="tv-strat-menu-item strat-tab" data-strat="compare" type="button">
+              <div class="tsm-icon-box">
+                <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" y1="19" x2="19" y2="13"/><line x1="16" y1="16" x2="20" y2="20"/><line x1="19" y1="21" x2="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/><line x1="5" y1="11" x2="11" y2="17"/></svg>
+              </div>
+              <div class="tsm-content">
+                <div class="tsm-title-row">
+                  <span class="tsm-title">四大策略全景对决</span>
+                  <span class="badge-pro" style="font-size: 9px; background: #f5f3ff; color: #7c3aed; border-color: #ddd6fe;">横向对决</span>
+                </div>
+                <div class="tsm-desc">同源回测比较 · 风险收益比 · 卡玛比率横向矩阵</div>
+              </div>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -159,13 +212,15 @@
         </button>
       </aside>
 
+      <!-- Center Workspace (TradingView Standard: Main Chart + Bottom Strategy Tester) -->
+      <div class="tv-center-workspace">
       <!-- Center Main Chart Viewport -->
       <main class="tv-main-chart-area">
         <!-- Chart Status & Interactive Tooltip Strip -->
         <div class="tv-chart-status-strip">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span id="kline-chart-title" style="font-weight: 700; color: #0f172a; font-family: var(--font-mono, monospace);">AAPL 历史行情与交易信号标定</span>
-            <div class="legend-row" style="margin: 0; padding: 0;">
+          <div class="tv-css-left">
+            <span id="kline-chart-title" class="tv-css-title">AAPL 历史行情与交易信号标定</span>
+            <div class="legend-row tv-css-legend">
               <span class="legend-item"><span class="legend-dot dot-sma20"></span>SMA 20</span>
               <span class="legend-item"><span class="legend-dot dot-sma50"></span>SMA 50</span>
               <span class="legend-item"><span class="legend-dot dot-bb"></span>Bollinger</span>
@@ -174,8 +229,8 @@
               <span class="legend-item"><span class="legend-line line-prediction-sl"></span>防守止损</span>
             </div>
           </div>
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span class="cursor-price-info" id="kline-tooltip-bar">移动光标查看具体日K线行情与信号标定</span>
+          <div class="tv-css-right">
+            <span class="cursor-price-info tv-css-tooltip" id="kline-tooltip-bar">移动光标查看具体日K线行情与信号标定</span>
             <button class="btn-dock-toggle hidden" id="btn-toggle-prediction-dock">
               <span id="btn-toggle-dock-icon"></span><span id="btn-toggle-dock-text"></span>
             </button>
@@ -201,6 +256,183 @@
           <button id="btn-quote-fav-toggle"><span id="bqu-fav-icon">★</span><span id="bqu-fav-label">自选</span></button>
         </div>
       </main>
+
+    <!-- 3. Bottom Strategy Tester Panel (TradingView Drawer) -->
+    <section class="tv-bottom-panel" id="tv-bottom-panel">
+      <div class="tv-panel-header">
+        <div class="tv-panel-tabs">
+          <button class="tv-panel-tab-btn active" data-panel="equity" id="tv-panel-tab-equity">
+            <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="3" y1="20" x2="21" y2="20"/></svg>
+            <span>策略净值走势</span>
+          </button>
+          <button class="tv-panel-tab-btn" data-panel="kpis" id="tv-panel-tab-kpis">
+            <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>
+            <span>量化绩效指标</span>
+          </button>
+          <button class="tv-panel-tab-btn" data-panel="trades" id="tv-panel-tab-trades">
+            <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+            <span>成交记录明细</span>
+          </button>
+          <button class="tv-panel-tab-btn" data-panel="compare" id="tv-panel-tab-compare">
+            <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" y1="19" x2="19" y2="13"/><line x1="16" y1="16" x2="20" y2="20"/><line x1="19" y1="21" x2="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/><line x1="5" y1="11" x2="11" y2="17"/></svg>
+            <span>四大策略对决</span>
+          </button>
+          <button class="tv-panel-tab-btn" data-panel="ml" id="tv-panel-tab-ml">
+            <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.5" fill="currentColor"/><circle cx="15" cy="9" r="1.5" fill="currentColor"/><path d="M9 15h6"/><line x1="12" y1="1" x2="12" y2="4"/><line x1="1" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="23" y2="12"/></svg>
+            <span>ML模型诊断</span>
+          </button>
+        </div>
+
+        <div class="tv-panel-controls">
+          <button class="tv-ctrl-btn" id="tv-btn-panel-minimize" title="折叠底栏 (32px)">−</button>
+          <button class="tv-ctrl-btn" id="tv-btn-panel-normal" title="标准高度 (260px)">▫</button>
+          <button class="tv-ctrl-btn" id="tv-btn-panel-maximize" title="展开底栏 (520px)">□</button>
+        </div>
+      </div>
+
+      <div class="tv-panel-content">
+        <!-- Pane 1: 策略净值与基准走势 (Equity Curve) -->
+        <div class="tv-panel-pane active" id="tv-panel-pane-equity">
+          <div style="display: flex; flex-direction: column; height: 100%;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+              <div class="legend-row" style="margin: 0; padding: 0;">
+                <span class="legend-item"><span class="legend-line line-strategy"></span>量化策略净值</span>
+                <span class="legend-item"><span class="legend-line line-benchmark"></span>基准 (买入持有)</span>
+                <span class="legend-item"><span class="legend-area area-drawdown"></span>动态回撤深度</span>
+              </div>
+              <span class="cursor-price-info" id="equity-tooltip-bar" style="font-size: 11px;">资金曲线追踪</span>
+            </div>
+            <div class="canvas-wrapper" id="equity-wrapper" style="flex: 1; min-height: 180px; position: relative;">
+              <canvas id="equity-canvas" style="position: absolute; inset: 0; width: 100%; height: 100%;"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pane 2: 核心绩效指标 (KPIs Grid) -->
+        <div class="tv-panel-pane" id="tv-panel-pane-kpis">
+          <div class="kpi-grid" id="kpi-grid">
+            <div class="kpi-card">
+              <span class="kpi-label">策略累计收益率</span>
+              <div class="kpi-value-row">
+                <span class="kpi-value positive" id="kpi-return">+0.00%</span>
+                <span class="kpi-tag" id="kpi-cagr">CAGR 0.0%</span>
+              </div>
+              <span class="kpi-subtext" id="kpi-bench-return">基准 (买入持有): +0.00%</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">夏普比率 (Sharpe)</span>
+              <div class="kpi-value-row">
+                <span class="kpi-value" id="kpi-sharpe">0.00</span>
+                <span class="kpi-tag" id="kpi-sortino">Sortino 0.00</span>
+              </div>
+              <span class="kpi-subtext" id="kpi-volatility">年化波动率: 0.00%</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">最大回撤 (Max Drawdown)</span>
+              <div class="kpi-value-row">
+                <span class="kpi-value negative" id="kpi-mdd">-0.00%</span>
+                <span class="kpi-tag" id="kpi-calmar">Calmar 0.00</span>
+              </div>
+              <span class="kpi-subtext" id="kpi-alpha-beta">Alpha: +0.0% · Beta: 1.0</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">交易胜率 / 盈亏比</span>
+              <div class="kpi-value-row">
+                <span class="kpi-value" id="kpi-winrate">0.0%</span>
+                <span class="kpi-tag" id="kpi-profit-factor">盈亏比 0.00</span>
+              </div>
+              <span class="kpi-subtext" id="kpi-trades-count">总交易: 0 笔</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pane 3: 交易明细记录 (Trades Table) -->
+        <div class="tv-panel-pane" id="tv-panel-pane-trades">
+          <div class="trades-card" style="border: none; padding: 0;">
+            <div class="trades-card-header" style="padding-bottom: 6px;">
+              <span style="font-size: 12px; font-weight: 700;">历史交易成交明细与出场原因</span>
+              <button id="export-csv-btn" class="btn-sm" style="font-size: 11px;">导出 CSV</button>
+            </div>
+            <div class="table-container">
+              <table class="trades-table" id="trades-table" style="font-size: 11px;">
+                <thead>
+                  <tr>
+                    <th>序号</th>
+                    <th>类型</th>
+                    <th>入场日期</th>
+                    <th>入场价</th>
+                    <th>出场日期</th>
+                    <th>出场价</th>
+                    <th>持股</th>
+                    <th>天数</th>
+                    <th>净盈亏</th>
+                    <th>收益率</th>
+                    <th>出场判定原因</th>
+                  </tr>
+                </thead>
+                <tbody id="trades-table-body">
+                  <tr><td colspan="11" class="empty-state">等待执行回测获取交易记录...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pane 4: 四大策略对决 (Comparison View) -->
+        <div class="tv-panel-pane" id="tv-panel-pane-compare">
+          <div id="comparison-view" style="display: flex; flex-direction: column; gap: 10px;">
+            <div class="comparison-cards-grid" id="comparison-cards-grid"></div>
+            <div style="height: 180px; position: relative;" id="compare-equity-wrapper">
+              <canvas id="compare-equity-canvas" style="position: absolute; inset: 0; width: 100%; height: 100%;"></canvas>
+            </div>
+            <div class="table-container">
+              <table class="trades-table comparison-table" id="comparison-matrix-table" style="font-size: 11px;">
+                <thead>
+                  <tr>
+                    <th>交易模型</th>
+                    <th>累计收益</th>
+                    <th>年化(CAGR)</th>
+                    <th>夏普比率</th>
+                    <th>索提诺</th>
+                    <th>最大回撤</th>
+                    <th>胜率</th>
+                    <th>盈亏比</th>
+                    <th>总笔数</th>
+                    <th>Alpha</th>
+                    <th>Beta</th>
+                  </tr>
+                </thead>
+                <tbody id="comparison-matrix-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pane 5: 机器学习模型诊断 (ML Diagnostics) -->
+        <div class="tv-panel-pane" id="tv-panel-pane-ml">
+          <div id="ml-diagnostics-panel" class="diagnostics-card" style="border: none; padding: 0;">
+            <div class="card-inner-header" style="margin-bottom: 8px;">
+              <h4 class="card-inner-title" style="font-size: 12.5px;">机器学习模型诊断与特征贡献度分析</h4>
+              <div class="ml-meta-tags" id="ml-meta-tags"></div>
+            </div>
+            <div class="ml-diagnostics-grid">
+              <div class="feature-bar-list" id="feature-importance-bars"></div>
+              <div class="ml-explanation-box">
+                <div class="ml-stat-pills" style="margin-bottom: 8px;">
+                  <div class="stat-pill"><span class="p-label">准确率</span><span class="p-val" id="ml-acc-val">--</span></div>
+                  <div class="stat-pill"><span class="p-label">查准率</span><span class="p-val" id="ml-prec-val">--</span></div>
+                  <div class="stat-pill"><span class="p-label">查全率</span><span class="p-val" id="ml-rec-val">--</span></div>
+                </div>
+                <p style="font-size: 11px; line-height: 1.5; color: #64748b; margin: 0;">
+                  基于随机森林 / 梯度提升树模型拟合多周期涨跌幅、波动率、振荡器与成交量特征，动态识别特征贡献度。
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+      </div>
 
       <!-- Right Dock (380px collapsible drawer) -->
       <aside class="tv-right-dock" id="tv-right-dock">
@@ -246,12 +478,12 @@
             </div>
 
             <!-- Keyword & Sort -->
-            <div style="display: flex; gap: 6px;">
-              <div class="screener-search-wrap" style="flex: 1; padding: 0 6px; height: 28px;">
-                <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input type="text" id="screener-keyword-input" placeholder="代码/板块过滤..." autocomplete="off" style="font-size: 11px;">
+            <div class="tv-screener-search-row">
+              <div class="tv-screener-search-input-box">
+                <svg class="art-icon tv-screener-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="screener-keyword-input" placeholder="代码/板块过滤..." autocomplete="off">
               </div>
-              <select id="screener-sort-select" class="ssg-select" style="height: 28px; font-size: 11px; padding: 0 4px; width: 130px;">
+              <select id="screener-sort-select" class="tv-screener-sort-select">
                 <option value="market_cap_desc">市值从大到小</option>
                 <option value="change_desc">24h 涨幅优先</option>
                 <option value="change_asc">24h 跌幅优先</option>
@@ -262,7 +494,7 @@
             </div>
 
             <!-- Screener Table Container -->
-            <div style="overflow-x: auto; max-height: calc(100vh - 200px);">
+            <div class="tv-screener-table-wrap">
               <table class="screener-table" id="screener-table" style="font-size: 11px;">
                 <thead>
                   <tr>
@@ -625,181 +857,7 @@
       </aside>
     </div>
 
-    <!-- 3. Bottom Strategy Tester Panel (TradingView Drawer) -->
-    <footer class="tv-bottom-panel" id="tv-bottom-panel">
-      <div class="tv-panel-header">
-        <div class="tv-panel-tabs">
-          <button class="tv-panel-tab-btn active" data-panel="equity" id="tv-panel-tab-equity">
-            <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="3" y1="20" x2="21" y2="20"/></svg>
-            <span>策略净值走势</span>
-          </button>
-          <button class="tv-panel-tab-btn" data-panel="kpis" id="tv-panel-tab-kpis">
-            <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>
-            <span>量化绩效指标</span>
-          </button>
-          <button class="tv-panel-tab-btn" data-panel="trades" id="tv-panel-tab-trades">
-            <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
-            <span>成交记录明细</span>
-          </button>
-          <button class="tv-panel-tab-btn" data-panel="compare" id="tv-panel-tab-compare">
-            <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" y1="19" x2="19" y2="13"/><line x1="16" y1="16" x2="20" y2="20"/><line x1="19" y1="21" x2="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/><line x1="5" y1="11" x2="11" y2="17"/></svg>
-            <span>四大策略对决</span>
-          </button>
-          <button class="tv-panel-tab-btn" data-panel="ml" id="tv-panel-tab-ml">
-            <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.5" fill="currentColor"/><circle cx="15" cy="9" r="1.5" fill="currentColor"/><path d="M9 15h6"/><line x1="12" y1="1" x2="12" y2="4"/><line x1="1" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="23" y2="12"/></svg>
-            <span>ML模型诊断</span>
-          </button>
-        </div>
 
-        <div class="tv-panel-controls">
-          <button class="tv-ctrl-btn" id="tv-btn-panel-minimize" title="折叠底栏 (32px)">−</button>
-          <button class="tv-ctrl-btn" id="tv-btn-panel-normal" title="标准高度 (260px)">▫</button>
-          <button class="tv-ctrl-btn" id="tv-btn-panel-maximize" title="展开底栏 (520px)">□</button>
-        </div>
-      </div>
-
-      <div class="tv-panel-content">
-        <!-- Pane 1: 策略净值与基准走势 (Equity Curve) -->
-        <div class="tv-panel-pane active" id="tv-panel-pane-equity">
-          <div style="display: flex; flex-direction: column; height: 100%;">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-              <div class="legend-row" style="margin: 0; padding: 0;">
-                <span class="legend-item"><span class="legend-line line-strategy"></span>量化策略净值</span>
-                <span class="legend-item"><span class="legend-line line-benchmark"></span>基准 (买入持有)</span>
-                <span class="legend-item"><span class="legend-area area-drawdown"></span>动态回撤深度</span>
-              </div>
-              <span class="cursor-price-info" id="equity-tooltip-bar" style="font-size: 11px;">资金曲线追踪</span>
-            </div>
-            <div class="canvas-wrapper" id="equity-wrapper" style="flex: 1; min-height: 180px; position: relative;">
-              <canvas id="equity-canvas" style="position: absolute; inset: 0; width: 100%; height: 100%;"></canvas>
-            </div>
-          </div>
-        </div>
-
-        <!-- Pane 2: 核心绩效指标 (KPIs Grid) -->
-        <div class="tv-panel-pane" id="tv-panel-pane-kpis">
-          <div class="kpi-grid" id="kpi-grid">
-            <div class="kpi-card">
-              <span class="kpi-label">策略累计收益率</span>
-              <div class="kpi-value-row">
-                <span class="kpi-value positive" id="kpi-return">+0.00%</span>
-                <span class="kpi-tag" id="kpi-cagr">CAGR 0.0%</span>
-              </div>
-              <span class="kpi-subtext" id="kpi-bench-return">基准 (买入持有): +0.00%</span>
-            </div>
-            <div class="kpi-card">
-              <span class="kpi-label">夏普比率 (Sharpe)</span>
-              <div class="kpi-value-row">
-                <span class="kpi-value" id="kpi-sharpe">0.00</span>
-                <span class="kpi-tag" id="kpi-sortino">Sortino 0.00</span>
-              </div>
-              <span class="kpi-subtext" id="kpi-volatility">年化波动率: 0.00%</span>
-            </div>
-            <div class="kpi-card">
-              <span class="kpi-label">最大回撤 (Max Drawdown)</span>
-              <div class="kpi-value-row">
-                <span class="kpi-value negative" id="kpi-mdd">-0.00%</span>
-                <span class="kpi-tag" id="kpi-calmar">Calmar 0.00</span>
-              </div>
-              <span class="kpi-subtext" id="kpi-alpha-beta">Alpha: +0.0% · Beta: 1.0</span>
-            </div>
-            <div class="kpi-card">
-              <span class="kpi-label">交易胜率 / 盈亏比</span>
-              <div class="kpi-value-row">
-                <span class="kpi-value" id="kpi-winrate">0.0%</span>
-                <span class="kpi-tag" id="kpi-profit-factor">盈亏比 0.00</span>
-              </div>
-              <span class="kpi-subtext" id="kpi-trades-count">总交易: 0 笔</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Pane 3: 交易明细记录 (Trades Table) -->
-        <div class="tv-panel-pane" id="tv-panel-pane-trades">
-          <div class="trades-card" style="border: none; padding: 0;">
-            <div class="trades-card-header" style="padding-bottom: 6px;">
-              <span style="font-size: 12px; font-weight: 700;">历史交易成交明细与出场原因</span>
-              <button id="export-csv-btn" class="btn-sm" style="font-size: 11px;">导出 CSV</button>
-            </div>
-            <div class="table-container">
-              <table class="trades-table" id="trades-table" style="font-size: 11px;">
-                <thead>
-                  <tr>
-                    <th>序号</th>
-                    <th>类型</th>
-                    <th>入场日期</th>
-                    <th>入场价</th>
-                    <th>出场日期</th>
-                    <th>出场价</th>
-                    <th>持股</th>
-                    <th>天数</th>
-                    <th>净盈亏</th>
-                    <th>收益率</th>
-                    <th>出场判定原因</th>
-                  </tr>
-                </thead>
-                <tbody id="trades-table-body">
-                  <tr><td colspan="11" class="empty-state">等待执行回测获取交易记录...</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- Pane 4: 四大策略对决 (Comparison View) -->
-        <div class="tv-panel-pane" id="tv-panel-pane-compare">
-          <div id="comparison-view" style="display: flex; flex-direction: column; gap: 10px;">
-            <div class="comparison-cards-grid" id="comparison-cards-grid"></div>
-            <div style="height: 180px; position: relative;" id="compare-equity-wrapper">
-              <canvas id="compare-equity-canvas" style="position: absolute; inset: 0; width: 100%; height: 100%;"></canvas>
-            </div>
-            <div class="table-container">
-              <table class="trades-table comparison-table" id="comparison-matrix-table" style="font-size: 11px;">
-                <thead>
-                  <tr>
-                    <th>交易模型</th>
-                    <th>累计收益</th>
-                    <th>年化(CAGR)</th>
-                    <th>夏普比率</th>
-                    <th>索提诺</th>
-                    <th>最大回撤</th>
-                    <th>胜率</th>
-                    <th>盈亏比</th>
-                    <th>总笔数</th>
-                    <th>Alpha</th>
-                    <th>Beta</th>
-                  </tr>
-                </thead>
-                <tbody id="comparison-matrix-body"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- Pane 5: 机器学习模型诊断 (ML Diagnostics) -->
-        <div class="tv-panel-pane" id="tv-panel-pane-ml">
-          <div id="ml-diagnostics-panel" class="diagnostics-card" style="border: none; padding: 0;">
-            <div class="card-inner-header" style="margin-bottom: 8px;">
-              <h4 class="card-inner-title" style="font-size: 12.5px;">机器学习模型诊断与特征贡献度分析</h4>
-              <div class="ml-meta-tags" id="ml-meta-tags"></div>
-            </div>
-            <div class="ml-diagnostics-grid">
-              <div class="feature-bar-list" id="feature-importance-bars"></div>
-              <div class="ml-explanation-box">
-                <div class="ml-stat-pills" style="margin-bottom: 8px;">
-                  <div class="stat-pill"><span class="p-label">准确率</span><span class="p-val" id="ml-acc-val">--</span></div>
-                  <div class="stat-pill"><span class="p-label">查准率</span><span class="p-val" id="ml-prec-val">--</span></div>
-                  <div class="stat-pill"><span class="p-label">查全率</span><span class="p-val" id="ml-rec-val">--</span></div>
-                </div>
-                <p style="font-size: 11px; line-height: 1.5; color: #64748b; margin: 0;">
-                  基于随机森林 / 梯度提升树模型拟合多周期涨跌幅、波动率、振荡器与成交量特征，动态识别特征贡献度。
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </footer>
   </div>
 
   <!-- Compatibility wrapper for single-strategy-view / workspace-strategy-view -->

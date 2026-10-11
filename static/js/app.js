@@ -52,11 +52,27 @@ function initCharts() {
 }
 
 function initEventHandlers() {
+  // TradingView Strategy Dropdown Trigger & Outside Click
+  const stratDropdownTrigger = document.getElementById('tv-strat-dropdown-trigger');
+  const stratMenu = document.getElementById('tv-strat-menu');
+  if (stratDropdownTrigger && stratMenu) {
+    stratDropdownTrigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      stratMenu.classList.toggle('hidden');
+    });
+    document.addEventListener('click', (e) => {
+      if (!stratMenu.classList.contains('hidden') && !stratMenu.contains(e.target) && e.target !== stratDropdownTrigger) {
+        stratMenu.classList.add('hidden');
+      }
+    });
+  }
+
   // Strategy Tab Switching
   document.querySelectorAll('.strat-tab').forEach(tab => {
     tab.addEventListener('click', () => {
       const strat = tab.dataset.strat;
       switchStrategy(strat);
+      if (stratMenu) stratMenu.classList.add('hidden');
     });
   });
 
@@ -2016,6 +2032,19 @@ function switchStrategy(strat, triggerAnalysis = true) {
     assStratPill.textContent = `当前策略: ${getStrategyDisplayName(state.strategy)}`;
   }
 
+  // Update TradingView Strategy Trigger Label
+  const tvStratLabel = document.getElementById('tv-strat-current-label');
+  if (tvStratLabel) {
+    const stratNames = {
+      momentum: '多因子动量',
+      ml: '机器学习',
+      turtle: '海龟突破',
+      chan: '缠论形态',
+      compare: '策略对决'
+    };
+    tvStratLabel.textContent = stratNames[strat] || '多因子动量';
+  }
+
   // Switch parameter cards with slide-fade transition
   const groupMomentum = document.getElementById('params-momentum');
   const groupML = document.getElementById('params-ml');
@@ -2527,42 +2556,39 @@ function renderScreenerTable() {
   });
 
   if (list.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="11" class="empty-state">未找到匹配 "${kw}" 的股票或ETF标的</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" class="empty-state">未找到匹配 "${kw}" 的股票或ETF标的</td></tr>`;
     return;
   }
 
   tbody.innerHTML = list.map((stock, idx) => {
     const isPos = stock.change_pct >= 0;
-    const isUp = (stock.target_upside_pct || 0) >= 0;
-    const delay = Math.min(idx * 0.025, 0.40);
+    const delay = Math.min(idx * 0.02, 0.35);
     return `
       <tr data-symbol="${stock.symbol}" class="screener-row-enter" style="animation-delay: ${delay}s;">
-        <td>
-          <div class="st-ticker-cell">
-            <div class="st-sym-row">
-              <span class="st-symbol">${stock.symbol}</span>
-              <span class="st-badge">${stock.badge || stock.category_label}</span>
+        <td style="padding: 6px 8px;">
+          <div class="st-ticker-cell" style="gap: 1px;">
+            <div class="st-sym-row" style="display: flex; align-items: center; gap: 4px;">
+              <span class="st-symbol" style="font-weight: 700; font-family: var(--font-mono); font-size: 11.5px; color: #0f172a;">${stock.symbol}</span>
+              <span class="st-badge" style="font-size: 9px; padding: 1px 4px;">${stock.badge || stock.category_label}</span>
             </div>
-            <span class="st-name">${stock.name}</span>
+            <span class="st-name" style="font-size: 10px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 95px;">${stock.name}</span>
           </div>
         </td>
-        <td><span class="ass-pill">${stock.category_label}</span></td>
-        <td style="font-size:12.5px; color:var(--text-secondary);">${stock.sector}</td>
-        <td class="st-price">$${Number(stock.price || 0).toFixed(2)}</td>
-        <td>
-          <span class="st-change ${isPos ? 'positive' : 'negative'}">
+        <td class="st-price" style="padding: 6px 6px; font-family: var(--font-mono); font-weight: 600; font-size: 11.5px; color: #0f172a;">
+          $${Number(stock.price || 0).toFixed(2)}
+        </td>
+        <td style="padding: 6px 6px;">
+          <span class="st-change ${isPos ? 'positive' : 'negative'}" style="font-family: var(--font-mono); font-size: 11px; font-weight: 600; padding: 2px 4px; border-radius: 4px; background: ${isPos ? '#ecfdf5' : '#fef2f2'}; color: ${isPos ? '#059669' : '#dc2626'};">
             ${isPos ? '+' : ''}${Number(stock.change_pct || 0).toFixed(2)}%
           </span>
         </td>
-        <td style="font-family:var(--font-mono); font-weight:600;">${stock.market_cap_fmt || '--'}</td>
-        <td style="font-family:var(--font-mono);">${stock.pe ? `${stock.pe.toFixed(1)}x` : '--'}</td>
-        <td><span class="ass-pill" style="background:#ECFDF5; color:#065F46; font-weight:600;">${stock.analyst_rating}</span></td>
-        <td style="font-family:var(--font-mono); font-weight:700; color:${isUp ? '#10b981' : '#f43f5e'};">
-          ${isUp ? '+' : ''}${Number(stock.target_upside_pct || 0).toFixed(1)}%
+        <td style="padding: 6px 6px; font-family: var(--font-mono); font-size: 10.5px; color: #475569;">
+          ${stock.market_cap_fmt || '--'}
         </td>
-        <td style="font-family:var(--font-mono);">${stock.div_yield_pct > 0 ? `${Number(stock.div_yield_pct).toFixed(2)}%` : '--'}</td>
-        <td>
-          <button class="st-action-btn" type="button" onclick="selectStockAndNavigate('${stock.symbol}')">进入个股与策略 →</button>
+        <td style="padding: 6px 6px; text-align: right;">
+          <button class="st-action-btn" type="button" onclick="selectStockAndNavigate('${stock.symbol}')" style="padding: 3px 6px; font-size: 10.5px; border-radius: 4px; background: #eff6ff; color: #0052cc; border: 1px solid #bfdbfe; cursor: pointer; white-space: nowrap;">
+            分析 &rarr;
+          </button>
         </td>
       </tr>
     `;
