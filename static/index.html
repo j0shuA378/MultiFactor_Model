@@ -11,12 +11,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body data-page="compare">
+<body data-page="workspace">
   <div class="app-layout">
     <!-- Tier 1: Main Institutional Navigation Header -->
     <header class="app-header">
       <div class="header-left">
-        <a href="factor_model.html" class="brand-logo">
+        <a href="index.html" class="brand-logo">
           <div class="logo-icon">
             <span class="logo-symbol">AQ</span>
           </div>
@@ -28,7 +28,7 @@
 
         <!-- Modern Application Workspace Flow Switcher -->
         <nav class="app-workspace-nav" id="app-workspace-nav">
-          <button class="nav-workspace-btn" data-view="screener" id="tab-screener" type="button">
+          <button class="nav-workspace-btn active" data-view="screener" id="tab-screener" type="button">
             <span class="nwb-icon">🎯</span>
             <span>选股大厅</span>
             <span class="nav-page-badge badge-screener">1. 选股</span>
@@ -38,7 +38,7 @@
             <span>股票基本面</span>
             <span class="nav-page-badge badge-fund">2. 财务/预测</span>
           </button>
-          <button class="nav-workspace-btn active" data-view="strategy" id="tab-strategy" type="button">
+          <button class="nav-workspace-btn" data-view="strategy" id="tab-strategy" type="button">
             <span class="nwb-icon">⚡</span>
             <span>策略交易台</span>
             <span class="nav-page-badge badge-strat">3 & 4. 交易决策</span>
@@ -162,7 +162,7 @@
     </div>
 
     <!-- Step 1: 选股大厅 (Screener View) -->
-    <section id="workspace-screener-view" class="workspace-screener-view hidden">
+    <section id="workspace-screener-view" class="workspace-screener-view">
       <div class="screener-hero-banner">
         <div class="shb-title-group">
           <h2>🎯 全市场智能选股大厅与标的池 (Stock Screener)</h2>
@@ -426,7 +426,7 @@
     </section>
 
     <!-- Step 3 & 4: 策略选择与当前策略下的信息展示 (Strategy Workbench View) -->
-    <div id="workspace-strategy-view" class="workspace-strategy-view">
+    <div id="workspace-strategy-view" class="workspace-strategy-view hidden">
       <!-- Strategy Selection Navigation Tabs -->
       <nav class="strategy-navbar">
       <div class="strategy-tabs" id="strategy-tabs">

@@ -62,19 +62,22 @@ STRATEGY_MAP = {
 # Dedicated Independent Page Routes
 @app.route("/")
 def index():
-    return send_from_directory("static", "factor_model.html")
+    return send_from_directory("static", "index.html")
 
 @app.route("/factor")
+@app.route("/static/factor_model.html")
 def page_factor():
-    return send_from_directory("static", "factor_model.html")
+    return send_from_directory("static", "index.html")
 
 @app.route("/ml")
+@app.route("/static/ml_model.html")
 def page_ml():
-    return send_from_directory("static", "ml_model.html")
+    return send_from_directory("static", "index.html")
 
 @app.route("/cta")
+@app.route("/static/cta_model.html")
 def page_cta():
-    return send_from_directory("static", "cta_model.html")
+    return send_from_directory("static", "index.html")
 
 @app.route("/portfolio")
 def page_portfolio():

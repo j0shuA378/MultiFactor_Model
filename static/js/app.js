@@ -8,7 +8,7 @@ const state = {
   period: '1y',
   strategy: 'momentum',
   capital: 100000,
-  currentWorkspaceView: 'strategy',
+  currentWorkspaceView: 'screener',
   stockData: null,
   fundamentalsData: null,
   screenerData: null,
@@ -2009,6 +2009,25 @@ function initAppWorkspaceWorkflow() {
     screenerSort.addEventListener('change', () => {
       renderScreenerTable();
     });
+  }
+
+  // Parse URL routing parameters (?view=screener|fundamentals|strategy, ?ticker=AAPL, ?strat=momentum)
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const viewParam = urlParams.get('view') || 'screener';
+    const tickerParam = urlParams.get('ticker');
+    const stratParam = urlParams.get('strat');
+
+    if (tickerParam) {
+      state.ticker = tickerParam.toUpperCase();
+    }
+    if (stratParam) {
+      state.strategy = stratParam;
+      switchStrategy(stratParam, false);
+    }
+    switchWorkspaceView(viewParam);
+  } catch (err) {
+    switchWorkspaceView('screener');
   }
 }
 
