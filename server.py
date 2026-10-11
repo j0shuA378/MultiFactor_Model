@@ -198,6 +198,8 @@ def api_stock_history():
         prev_price = candles[-2]['close'] if len(candles) > 1 else latest_price
         change_pct = round(((latest_price - prev_price) / prev_price) * 100.0, 2) if prev_price > 0 else 0.0
 
+        is_open, status_text, detail = is_us_market_open()
+
         return jsonify({
             "status": "success",
             "ticker": ticker,
@@ -205,6 +207,9 @@ def api_stock_history():
             "total_bars": len(candles),
             "latest_price": latest_price,
             "change_pct": change_pct,
+            "is_market_open": is_open,
+            "market_status_text": status_text,
+            "market_session": detail.get("session", "CLOSED"),
             "candles": candles
         })
     except Exception as e:
@@ -220,6 +225,10 @@ def api_stock_quote():
     ticker = sanitize_ticker(request.args.get("ticker", "AAPL"))
     try:
         quote = fetch_realtime_quote(ticker)
+        is_open, status_text, detail = is_us_market_open()
+        quote["is_market_open"] = is_open
+        quote["market_status_text"] = status_text
+        quote["market_session"] = detail.get("session", "CLOSED")
         return jsonify(quote)
     except Exception as e:
         logger.error(f"Error fetching quote for {ticker}: {e}")

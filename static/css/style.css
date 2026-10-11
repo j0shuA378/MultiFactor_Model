@@ -3088,6 +3088,41 @@ canvas {
   font-weight: 600;
 }
 
+/* Market Status: Closed / Weekend / Pre-Market States */
+.bqu-live-sync-indicator.closed {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #64748b;
+  box-shadow: none;
+}
+
+.bqu-live-sync-indicator.closed .pulse-live-dot {
+  background-color: #94a3b8;
+  animation: none;
+  box-shadow: none;
+}
+
+.bqu-live-sync-indicator.closed .live-clock-seconds {
+  display: none;
+}
+
+.bqu-live-sync-indicator.pre {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #b45309;
+  box-shadow: none;
+}
+
+.bqu-live-sync-indicator.pre .pulse-live-dot {
+  background-color: #f59e0b;
+  animation: none;
+  box-shadow: none;
+}
+
+.bqu-live-sync-indicator.pre .live-clock-seconds {
+  display: none;
+}
+
 .bqu-change-badge {
   display: inline-flex;
   align-items: baseline;

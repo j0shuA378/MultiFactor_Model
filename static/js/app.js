@@ -1134,113 +1134,205 @@ async function syncYahooFinanceQuotes() {
 
 let realtimeQuoteInterval = null;
 
-function startRealtimeQuoteTicker() {
+/**
+ * Calculates current US Eastern Time and determines market session status.
+ * Standard regular trading hours: Mon-Fri 09:30 - 16:00 ET (NYSE / NASDAQ).
+ */
+function getUsMarketStatus() {
+  const now = new Date();
+  const etStr = now.toLocaleString('en-US', { timeZone: 'America/New_York' });
+  const etDate = new Date(etStr);
+  const day = etDate.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+  const hours = etDate.getHours();
+  const minutes = etDate.getMinutes();
+  const totalMinutes = hours * 60 + minutes;
+
+  const isWeekday = (day >= 1 && day <= 5);
+  const isRegularTrading = isWeekday && (totalMinutes >= (9 * 60 + 30) && totalMinutes < (16 * 60));
+
+  if (!isWeekday) {
+    return {
+      isOpen: false,
+      session: 'WEEKEND',
+      badgeClass: 'closed',
+      text: '周末休市 (非交易日)',
+      tooltip: '美股周末休市，显示真实收盘价，不开市不跳动'
+    };
+  }
+
+  if (isRegularTrading) {
+    return {
+      isOpen: true,
+      session: 'REGULAR',
+      badgeClass: 'open',
+      text: '美股连续竞价中',
+      tooltip: '美股正常交易时段 (09:30 - 16:00 ET)，实时同步交易所真实成交价'
+    };
+  }
+
+  if (totalMinutes < (9 * 60 + 30)) {
+    return {
+      isOpen: false,
+      session: 'PRE_MARKET',
+      badgeClass: 'pre',
+      text: '盘前等待开盘',
+      tooltip: '美股盘前等待开盘，09:30 ET 正式开盘'
+    };
+  }
+
+  return {
+    isOpen: false,
+    session: 'CLOSED',
+    badgeClass: 'closed',
+    text: '美股已收盘',
+    tooltip: '美股今日常规交易已结束，显示真实收盘价'
+  };
+}
+
+/**
+ * Updates the visual market status indicator badge in the quote banner.
+ */
+function updateMarketStatusIndicator(ms) {
+  const indicator = document.querySelector('.bqu-live-sync-indicator');
+  if (!indicator) return;
+
+  indicator.className = `bqu-live-sync-indicator ${ms.badgeClass || (ms.isOpen ? 'open' : 'closed')}`;
+  indicator.title = ms.tooltip || '美股行情状态';
+
+  // Find label span
+  const textSpan = indicator.querySelector('.bqu-sync-label') || indicator.children[1];
+  if (textSpan) {
+    textSpan.textContent = ms.text;
+  }
+
+  // Seconds indicator: only show during live open hours, hide completely when closed
+  const secEl = document.getElementById('live-seconds-val');
+  if (secEl) {
+    if (ms.isOpen) {
+      secEl.style.display = 'inline-block';
+      const s = new Date().getSeconds();
+      secEl.textContent = `${s < 10 ? '0' : ''}${s}s`;
+    } else {
+      secEl.style.display = 'none';
+      secEl.textContent = '';
+    }
+  }
+}
+
+/**
+ * Manages real-time market quote synchronization:
+ * - If market is CLOSED: stops all ticking intervals, shows static real close price.
+ * - If market is OPEN: polls backend for REAL quote every 5s; only ticks when price truly changes.
+ */
+function manageRealtimeQuotes() {
   if (realtimeQuoteInterval) {
     clearInterval(realtimeQuoteInterval);
     realtimeQuoteInterval = null;
   }
 
-  realtimeQuoteInterval = setInterval(() => {
-    if (!state.stockData || !state.stockData.candles || state.stockData.candles.length === 0) return;
-    const candles = state.stockData.candles;
-    const lastBar = candles[candles.length - 1];
-    const prevBar = candles.length > 1 ? candles[candles.length - 2] : lastBar;
-    const prevClose = prevBar.close;
+  const ms = getUsMarketStatus();
+  updateMarketStatusIndicator(ms);
 
-    // Realistic micro-fluctuation volatility (~0.03% to 0.08% per tick)
-    const tickScale = Math.max(0.04, lastBar.close * 0.00035);
-    const delta = (Math.random() - 0.493) * tickScale;
-    const oldPrice = lastBar.close;
-    const newPrice = Math.max(0.5, Math.round((oldPrice + delta) * 100) / 100);
-    const priceDiff = newPrice - oldPrice;
-
-    // Mutate latest bar
-    lastBar.close = newPrice;
-    lastBar.high = Math.max(lastBar.high, newPrice);
-    lastBar.low = Math.min(lastBar.low, newPrice);
-    lastBar.volume += Math.floor(Math.random() * 800 + 150);
-
-    const changeVal = newPrice - prevClose;
-    const changePct = prevClose > 0 ? (changeVal / prevClose) * 100 : 0;
-    const isPos = changeVal >= 0;
-
-    // 1. Tick pulse animation on #bqu-price
+  // If market is NOT open: DO NOT tick prices. No fake data!
+  if (!ms.isOpen) {
     const priceEl = document.getElementById('bqu-price');
     if (priceEl) {
-      priceEl.textContent = `$${newPrice.toFixed(2)}`;
-      if (priceDiff > 0.001) {
-        priceEl.classList.remove('tick-down');
-        priceEl.classList.add('tick-up');
-      } else if (priceDiff < -0.001) {
-        priceEl.classList.remove('tick-up');
-        priceEl.classList.add('tick-down');
-      }
-      setTimeout(() => {
-        if (priceEl) {
-          priceEl.classList.remove('tick-up');
+      priceEl.classList.remove('tick-up', 'tick-down');
+    }
+    return;
+  }
+
+  // If market IS open: Fetch REAL live market quotes from backend
+  const targetTicker = state.ticker;
+
+  realtimeQuoteInterval = setInterval(async () => {
+    // Re-verify market hours
+    const currentMs = getUsMarketStatus();
+    if (!currentMs.isOpen) {
+      clearInterval(realtimeQuoteInterval);
+      realtimeQuoteInterval = null;
+      updateMarketStatusIndicator(currentMs);
+      return;
+    }
+
+    updateMarketStatusIndicator(currentMs);
+
+    try {
+      const res = await fetch(`/api/stock/quote?ticker=${encodeURIComponent(targetTicker)}`);
+      if (!res.ok) return;
+      const json = await res.json();
+      if (json.status !== 'success' || typeof json.price !== 'number' || json.price <= 0) return;
+
+      const newPrice = json.price;
+      const priceEl = document.getElementById('bqu-price');
+      if (!priceEl) return;
+
+      const currentPrice = parseFloat(priceEl.textContent.replace('$', '')) || 0;
+      const priceDiff = newPrice - currentPrice;
+
+      // ONLY trigger price animation if the actual market price has changed!
+      if (Math.abs(priceDiff) >= 0.005) {
+        priceEl.textContent = `$${newPrice.toFixed(2)}`;
+        if (priceDiff > 0) {
           priceEl.classList.remove('tick-down');
+          priceEl.classList.add('tick-up');
+        } else {
+          priceEl.classList.remove('tick-up');
+          priceEl.classList.add('tick-down');
         }
-      }, 650);
-    }
+        setTimeout(() => {
+          if (priceEl) {
+            priceEl.classList.remove('tick-up', 'tick-down');
+          }
+        }, 650);
 
-    // 2. Change badge
-    const badgeEl = document.getElementById('bqu-change-badge');
-    if (badgeEl) {
-      badgeEl.className = `bqu-change-badge ${isPos ? 'positive' : 'negative'}`;
-    }
-    const chgValEl = document.getElementById('bqu-change-val');
-    if (chgValEl) chgValEl.textContent = `${isPos ? '+' : ''}${changeVal.toFixed(2)}`;
-    const chgPctEl = document.getElementById('bqu-change-pct');
-    if (chgPctEl) chgPctEl.textContent = `(${isPos ? '+' : ''}${changePct.toFixed(2)}%)`;
+        // Update badge and other statistics with authentic values
+        const prevClose = json.prev_close || (state.stockData?.candles?.length > 1 ? state.stockData.candles[state.stockData.candles.length - 2].close : newPrice);
+        const changeVal = json.change ?? (newPrice - prevClose);
+        const changePct = json.change_pct ?? (prevClose > 0 ? (changeVal / prevClose) * 100 : 0);
+        const isPos = changeVal >= 0;
 
-    // 3. High, Low, Vol, Amp
-    const highEl = document.getElementById('bqu-high');
-    if (highEl) highEl.textContent = `$${lastBar.high.toFixed(2)}`;
-    const lowEl = document.getElementById('bqu-low');
-    if (lowEl) lowEl.textContent = `$${lastBar.low.toFixed(2)}`;
-    const volEl = document.getElementById('bqu-volume');
-    if (volEl) {
-      volEl.textContent = `${(lastBar.volume / 1e6).toFixed(2)}M`;
-    }
-    const ampEl = document.getElementById('bqu-amplitude');
-    if (ampEl) {
-      const amp = ((lastBar.high - lastBar.low) / prevClose * 100);
-      ampEl.textContent = `${amp.toFixed(2)}%`;
-    }
+        const badgeEl = document.getElementById('bqu-change-badge');
+        if (badgeEl) {
+          badgeEl.className = `bqu-change-badge ${isPos ? 'positive' : 'negative'}`;
+        }
+        const chgValEl = document.getElementById('bqu-change-val');
+        if (chgValEl) chgValEl.textContent = `${isPos ? '+' : ''}${changeVal.toFixed(2)}`;
+        const chgPctEl = document.getElementById('bqu-change-pct');
+        if (chgPctEl) chgPctEl.textContent = `(${isPos ? '+' : ''}${changePct.toFixed(2)}%)`;
 
-    // 4. Running Clock Seconds
-    const secEl = document.getElementById('live-seconds-val');
-    if (secEl) {
-      const s = new Date().getSeconds();
-      secEl.textContent = `${s < 10 ? '0' : ''}${s}s`;
-    }
+        if (json.high) {
+          const highEl = document.getElementById('bqu-high');
+          if (highEl) highEl.textContent = `$${json.high.toFixed(2)}`;
+        }
+        if (json.low) {
+          const lowEl = document.getElementById('bqu-low');
+          if (lowEl) lowEl.textContent = `$${json.low.toFixed(2)}`;
+        }
+        if (json.volume) {
+          const volEl = document.getElementById('bqu-volume');
+          if (volEl) {
+            const v = json.volume;
+            volEl.textContent = v > 1e6 ? `${(v / 1e6).toFixed(2)}M` : (v > 1e3 ? `${(v / 1e3).toFixed(1)}K` : v);
+          }
+        }
 
-    // 5. Update Prediction Dock Expected Buy Diff
-    const buyPointEl = document.getElementById('dock-buy-point');
-    const buyDiffEl = document.getElementById('dock-buy-diff');
-    if (buyPointEl && buyDiffEl) {
-      const buyPrice = parseFloat(buyPointEl.textContent.replace('$', ''));
-      if (!isNaN(buyPrice) && buyPrice > 0) {
-        const diffPct = ((newPrice - buyPrice) / buyPrice * 100).toFixed(1);
-        buyDiffEl.textContent = `${diffPct > 0 ? '+' : ''}${diffPct}%`;
+        // Synchronize latest candle bar with real price and re-render chart
+        if (state.stockData && state.stockData.candles && state.stockData.candles.length > 0) {
+          const lastBar = state.stockData.candles[state.stockData.candles.length - 1];
+          lastBar.close = newPrice;
+          if (json.high) lastBar.high = Math.max(lastBar.high, json.high);
+          if (json.low) lastBar.low = Math.min(lastBar.low, json.low);
+          if (json.volume) lastBar.volume = json.volume;
+          if (klineChart && typeof klineChart.render === 'function') {
+            klineChart.render();
+          }
+        }
       }
+    } catch (err) {
+      // Ignore network hiccups silently
     }
-
-    // 6. Update Active Ticker Chip in Watchlist Ribbon Bar
-    const activeChip = document.querySelector(`.ticker-chip.active`);
-    if (activeChip) {
-      const tag = activeChip.querySelector('.chip-change-tag');
-      if (tag) {
-        tag.className = `chip-change-tag ${isPos ? 'pos' : 'neg'}`;
-        tag.textContent = `${isPos ? '+' : ''}${changePct.toFixed(1)}%`;
-      }
-    }
-
-    // 7. Smooth chart update without lag
-    if (klineChart && typeof klineChart.render === 'function') {
-      klineChart.render();
-    }
-  }, 1000);
+  }, 5000); // 5-second authentic quote poll during regular market hours
 }
 
 function renderBrokerageQuoteBanner(stockData) {
@@ -1315,8 +1407,8 @@ function renderBrokerageQuoteBanner(stockData) {
   // Update Favorite Button in quote banner
   updateFavoriteStarButton();
 
-  // Start 1-second continuous real-time market quote ticker
-  startRealtimeQuoteTicker();
+  // Manage real-time market quote synchronization based on authentic market hours
+  manageRealtimeQuotes();
 }
 
 function renderManageGroupsList() {
