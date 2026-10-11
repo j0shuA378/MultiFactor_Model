@@ -1,0 +1,76 @@
+{
+  "status": "success",
+  "ticker": "510300.SS",
+  "currency": "CNY",
+  "currency_symbol": "¥",
+  "profile": {
+    "symbol": "510300.SS",
+    "name": "华泰柏瑞沪深300 ETF",
+    "exchange": "SHH",
+    "currency": "CNY",
+    "sector": "综合行业 (Diversified)",
+    "industry": "Equity",
+    "quote_type": "Equity",
+    "country": "United States",
+    "city": "N/A",
+    "website": "",
+    "employees": 0,
+    "summary": "华泰柏瑞沪深300 ETF 是该领域的代表性上市企业。"
+  },
+  "price_overview": {
+    "current_price": 4.39,
+    "prev_close": 4.38,
+    "change": 0.01,
+    "change_pct": 0.23,
+    "day_high": 4.4,
+    "day_low": 4.31,
+    "volume": 1276733125,
+    "market_cap": 4390000000.0,
+    "market_cap_fmt": "¥4.39B",
+    "enterprise_value": 4390000000.0,
+    "enterprise_value_fmt": "¥4.39B"
+  },
+  "valuation": {
+    "trailing_pe": null,
+    "forward_pe": null,
+    "price_to_book": null,
+    "price_to_sales": null,
+    "trailing_eps": null,
+    "forward_eps": null,
+    "beta": 1.0,
+    "fifty_two_week_high": 5.09,
+    "fifty_two_week_low": 4.31,
+    "range_52w_position_pct": 10.3
+  },
+  "financials": {
+    "total_revenue": null,
+    "revenue_fmt": "N/A",
+    "net_income": null,
+    "net_income_fmt": "N/A",
+    "gross_margins_pct": 0.0,
+    "operating_margins_pct": 0.0,
+    "profit_margins_pct": 0.0,
+    "return_on_equity_pct": 0.0,
+    "debt_to_equity": null,
+    "operating_cashflow_fmt": "N/A",
+    "free_cashflow_fmt": "N/A",
+    "revenue_growth_pct": 0.0,
+    "earnings_growth_pct": 0.0
+  },
+  "analyst": {
+    "target_mean_price": null,
+    "target_high_price": null,
+    "target_low_price": null,
+    "target_median_price": null,
+    "upside_potential_pct": 0.0,
+    "recommendation_key": "none",
+    "recommendation_display": "中性配置",
+    "number_of_analysts": 0
+  },
+  "dividends": {
+    "dividend_rate": 0.0,
+    "dividend_yield_pct": 0.0,
+    "ex_dividend_date": "暂无分红记录",
+    "payout_ratio_pct": 0.0
+  }
+}

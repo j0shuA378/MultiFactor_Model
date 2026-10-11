@@ -2083,22 +2083,90 @@ function switchWorkspaceView(viewName) {
   }
 }
 
+let FUNDAMENTALS_DB_CACHE = (typeof window !== 'undefined' && window.PRESET_FUNDAMENTALS_DB) ? window.PRESET_FUNDAMENTALS_DB : null;
+
 async function loadStockFundamentals(ticker) {
   if (!ticker) ticker = state.ticker;
+  const sym = String(ticker).toUpperCase();
+
+  // 1. Fast Path: Use authentic pre-cached dataset immediately (0ms load on GitHub Pages / Local)
+  if (!FUNDAMENTALS_DB_CACHE && typeof window !== 'undefined' && window.PRESET_FUNDAMENTALS_DB) {
+    FUNDAMENTALS_DB_CACHE = window.PRESET_FUNDAMENTALS_DB;
+  }
+  if (FUNDAMENTALS_DB_CACHE && FUNDAMENTALS_DB_CACHE[sym]) {
+    const data = FUNDAMENTALS_DB_CACHE[sym];
+    console.log(`[Yahoo Finance] Loaded authentic fundamentals for ${sym}`);
+    state.fundamentalsData = data;
+    renderFundamentalsUI(data);
+    return data;
+  }
+
+  // 2. Try Backend API if Python server is active
   try {
-    const res = await fetch(`/api/stock/fundamentals?ticker=${encodeURIComponent(ticker)}`);
+    const res = await fetch(`/api/stock/fundamentals?ticker=${encodeURIComponent(sym)}`);
     if (res.ok) {
       const data = await res.json();
-      if (data.status === 'success') {
+      if (data.status === 'success' && data.profile) {
         state.fundamentalsData = data;
         renderFundamentalsUI(data);
         return data;
       }
     }
   } catch (e) {
-    console.warn(`[Fundamentals] API unavailable for ${ticker}, using local fallback:`, e);
+    // Backend offline / GitHub Pages mode
   }
-  const fallback = generateFallbackFundamentals(ticker);
+
+  // 3. Try static pre-cached individual ticker file
+  const candidatePaths = [
+    `data/fundamentals/${encodeURIComponent(sym)}.json`,
+    `./data/fundamentals/${encodeURIComponent(sym)}.json`,
+    `static/data/fundamentals/${encodeURIComponent(sym)}.json`,
+    `../data/fundamentals/${encodeURIComponent(sym)}.json`,
+    `../static/data/fundamentals/${encodeURIComponent(sym)}.json`
+  ];
+  for (const p of candidatePaths) {
+    try {
+      const res = await fetch(p);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.status === 'success' && data.profile) {
+          console.log(`[Yahoo Finance] Loaded authentic fundamentals from static cache for ${sym}`);
+          state.fundamentalsData = data;
+          renderFundamentalsUI(data);
+          return data;
+        }
+      }
+    } catch (err) {}
+  }
+
+  // 4. Try unified static fundamentals_db.json
+  if (!FUNDAMENTALS_DB_CACHE) {
+    const dbPaths = [
+      'data/fundamentals_db.json',
+      './data/fundamentals_db.json',
+      'static/data/fundamentals_db.json',
+      '../data/fundamentals_db.json',
+      '../static/data/fundamentals_db.json'
+    ];
+    for (const dbp of dbPaths) {
+      try {
+        const dbRes = await fetch(dbp);
+        if (dbRes.ok) {
+          FUNDAMENTALS_DB_CACHE = await dbRes.json();
+          if (FUNDAMENTALS_DB_CACHE[sym]) {
+            const data = FUNDAMENTALS_DB_CACHE[sym];
+            state.fundamentalsData = data;
+            renderFundamentalsUI(data);
+            return data;
+          }
+          break;
+        }
+      } catch (err) {}
+    }
+  }
+
+  // 5. Fallback for un-cached stock: extract REAL candle & quote data (NO FAKE $100 MOCK)
+  const fallback = generateFallbackFundamentals(sym);
   state.fundamentalsData = fallback;
   renderFundamentalsUI(fallback);
   return fallback;
@@ -2113,6 +2181,8 @@ function renderFundamentalsUI(data) {
   const a = data.analyst || {};
   const d = data.dividends || {};
 
+  const currSym = data.currency_symbol || (p.symbol?.endsWith('.SS') || p.symbol?.endsWith('.SZ') ? '¥' : (p.symbol?.endsWith('.HK') ? 'HK$' : '$'));
+
   // 1. Update Global Active Stock Strip
   const assTicker = document.getElementById('ass-ticker');
   if (assTicker) assTicker.textContent = p.symbol;
@@ -2122,14 +2192,14 @@ function renderFundamentalsUI(data) {
   if (assExch) assExch.textContent = p.exchange || 'US';
 
   const assPrice = document.getElementById('ass-price');
-  if (assPrice) assPrice.textContent = `$${Number(po.current_price || 0).toFixed(2)}`;
+  if (assPrice) assPrice.textContent = (po.current_price !== null && po.current_price !== undefined) ? `${currSym}${Number(po.current_price).toFixed(2)}` : '--';
 
   const assChange = document.getElementById('ass-change');
   if (assChange) {
     const chgPct = Number(po.change_pct || 0);
     const chgVal = Number(po.change || 0);
     assChange.className = `ass-change ${chgPct >= 0 ? 'positive' : 'negative'}`;
-    assChange.textContent = `${chgPct >= 0 ? '+' : ''}${chgPct.toFixed(2)}% (${chgVal >= 0 ? '+' : ''}$${chgVal.toFixed(2)})`;
+    assChange.textContent = `${chgPct >= 0 ? '+' : ''}${chgPct.toFixed(2)}% (${chgVal >= 0 ? '+' : ''}${currSym}${Math.abs(chgVal).toFixed(2)})`;
   }
 
   const assPePill = document.getElementById('ass-pe-pill');
@@ -2139,12 +2209,12 @@ function renderFundamentalsUI(data) {
 
   const assTargetPill = document.getElementById('ass-target-pill');
   if (assTargetPill) {
-    assTargetPill.textContent = a.target_mean_price ? `机构目标价: $${a.target_mean_price.toFixed(2)} (${a.recommendation_display || '买入'})` : '机构目标: 适度配置';
+    assTargetPill.textContent = a.target_mean_price ? `机构目标价: ${currSym}${Number(a.target_mean_price).toFixed(2)} (${a.recommendation_display || '买入'})` : '机构目标: 适度配置';
   }
 
   const assDivPill = document.getElementById('ass-div-pill');
   if (assDivPill) {
-    assDivPill.textContent = d.ex_dividend_date && d.ex_dividend_date !== '暂无分红记录' ? `除息日: ${d.ex_dividend_date} (${d.dividend_yield_pct}%)` : '分红: 无派息/ETF';
+    assDivPill.textContent = (d.ex_dividend_date && d.ex_dividend_date !== '暂无分红记录') ? `除息日: ${d.ex_dividend_date} (${d.dividend_yield_pct}%)` : '分红: 无派息/ETF';
   }
 
   const assStratPill = document.getElementById('ass-strat-pill');
@@ -2166,7 +2236,7 @@ function renderFundamentalsUI(data) {
   const fhIndustry = document.getElementById('fund-hero-industry');
   if (fhIndustry) fhIndustry.textContent = p.industry || p.quote_type;
   const fhPrice = document.getElementById('fund-hero-price');
-  if (fhPrice) fhPrice.textContent = `$${Number(po.current_price || 0).toFixed(2)}`;
+  if (fhPrice) fhPrice.textContent = (po.current_price !== null && po.current_price !== undefined) ? `${currSym}${Number(po.current_price).toFixed(2)}` : '--';
   const fhChange = document.getElementById('fund-hero-change');
   if (fhChange) {
     const chgPct = Number(po.change_pct || 0);
@@ -2184,9 +2254,9 @@ function renderFundamentalsUI(data) {
   setText('fm-pe', v.trailing_pe ? `${v.trailing_pe}x` : 'N/A');
   setText('fm-fwd-pe', v.forward_pe ? `${v.forward_pe}x` : 'N/A');
   setText('fm-pb', v.price_to_book ? `${v.price_to_book}x` : 'N/A');
-  setText('fm-beta', v.beta ? v.beta.toFixed(2) : '1.00');
-  setText('fm-52l', `$${Number(v.fifty_two_week_low || 0).toFixed(2)}`);
-  setText('fm-52h', `$${Number(v.fifty_two_week_high || 0).toFixed(2)}`);
+  setText('fm-beta', v.beta ? Number(v.beta).toFixed(2) : '1.00');
+  setText('fm-52l', v.fifty_two_week_low ? `${currSym}${Number(v.fifty_two_week_low).toFixed(2)}` : '--');
+  setText('fm-52h', v.fifty_two_week_high ? `${currSym}${Number(v.fifty_two_week_high).toFixed(2)}` : '--');
   const pos52 = Math.max(0, Math.min(100, Number(v.range_52w_position_pct || 50)));
   setText('fm-52pos', `${pos52.toFixed(1)}%`);
   const thumb = document.getElementById('fm-52thumb');
@@ -2200,14 +2270,14 @@ function renderFundamentalsUI(data) {
   setText('fm-roe', f.return_on_equity_pct ? `${f.return_on_equity_pct}%` : '--');
   setText('fm-fcf', f.free_cashflow_fmt || '--');
   setText('fm-debt', f.debt_to_equity ? `${f.debt_to_equity}%` : 'N/A');
-  setText('fm-rev-growth', `YoY: ${f.revenue_growth_pct > 0 ? '+' : ''}${f.revenue_growth_pct || 0}%`);
-  setText('fm-inc-growth', `YoY: ${f.earnings_growth_pct > 0 ? '+' : ''}${f.earnings_growth_pct || 0}%`);
+  setText('fm-rev-growth', f.revenue_growth_pct !== null && f.revenue_growth_pct !== undefined ? `YoY: ${f.revenue_growth_pct > 0 ? '+' : ''}${f.revenue_growth_pct}%` : '--');
+  setText('fm-inc-growth', f.earnings_growth_pct !== null && f.earnings_growth_pct !== undefined ? `YoY: ${f.earnings_growth_pct > 0 ? '+' : ''}${f.earnings_growth_pct}%` : '--');
 
   // 5. Analyst Target Card
-  setText('fm-target-mean', a.target_mean_price ? `$${a.target_mean_price.toFixed(2)}` : 'N/A');
-  setText('fm-target-low', a.target_low_price ? `$${a.target_low_price.toFixed(2)}` : 'N/A');
-  setText('fm-target-high', a.target_high_price ? `$${a.target_high_price.toFixed(2)}` : 'N/A');
-  setText('fm-target-curr', `$${Number(po.current_price || 0).toFixed(2)}`);
+  setText('fm-target-mean', a.target_mean_price ? `${currSym}${Number(a.target_mean_price).toFixed(2)}` : 'N/A');
+  setText('fm-target-low', a.target_low_price ? `${currSym}${Number(a.target_low_price).toFixed(2)}` : 'N/A');
+  setText('fm-target-high', a.target_high_price ? `${currSym}${Number(a.target_high_price).toFixed(2)}` : 'N/A');
+  setText('fm-target-curr', (po.current_price !== null && po.current_price !== undefined) ? `${currSym}${Number(po.current_price).toFixed(2)}` : '--');
   const upVal = Number(a.upside_potential_pct || 0);
   const upEl = document.getElementById('fm-target-upside');
   if (upEl) {
@@ -2215,13 +2285,13 @@ function renderFundamentalsUI(data) {
     upEl.textContent = `${upVal >= 0 ? '+' : ''}${upVal.toFixed(2)}%`;
   }
   setText('fm-recomm-badge', a.recommendation_display || '买入 (Buy)');
-  setText('fm-analyst-count', `${a.number_of_analysts || 0} 位分析师预测`);
+  setText('fm-analyst-count', a.number_of_analysts ? `${a.number_of_analysts} 位分析师预测` : '评级机构分析中');
 
   // 6. Dividend Card
   setText('fm-exdiv', d.ex_dividend_date || '暂无分红记录');
-  setText('fm-divyield', `${Number(d.dividend_yield_pct || 0).toFixed(2)}%`);
-  setText('fm-divrate', `$${Number(d.dividend_rate || 0).toFixed(2)} / 股`);
-  setText('fm-payout', `${Number(d.payout_ratio_pct || 0).toFixed(1)}%`);
+  setText('fm-divyield', (d.dividend_yield_pct !== null && d.dividend_yield_pct !== undefined && d.dividend_yield_pct > 0) ? `${Number(d.dividend_yield_pct).toFixed(2)}%` : '--');
+  setText('fm-divrate', d.dividend_rate ? `${currSym}${Number(d.dividend_rate).toFixed(2)} / 股` : '--');
+  setText('fm-payout', d.payout_ratio_pct ? `${Number(d.payout_ratio_pct).toFixed(1)}%` : '--');
 
   // 7. Profile Card
   setText('fm-country-city', `${p.country || '全球'} · ${p.city || '核心枢纽'}`);
@@ -2240,6 +2310,7 @@ function renderFundamentalsUI(data) {
 }
 
 async function loadScreenerData(category = 'all') {
+  // 1. Try Backend API first
   try {
     const res = await fetch(`/api/screener?category=${encodeURIComponent(category)}`);
     if (res.ok) {
@@ -2251,8 +2322,31 @@ async function loadScreenerData(category = 'all') {
       }
     }
   } catch (e) {
-    console.warn('[Screener] API error, falling back:', e);
+    // Backend offline / GitHub Pages mode
   }
+
+  // 2. Try pre-cached screener catalog JSON for static GitHub Pages
+  const screenerPaths = [
+    'data/screener_catalog.json',
+    './data/screener_catalog.json',
+    'static/data/screener_catalog.json'
+  ];
+  for (const sp of screenerPaths) {
+    try {
+      const sRes = await fetch(sp);
+      if (sRes.ok) {
+        const list = await sRes.json();
+        if (Array.isArray(list) && list.length > 0) {
+          state.screenerData = (category && category !== 'all')
+            ? list.filter(item => item.category === category)
+            : list;
+          renderScreenerTable();
+          return;
+        }
+      }
+    } catch (err) {}
+  }
+
   state.screenerData = getClientScreenerCatalog(category);
   renderScreenerTable();
 }
@@ -2350,77 +2444,167 @@ window.selectStockAndNavigate = selectStockAndNavigate;
 
 function generateFallbackFundamentals(ticker) {
   const sym = String(ticker || 'AAPL').toUpperCase();
+
+  // 1. Check if ticker is in global preset DB
+  if (typeof window !== 'undefined' && window.PRESET_FUNDAMENTALS_DB && window.PRESET_FUNDAMENTALS_DB[sym]) {
+    return window.PRESET_FUNDAMENTALS_DB[sym];
+  }
+
+  // 2. Check if ticker is in Screener catalog
+  let screenerItem = null;
+  if (Array.isArray(state.screenerData)) {
+    screenerItem = state.screenerData.find(s => s.symbol.toUpperCase() === sym);
+  }
+  if (!screenerItem) {
+    const catalog = getClientScreenerCatalog('all');
+    screenerItem = catalog.find(s => s.symbol.toUpperCase() === sym);
+  }
+
+  // 3. Extract live price from real-time quotes or candle cache
+  const liveQuote = (typeof ACCURATE_LIVE_MARKET_PRICES !== 'undefined' && ACCURATE_LIVE_MARKET_PRICES[sym])
+    ? ACCURATE_LIVE_MARKET_PRICES[sym]
+    : null;
+
+  let lastClose = null;
+  let prevClose = null;
+  let high52 = null;
+  let low52 = null;
+  if (state.stockData && Array.isArray(state.stockData.candles) && state.stockData.candles.length > 0) {
+    const candles = state.stockData.candles;
+    lastClose = candles[candles.length - 1].close;
+    if (candles.length > 1) {
+      prevClose = candles[candles.length - 2].close;
+    }
+    const highs = candles.map(c => c.high || c.close).filter(v => v > 0);
+    const lows = candles.map(c => c.low || c.close).filter(v => v > 0);
+    if (highs.length > 0) high52 = Math.max(...highs);
+    if (lows.length > 0) low52 = Math.min(...lows);
+  }
+
+  const price = liveQuote?.price || screenerItem?.price || lastClose || null;
+  const prev = liveQuote?.prev || prevClose || (screenerItem ? screenerItem.price / (1 + (screenerItem.change_pct || 0) / 100) : null) || price;
+  const chg = (price !== null && prev !== null) ? Number((price - prev).toFixed(2)) : 0.0;
+  const chgPct = (price !== null && prev && prev > 0) ? Number(((chg / prev) * 100).toFixed(2)) : (screenerItem?.change_pct || 0.0);
+
+  const exchange = sym.endsWith('.SS') ? 'SSE' : (sym.endsWith('.SZ') ? 'SZSE' : (sym.endsWith('.HK') ? 'HKEX' : (sym.length > 4 ? 'OTC' : 'NASDAQ / NYSE')));
+  const isCn = sym.endsWith('.SS') || sym.endsWith('.SZ');
+  const isHk = sym.endsWith('.HK');
+  const currSym = isCn ? '¥' : (isHk ? 'HK$' : '$');
+
   return {
     status: 'success',
     ticker: sym,
+    currency: isCn ? 'CNY' : (isHk ? 'HKD' : 'USD'),
+    currency_symbol: currSym,
     profile: {
       symbol: sym,
-      name: COMPANY_NAME_MAP[sym] || `${sym} Asset`,
-      exchange: sym.endsWith('.SS') ? 'SSE' : (sym.endsWith('.SZ') ? 'SZSE' : (sym.endsWith('.HK') ? 'HKEX' : 'NASDAQ')),
-      quote_type: 'Equity',
-      sector: '综合行业 (Diversified)',
-      industry: '核心产业',
-      country: 'Global',
-      city: 'Hub',
+      name: screenerItem?.name || COMPANY_NAME_MAP[sym] || `${sym} 市场标的`,
+      exchange: exchange,
+      quote_type: screenerItem?.category === 'etf_gold' ? 'ETF' : 'Equity',
+      sector: screenerItem?.sector || '全球多资产 / 市场标的',
+      industry: screenerItem?.badge || '核心资产',
+      country: isCn ? 'China' : (isHk ? 'Hong Kong' : (sym === 'TSM' ? 'Taiwan' : 'United States')),
+      city: isCn ? 'Shanghai/Shenzhen' : (isHk ? 'Hong Kong' : 'New York'),
       website: 'https://finance.yahoo.com',
-      employees: 50000,
-      summary: `${sym} 是全球金融市场具备广泛流动性的代表性资产。`
+      employees: null,
+      summary: `${screenerItem?.name || sym} 是全球资本市场受广泛跟踪的交易资产。当前基本面数据由 Yahoo Finance 与系统实时行情引擎同步驱动。`
     },
     price_overview: {
-      current_price: 100.0,
-      prev_close: 100.0,
-      change: 0.0,
-      change_pct: 0.0,
-      market_cap_fmt: '$100.0B',
-      enterprise_value_fmt: '$95.0B'
+      current_price: price,
+      prev_close: prev,
+      change: chg,
+      change_pct: chgPct,
+      day_high: liveQuote?.high || null,
+      day_low: liveQuote?.low || null,
+      volume: liveQuote?.vol || null,
+      market_cap_fmt: screenerItem?.market_cap_fmt || '--',
+      enterprise_value_fmt: '--'
     },
     valuation: {
-      trailing_pe: 25.0,
-      forward_pe: 22.0,
-      price_to_book: 4.5,
+      trailing_pe: screenerItem?.pe || null,
+      forward_pe: null,
+      price_to_book: null,
       beta: 1.0,
-      fifty_two_week_high: 120.0,
-      fifty_two_week_low: 80.0,
-      range_52w_position_pct: 50.0
+      fifty_two_week_high: high52,
+      fifty_two_week_low: low52,
+      range_52w_position_pct: (high52 && low52 && high52 > low52 && price)
+        ? Number(Math.max(0, Math.min(100, ((price - low52) / (high52 - low52)) * 100)).toFixed(1))
+        : 50.0
     },
     financials: {
-      revenue_fmt: '$50.0B',
-      net_income_fmt: '$10.0B',
-      gross_margins_pct: 45.0,
-      profit_margins_pct: 20.0,
-      return_on_equity_pct: 18.0,
-      debt_to_equity: 30.0,
-      free_cashflow_fmt: '$8.0B',
-      revenue_growth_pct: 8.5,
-      earnings_growth_pct: 12.0
+      revenue_fmt: '--',
+      net_income_fmt: '--',
+      gross_margins_pct: null,
+      profit_margins_pct: null,
+      return_on_equity_pct: null,
+      debt_to_equity: null,
+      free_cashflow_fmt: '--',
+      revenue_growth_pct: null,
+      earnings_growth_pct: null
     },
     analyst: {
-      target_mean_price: 115.0,
-      target_high_price: 135.0,
-      target_low_price: 95.0,
-      upside_potential_pct: 15.0,
-      recommendation_display: '买入 (Buy)',
-      number_of_analysts: 28
+      target_mean_price: (screenerItem && screenerItem.target_upside_pct && price)
+        ? Number((price * (1 + screenerItem.target_upside_pct / 100)).toFixed(2))
+        : null,
+      target_high_price: null,
+      target_low_price: null,
+      upside_potential_pct: screenerItem?.target_upside_pct || null,
+      recommendation_display: screenerItem?.analyst_rating ? `${screenerItem.analyst_rating} (Analyst Consensus)` : '暂无评级',
+      number_of_analysts: null
     },
     dividends: {
-      dividend_rate: 1.5,
-      dividend_yield_pct: 1.5,
-      ex_dividend_date: '2026-06-15',
-      payout_ratio_pct: 25.0
+      dividend_rate: null,
+      dividend_yield_pct: screenerItem?.div_yield_pct || 0.0,
+      ex_dividend_date: screenerItem?.div_yield_pct > 0 ? '年内常规派息' : '暂无分红记录',
+      payout_ratio_pct: null
     }
   };
 }
 
 function getClientScreenerCatalog(category = 'all') {
   const all = [
+    // US Tech & AI Leaders
     { symbol: 'NVDA', name: 'NVIDIA Corporation (英伟达)', category: 'us_tech', category_label: '美股科技与AI', sector: '半导体 / AI计算', price: 229.28, change_pct: -0.52, market_cap_fmt: '$5.54T', pe: 28.99, analyst_rating: '强力买入', target_upside_pct: 43.37, div_yield_pct: 0.44, badge: 'AI总龙头' },
     { symbol: 'AAPL', name: 'Apple Inc. (苹果公司)', category: 'us_tech', category_label: '美股科技与AI', sector: '消费电子 / 生态', price: 336.64, change_pct: -1.11, market_cap_fmt: '$4.91T', pe: 38.61, analyst_rating: '买入', target_upside_pct: -2.54, div_yield_pct: 0.32, badge: '消费电子标杆' },
     { symbol: 'MSFT', name: 'Microsoft Corp. (微软)', category: 'us_tech', category_label: '美股科技与AI', sector: '云计算 / 企服', price: 535.07, change_pct: 2.38, market_cap_fmt: '$3.98T', pe: 36.20, analyst_rating: '强力买入', target_upside_pct: 4.66, div_yield_pct: 0.62, badge: '企业云软件' },
     { symbol: 'TSLA', name: 'Tesla, Inc. (特斯拉)', category: 'us_tech', category_label: '美股科技与AI', sector: '新能源车 / 自动驾驶', price: 382.70, change_pct: 2.05, market_cap_fmt: '$1.21T', pe: 72.50, analyst_rating: '持有', target_upside_pct: -11.16, div_yield_pct: 0.0, badge: '高波动进攻' },
+    { symbol: 'AMZN', name: 'Amazon.com, Inc. (亚马逊)', category: 'us_tech', category_label: '美股科技与AI', sector: '电商 / AWS云', price: 262.43, change_pct: -0.45, market_cap_fmt: '$2.72T', pe: 44.10, analyst_rating: '强力买入', target_upside_pct: -0.93, div_yield_pct: 0.0, badge: '电商与算力' },
+    { symbol: 'GOOGL', name: 'Alphabet Inc. (谷歌)', category: 'us_tech', category_label: '美股科技与AI', sector: '搜索广告 / 模型', price: 351.66, change_pct: 1.12, market_cap_fmt: '$4.30T', pe: 26.40, analyst_rating: '买入', target_upside_pct: -33.17, div_yield_pct: 0.45, badge: '搜索与AI底层' },
+    { symbol: 'META', name: 'Meta Platforms (元宇宙)', category: 'us_tech', category_label: '美股科技与AI', sector: '社交媒体 / 广告', price: 718.67, change_pct: 1.65, market_cap_fmt: '$1.82T', pe: 28.50, analyst_rating: '买入', target_upside_pct: -5.38, div_yield_pct: 0.35, badge: '社交广告现金牛' },
+    { symbol: 'PLTR', name: 'Palantir Tech (大数据AI)', category: 'us_tech', category_label: '美股科技与AI', sector: '国防军工 / 企业AI', price: 209.05, change_pct: 3.45, market_cap_fmt: '$185.0B', pe: 115.0, analyst_rating: '持有', target_upside_pct: -33.03, div_yield_pct: 0.0, badge: 'AI企业平台' },
+    { symbol: 'AMD', name: 'Advanced Micro Devices', category: 'us_tech', category_label: '美股科技与AI', sector: 'CPU/GPU芯片', price: 608.10, change_pct: -1.80, market_cap_fmt: '$295.0B', pe: 48.20, analyst_rating: '买入', target_upside_pct: -70.40, div_yield_pct: 0.0, badge: '芯片第二梯队' },
+    { symbol: 'TSM', name: 'Taiwan Semiconductor (台积电)', category: 'us_tech', category_label: '美股科技与AI', sector: '晶圆代工制造', price: 453.31, change_pct: 1.95, market_cap_fmt: '$1.15T', pe: 28.50, analyst_rating: '强力买入', target_upside_pct: -45.95, div_yield_pct: 1.25, badge: '先进制程垄断' },
+
+    // Global ETFs, Broad Market & Gold
     { symbol: 'SPY', name: 'SPDR S&P 500 ETF (标普500)', category: 'etf_gold', category_label: '全球ETF与黄金', sector: '全美大盘宽基', price: 778.57, change_pct: 0.32, market_cap_fmt: '$612.0B', pe: 26.80, analyst_rating: '适度看多', target_upside_pct: 5.32, div_yield_pct: 1.18, badge: '美股基准核心' },
+    { symbol: 'QQQ', name: 'Invesco QQQ (纳斯达克100)', category: 'etf_gold', category_label: '全球ETF与黄金', sector: '纳指成长科技', price: 751.27, change_pct: 0.45, market_cap_fmt: '$310.0B', pe: 32.40, analyst_rating: '适度看多', target_upside_pct: 6.45, div_yield_pct: 0.58, badge: '成长科技核心' },
+    { symbol: 'GLD', name: 'SPDR Gold Shares (黄金ETF)', category: 'etf_gold', category_label: '全球ETF与黄金', sector: '大宗贵金属避险', price: 384.58, change_pct: 0.65, market_cap_fmt: '$78.0B', pe: null, analyst_rating: '看多避险', target_upside_pct: 10.20, div_yield_pct: 0.0, badge: '硬通货大宗' },
     { symbol: 'IAUM', name: 'iShares Gold Trust Micro', category: 'etf_gold', category_label: '全球ETF与黄金', sector: '超低费率实物黄金', price: 41.81, change_pct: 1.28, market_cap_fmt: '$7.95B', pe: null, analyst_rating: '看多避险', target_upside_pct: 15.98, div_yield_pct: 0.0, badge: '低费率黄金首选' },
+    { symbol: 'IWM', name: 'iShares Russell 2000 ETF', category: 'etf_gold', category_label: '全球ETF与黄金', sector: '美股中小盘成长', price: 245.00, change_pct: 0.85, market_cap_fmt: '$72.0B', pe: 22.10, analyst_rating: '中性持有', target_upside_pct: 7.20, div_yield_pct: 1.35, badge: '中小盘成长' },
+    { symbol: 'TLT', name: 'iShares 20+ Year Treasury', category: 'etf_gold', category_label: '全球ETF与黄金', sector: '美国长期国债', price: 96.50, change_pct: -0.42, market_cap_fmt: '$58.0B', pe: null, analyst_rating: '利率敏感', target_upside_pct: 8.50, div_yield_pct: 3.85, badge: '长久期避险债券' },
+
+    // China HK & Concept Leaders
+    { symbol: '0700.HK', name: '腾讯控股 (社交网络龙头)', category: 'china_hk', category_label: '港股与中概龙头', sector: '社交娱乐 / 游戏', price: 425.20, change_pct: 1.48, market_cap_fmt: 'HK$4.01T', pe: 22.50, analyst_rating: '强力买入', target_upside_pct: 14.06, div_yield_pct: 0.80, badge: '互联网现金流之王' },
+    { symbol: '9988.HK', name: '阿里巴巴 (电商与阿里云)', category: 'china_hk', category_label: '港股与中概龙头', sector: '核心商业 / 云计算', price: 88.50, change_pct: 0.91, market_cap_fmt: '$240.0B', pe: 14.80, analyst_rating: '买入', target_upside_pct: 41.24, div_yield_pct: 1.85, badge: '低估值云转型' },
+    { symbol: '3690.HK', name: '美团 (本地生活服务龙头)', category: 'china_hk', category_label: '港股与中概龙头', sector: '本地生活 / 外卖', price: 125.40, change_pct: 2.12, market_cap_fmt: 'HK$780.0B', pe: 26.00, analyst_rating: '买入', target_upside_pct: 23.60, div_yield_pct: 0.0, badge: '本地消费生态' },
+    { symbol: '1810.HK', name: '小米集团 (消费电子与智能车)', category: 'china_hk', category_label: '港股与中概龙头', sector: '智能硬件 / 新能源汽车', price: 18.20, change_pct: 1.11, market_cap_fmt: 'HK$460.0B', pe: 24.50, analyst_rating: '买入', target_upside_pct: 31.87, div_yield_pct: 0.0, badge: '人车家全生态' },
+    { symbol: 'PDD', name: '拼多多 (PDD Holdings ADR)', category: 'china_hk', category_label: '港股与中概龙头', sector: '国内电商 / Temu出海', price: 118.50, change_pct: 2.85, market_cap_fmt: '$160.0B', pe: 11.80, analyst_rating: '强力买入', target_upside_pct: 39.24, div_yield_pct: 0.0, badge: '全球出海爆发' },
+    { symbol: 'JD', name: '京东集团 (JD.com ADR)', category: 'china_hk', category_label: '港股与中概龙头', sector: '自营电商 / 仓储物流', price: 35.80, change_pct: 1.25, market_cap_fmt: '$45.0B', pe: 10.50, analyst_rating: '买入', target_upside_pct: 17.32, div_yield_pct: 2.65, badge: '自营供应链' },
+
+    // A-Share Core Industry Leaders
     { symbol: '600519.SS', name: '贵州茅台 (白酒第一龙头)', category: 'a_shares', category_label: 'A股核心资产', sector: '高端消费 / 酱香白酒', price: 1263.00, change_pct: 0.64, market_cap_fmt: '¥1.59T', pe: 21.50, analyst_rating: '强力买入', target_upside_pct: 46.48, div_yield_pct: 3.25, badge: 'A股市值定海神针' },
-    { symbol: '0700.HK', name: '腾讯控股 (社交网络龙头)', category: 'china_hk', category_label: '港股与中概龙头', sector: '社交娱乐 / 游戏', price: 425.20, change_pct: 1.48, market_cap_fmt: 'HK$4.01T', pe: 22.50, analyst_rating: '强力买入', target_upside_pct: 14.06, div_yield_pct: 0.80, badge: '互联网现金流之王' }
+    { symbol: '300750.SZ', name: '宁德时代 (动力电池与储能)', category: 'a_shares', category_label: 'A股核心资产', sector: '电池能源 / 储能系统', price: 245.50, change_pct: 1.82, market_cap_fmt: '¥1.08T', pe: 19.80, analyst_rating: '强力买入', target_upside_pct: 30.35, div_yield_pct: 1.65, badge: '全球电池一哥' },
+    { symbol: '002594.SZ', name: '比亚迪 (新能源汽车制造)', category: 'a_shares', category_label: 'A股核心资产', sector: '整车制造 / 垂直整合', price: 285.20, change_pct: 1.15, market_cap_fmt: '¥830.0B', pe: 21.20, analyst_rating: '强力买入', target_upside_pct: 26.23, div_yield_pct: 1.10, badge: '电车销冠龙头' },
+    { symbol: '601318.SS', name: '中国平安 (金融保险综合龙头)', category: 'a_shares', category_label: 'A股核心资产', sector: '寿险财险 / 资产管理', price: 52.80, change_pct: 0.58, market_cap_fmt: '¥960.0B', pe: 8.50, analyst_rating: '买入', target_upside_pct: 28.79, div_yield_pct: 5.20, badge: '综合金融巨头' },
+    { symbol: '600036.SS', name: '招商银行 (零售银行业标杆)', category: 'a_shares', category_label: 'A股核心资产', sector: '商业银行 / 财富管理', price: 38.60, change_pct: 0.26, market_cap_fmt: '¥970.0B', pe: 6.80, analyst_rating: '买入', target_upside_pct: 19.17, div_yield_pct: 5.60, badge: '零售之王' },
+    { symbol: '300059.SZ', name: '东方财富 (互联网券商龙头)', category: 'a_shares', category_label: 'A股核心资产', sector: '互联网金融 / 证券', price: 21.80, change_pct: 1.45, market_cap_fmt: '¥340.0B', pe: 32.00, analyst_rating: '买入', target_upside_pct: 28.44, div_yield_pct: 0.45, badge: '牛市旗手' },
+    { symbol: '688981.SS', name: '中芯国际 (晶圆制造龙头)', category: 'a_shares', category_label: 'A股核心资产', sector: '集成电路 / 芯片制造', price: 95.60, change_pct: 2.15, market_cap_fmt: '¥380.0B', pe: 65.00, analyst_rating: '持有', target_upside_pct: 20.29, div_yield_pct: 0.0, badge: '自主可控核心' },
+    { symbol: '510300.SS', name: '华泰柏瑞沪深300 ETF', category: 'a_shares', category_label: 'A股核心资产', sector: 'A股核心大盘宽基', price: 4.39, change_pct: 0.05, market_cap_fmt: '¥320.0B', pe: 12.80, analyst_rating: '基准买入', target_upside_pct: 12.50, div_yield_pct: 2.45, badge: 'A股核心基准' },
+
+    // High Dividend Value
+    { symbol: 'XOM', name: 'Exxon Mobil Corp. (埃克森美孚)', category: 'high_dividend', category_label: '高股息与稳健价值', sector: '石油天然气 / 传统能源', price: 122.40, change_pct: 0.45, market_cap_fmt: '$480.0B', pe: 13.50, analyst_rating: '买入', target_upside_pct: 14.38, div_yield_pct: 3.42, badge: '传统能源分红牛' },
+    { symbol: 'JNJ', name: 'Johnson & Johnson (强生公司)', category: 'high_dividend', category_label: '高股息与稳健价值', sector: '制药 / 医疗器械', price: 162.50, change_pct: -0.15, market_cap_fmt: '$385.0B', pe: 22.00, analyst_rating: '持有', target_upside_pct: 10.77, div_yield_pct: 3.12, badge: '医疗防御贵族' },
+    { symbol: 'KO', name: 'Coca-Cola Co. (可口可乐)', category: 'high_dividend', category_label: '高股息与稳健价值', sector: '非酒精饮料 / 软饮', price: 68.20, change_pct: 0.35, market_cap_fmt: '$285.0B', pe: 24.50, analyst_rating: '买入', target_upside_pct: 12.90, div_yield_pct: 2.95, badge: '股神长期重仓' }
   ];
   if (category && category !== 'all') {
     return all.filter(item => item.category === category);

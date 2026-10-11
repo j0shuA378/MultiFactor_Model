@@ -1,0 +1,76 @@
+{
+  "status": "success",
+  "ticker": "QQQ",
+  "currency": "USD",
+  "currency_symbol": "$",
+  "profile": {
+    "symbol": "QQQ",
+    "name": "Invesco QQQ Trust (纳斯达克100)",
+    "exchange": "NGM",
+    "currency": "USD",
+    "sector": "综合行业 (Diversified)",
+    "industry": "ETF",
+    "quote_type": "ETF",
+    "country": "United States",
+    "city": "N/A",
+    "website": "",
+    "employees": 0,
+    "summary": "To maintain the correspondence between the composition and weights of the securities in the trust (the \"securities\") and the stocks in the NASDAQ-100 Index®, the adviser adjusts the securities from time to time to conform to periodic changes in the identity and/or relative weights of index securities. The composition and weighting of the securities portion of a portfolio deposit are also adjusted to conform to changes in the index."
+  },
+  "price_overview": {
+    "current_price": 751.27,
+    "prev_close": 747.58,
+    "change": 3.69,
+    "change_pct": 0.49,
+    "day_high": 752.87,
+    "day_low": 748.37,
+    "volume": 21122000,
+    "market_cap": 295324237000.0,
+    "market_cap_fmt": "$295.32B",
+    "enterprise_value": 295324237000.0,
+    "enterprise_value_fmt": "$295.32B"
+  },
+  "valuation": {
+    "trailing_pe": 30.62,
+    "forward_pe": null,
+    "price_to_book": 2.1,
+    "price_to_sales": null,
+    "trailing_eps": null,
+    "forward_eps": null,
+    "beta": 1.0,
+    "fifty_two_week_high": 762.86,
+    "fifty_two_week_low": 555.6,
+    "range_52w_position_pct": 94.4
+  },
+  "financials": {
+    "total_revenue": null,
+    "revenue_fmt": "N/A",
+    "net_income": null,
+    "net_income_fmt": "N/A",
+    "gross_margins_pct": 0.0,
+    "operating_margins_pct": 0.0,
+    "profit_margins_pct": 0.0,
+    "return_on_equity_pct": 0.0,
+    "debt_to_equity": null,
+    "operating_cashflow_fmt": "N/A",
+    "free_cashflow_fmt": "N/A",
+    "revenue_growth_pct": 0.0,
+    "earnings_growth_pct": 0.0
+  },
+  "analyst": {
+    "target_mean_price": null,
+    "target_high_price": null,
+    "target_low_price": null,
+    "target_median_price": null,
+    "upside_potential_pct": 0.0,
+    "recommendation_key": "hold",
+    "recommendation_display": "持有 / 中性 (Hold)",
+    "number_of_analysts": 0
+  },
+  "dividends": {
+    "dividend_rate": 0.0,
+    "dividend_yield_pct": 0.42,
+    "ex_dividend_date": "暂无分红记录",
+    "payout_ratio_pct": 0.0
+  }
+}

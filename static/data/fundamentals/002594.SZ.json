@@ -1,0 +1,76 @@
+{
+  "status": "success",
+  "ticker": "002594.SZ",
+  "currency": "CNY",
+  "currency_symbol": "¥",
+  "profile": {
+    "symbol": "002594.SZ",
+    "name": "比亚迪 (新能源汽车龙头)",
+    "exchange": "SHZ",
+    "currency": "CNY",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Manufacturers",
+    "quote_type": "Equity",
+    "country": "China",
+    "city": "Shenzhen",
+    "website": "https://www.bydglobal.com",
+    "employees": 911900,
+    "summary": "BYD Company Limited, together with its subsidiaries, engages in automobiles and batteries business in the People's Republic of China, Hong Kong, Macau, Taiwan, and internationally. It operates in two segments, Mobile Handset Components, Assembly Service and Other Products; and Automobiles and Related Products and Other Products. The Mobile Handset Components, Assembly Service and Other Products segment manufactures and sells mobile handset components, such as housings and electronic components, and provides assembly services. Its Automobiles and Related Products and Other Products segment is involved in the manufacturing and sale of automobiles, and auto-related molds and components; provision of automobile leasing and after sales services, automobile power batteries, lithium-ion batteries, photovoltaic, and iron battery products; and rail transport and related business. The company develops urban rail transportation business. BYD Company Limited was founded in 1994 and is headquartered in Shenzhen, China."
+  },
+  "price_overview": {
+    "current_price": 84.95,
+    "prev_close": 81.72,
+    "change": 3.23,
+    "change_pct": 3.95,
+    "day_high": 85.16,
+    "day_low": 81.81,
+    "volume": 40197743,
+    "market_cap": 774505889792,
+    "market_cap_fmt": "¥774.51B",
+    "enterprise_value": 781553696768,
+    "enterprise_value_fmt": "¥781.55B"
+  },
+  "valuation": {
+    "trailing_pe": 26.38,
+    "forward_pe": 15.85,
+    "price_to_book": 3.22,
+    "price_to_sales": 1.0,
+    "trailing_eps": 3.35,
+    "forward_eps": 5.36,
+    "beta": 0.35,
+    "fifty_two_week_high": 111.82,
+    "fifty_two_week_low": 77.6,
+    "range_52w_position_pct": 21.5
+  },
+  "financials": {
+    "total_revenue": 777499443200,
+    "revenue_fmt": "¥777.50B",
+    "net_income": 29310240768,
+    "net_income_fmt": "¥29.31B",
+    "gross_margins_pct": 17.9,
+    "operating_margins_pct": 7.24,
+    "profit_margins_pct": 3.79,
+    "return_on_equity_pct": 11.6,
+    "debt_to_equity": 46.06,
+    "operating_cashflow_fmt": "¥64.64B",
+    "free_cashflow_fmt": "-¥96.30B",
+    "revenue_growth_pct": -3.2,
+    "earnings_growth_pct": 33.7
+  },
+  "analyst": {
+    "target_mean_price": 116.87,
+    "target_high_price": 137.0,
+    "target_low_price": 88.0,
+    "target_median_price": 120.0,
+    "upside_potential_pct": 37.57,
+    "recommendation_key": "buy",
+    "recommendation_display": "买入 (Buy)",
+    "number_of_analysts": 19
+  },
+  "dividends": {
+    "dividend_rate": 0.36,
+    "dividend_yield_pct": 0.42,
+    "ex_dividend_date": "2026-07-31",
+    "payout_ratio_pct": 41.14
+  }
+}

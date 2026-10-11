@@ -1,0 +1,76 @@
+{
+  "status": "success",
+  "ticker": "3690.HK",
+  "currency": "HKD",
+  "currency_symbol": "HK$",
+  "profile": {
+    "symbol": "3690.HK",
+    "name": "美团 (本地生活服务龙头)",
+    "exchange": "HKG",
+    "currency": "HKD",
+    "sector": "Consumer Cyclical",
+    "industry": "Internet Retail",
+    "quote_type": "Equity",
+    "country": "China",
+    "city": "Beijing",
+    "website": "https://www.meituan.com",
+    "employees": 111298,
+    "summary": "Meituan operates as a technology driven retail company in the People's Republic of China, Hong Kong, Macao, Taiwan, and internationally. It operates through Core Local Commerce and New Initiatives segments. The company offers daily goods and services, such as food delivery, in-store, hotel and travel booking, and other services and sales; bike sharing, e-moped sharing, power banks and micro-credit; and operates Kuailv and Xiaoxiang Supermarkets. It also sells goods from B2B food distribution services; provides online marketing services to merchants; e-commerce; multimedia information technology; online retail platform; cloud computing; and merchant information advisory services. The company was formerly known as Meituan Dianping and changed its name to Meituan in October 2020. Meituan was founded in 2003 and is headquartered in Beijing, China."
+  },
+  "price_overview": {
+    "current_price": 71.5,
+    "prev_close": 69.4,
+    "change": 2.1,
+    "change_pct": 3.03,
+    "day_high": 71.65,
+    "day_low": 69.6,
+    "volume": 23926883,
+    "market_cap": 441286623232,
+    "market_cap_fmt": "HK$441.29B",
+    "enterprise_value": 368732176384,
+    "enterprise_value_fmt": "HK$368.73B"
+  },
+  "valuation": {
+    "trailing_pe": null,
+    "forward_pe": 14.78,
+    "price_to_book": 2.23,
+    "price_to_sales": 1.15,
+    "trailing_eps": -7.09,
+    "forward_eps": 4.84,
+    "beta": 0.24,
+    "fifty_two_week_high": 108.0,
+    "fifty_two_week_low": 63.65,
+    "range_52w_position_pct": 17.7
+  },
+  "financials": {
+    "total_revenue": 382840340480,
+    "revenue_fmt": "HK$382.84B",
+    "net_income": -38449147904,
+    "net_income_fmt": "-HK$38.45B",
+    "gross_margins_pct": 28.72,
+    "operating_margins_pct": -0.57,
+    "profit_margins_pct": -10.04,
+    "return_on_equity_pct": -21.76,
+    "debt_to_equity": 56.65,
+    "operating_cashflow_fmt": "-HK$26.00B",
+    "free_cashflow_fmt": "-HK$24.11B",
+    "revenue_growth_pct": 14.4,
+    "earnings_growth_pct": 0.0
+  },
+  "analyst": {
+    "target_mean_price": 110.81,
+    "target_high_price": 153.19,
+    "target_low_price": 63.34,
+    "target_median_price": 110.62,
+    "upside_potential_pct": 54.98,
+    "recommendation_key": "buy",
+    "recommendation_display": "买入 (Buy)",
+    "number_of_analysts": 36
+  },
+  "dividends": {
+    "dividend_rate": 0.0,
+    "dividend_yield_pct": 0.0,
+    "ex_dividend_date": "暂无分红记录",
+    "payout_ratio_pct": 0.0
+  }
+}

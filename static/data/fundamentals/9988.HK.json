@@ -1,0 +1,76 @@
+{
+  "status": "success",
+  "ticker": "9988.HK",
+  "currency": "HKD",
+  "currency_symbol": "HK$",
+  "profile": {
+    "symbol": "9988.HK",
+    "name": "阿里巴巴 (电商与云计算)",
+    "exchange": "HKG",
+    "currency": "HKD",
+    "sector": "Consumer Cyclical",
+    "industry": "Internet Retail",
+    "quote_type": "Equity",
+    "country": "China",
+    "city": "Hangzhou",
+    "website": "https://www.alibabagroup.com",
+    "employees": 132165,
+    "summary": "Alibaba Group Holding Limited, through its subsidiaries, provides technology infrastructure and marketing reach to help merchants, brands, retailers, and other businesses in the People's Republic of China and internationally. It operates through the Alibaba China E-Commerce Group, Alibaba International Digital Commerce Group, Cloud Intelligence Group, and All Others segments. The Alibaba China E-commerce Group segment operates Taobao and Tmall, which are digital retail platforms; Taobao Instant Commerce, a local services and on-demand delivery platform; 1688.com, a domestic wholesale marketplace; and Xianyu, a consumer-to-consumer community and marketplace for idle goods. Its Alibaba International Digital Commerce Group segment includes AliExpress, a global e-commerce platform; Trendyol, an e-commerce platform in Turkey; Lazada, an e-commerce platform in Southeast Asia; Daraz, an e-commerce platform in South Asia, primarily in Pakistan and Bangladesh; and Alibaba.com, an integrated international online wholesale marketplace. The Cloud Intelligence Group segment offers a suite of cloud services based on infrastructure-as-a-service, platform-as-a-service, and model-as-a-service. Its All Others segment comprises Amap, a provider of mobile digital maps, navigation, and real-time traffic information in China; Cainiao, which provides logistics solutions; Youku, an online long-form video platform in China; Freshippo, a retail platform for groceries and fresh goods; and Alibaba Health, a pharmaceutical and healthcare services platform. Alibaba Group Holding Limited was incorporated in 1999 and is based in Hangzhou, China."
+  },
+  "price_overview": {
+    "current_price": 107.0,
+    "prev_close": 104.3,
+    "change": 2.7,
+    "change_pct": 2.59,
+    "day_high": 107.3,
+    "day_low": 104.3,
+    "volume": 72349748,
+    "market_cap": 2129509744640,
+    "market_cap_fmt": "HK$2.13T",
+    "enterprise_value": 1943485939712,
+    "enterprise_value_fmt": "HK$1.94T"
+  },
+  "valuation": {
+    "trailing_pe": 26.55,
+    "forward_pe": 11.7,
+    "price_to_book": 1.63,
+    "price_to_sales": 2.04,
+    "trailing_eps": 4.03,
+    "forward_eps": 9.15,
+    "beta": 0.46,
+    "fifty_two_week_high": 175.0,
+    "fifty_two_week_low": 88.65,
+    "range_52w_position_pct": 21.3
+  },
+  "financials": {
+    "total_revenue": 1044970995712,
+    "revenue_fmt": "HK$1.04T",
+    "net_income": 73325002752,
+    "net_income_fmt": "HK$73.33B",
+    "gross_margins_pct": 38.2,
+    "operating_margins_pct": 7.29,
+    "profit_margins_pct": 7.04,
+    "return_on_equity_pct": 6.36,
+    "debt_to_equity": 23.93,
+    "operating_cashflow_fmt": "HK$78.49B",
+    "free_cashflow_fmt": "-HK$82.64B",
+    "revenue_growth_pct": 8.6,
+    "earnings_growth_pct": -79.4
+  },
+  "analyst": {
+    "target_mean_price": 175.26,
+    "target_high_price": 206.07,
+    "target_low_price": 95.51,
+    "target_median_price": 183.92,
+    "upside_potential_pct": 63.79,
+    "recommendation_key": "strong_buy",
+    "recommendation_display": "强力买入 (Strong Buy)",
+    "number_of_analysts": 23
+  },
+  "dividends": {
+    "dividend_rate": 1.03,
+    "dividend_yield_pct": 0.96,
+    "ex_dividend_date": "2026-06-10",
+    "payout_ratio_pct": 25.44
+  }
+}

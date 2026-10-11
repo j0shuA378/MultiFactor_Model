@@ -1,0 +1,76 @@
+{
+  "status": "success",
+  "ticker": "TSM",
+  "currency": "USD",
+  "currency_symbol": "$",
+  "profile": {
+    "symbol": "TSM",
+    "name": "Taiwan Semiconductor (台积电)",
+    "exchange": "NYQ",
+    "currency": "USD",
+    "sector": "Technology",
+    "industry": "Semiconductors",
+    "quote_type": "Equity",
+    "country": "Taiwan",
+    "city": "Hsinchu City",
+    "website": "https://www.tsmc.com",
+    "employees": 76907,
+    "summary": "Taiwan Semiconductor Manufacturing Company Limited, together with its subsidiaries, manufactures, packages, tests, and sells integrated circuits and other semiconductor devices in Taiwan, China, Europe, the Middle East, Africa, Japan, the United States, and internationally. It provides various wafer fabrication processes, such as processes to manufacture complementary metal- oxide-semiconductor (CMOS) logic, mixed-signal, radio frequency, embedded memory, bipolar CMOS mixed-signal, and others. The company also involved in providing customer and engineering support services; manufacturing of masks; investment in technology start-up companies; research, designing, developing, manufacturing, packaging, testing, and sale of color filters; and investment activities. Its products are used in high performance computing, smartphones, Internet of things, automotive, and digital consumer electronics. Taiwan Semiconductor Manufacturing Company Limited was incorporated in 1987 and is headquartered in Hsinchu City, Taiwan."
+  },
+  "price_overview": {
+    "current_price": 453.31,
+    "prev_close": 459.19,
+    "change": -5.88,
+    "change_pct": -1.28,
+    "day_high": 464.83,
+    "day_low": 449.75,
+    "volume": 9225100,
+    "market_cap": 2351080407040,
+    "market_cap_fmt": "$2.35T",
+    "enterprise_value": 16401145266176,
+    "enterprise_value_fmt": "$16.40T"
+  },
+  "valuation": {
+    "trailing_pe": 32.94,
+    "forward_pe": 20.68,
+    "price_to_book": 93.33,
+    "price_to_sales": 0.53,
+    "trailing_eps": 13.76,
+    "forward_eps": 21.93,
+    "beta": 1.24,
+    "fifty_two_week_high": 487.47,
+    "fifty_two_week_low": 266.82,
+    "range_52w_position_pct": 84.5
+  },
+  "financials": {
+    "total_revenue": 4440492343296,
+    "revenue_fmt": "$4.44T",
+    "net_income": 2216808415232,
+    "net_income_fmt": "$2.22T",
+    "gross_margins_pct": 64.23,
+    "operating_margins_pct": 60.34,
+    "profit_margins_pct": 49.92,
+    "return_on_equity_pct": 39.97,
+    "debt_to_equity": 16.5,
+    "operating_cashflow_fmt": "$2.63T",
+    "free_cashflow_fmt": "$730.83B",
+    "revenue_growth_pct": 36.0,
+    "earnings_growth_pct": 77.4
+  },
+  "analyst": {
+    "target_mean_price": 555.01,
+    "target_high_price": 700.0,
+    "target_low_price": 440.0,
+    "target_median_price": 538.5,
+    "upside_potential_pct": 22.43,
+    "recommendation_key": "strong_buy",
+    "recommendation_display": "强力买入 (Strong Buy)",
+    "number_of_analysts": 20
+  },
+  "dividends": {
+    "dividend_rate": 3.77,
+    "dividend_yield_pct": 0.83,
+    "ex_dividend_date": "2026-12-10",
+    "payout_ratio_pct": 25.44
+  }
+}

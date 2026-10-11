@@ -1,0 +1,76 @@
+{
+  "status": "success",
+  "ticker": "IAUM",
+  "currency": "USD",
+  "currency_symbol": "$",
+  "profile": {
+    "symbol": "IAUM",
+    "name": "iShares Gold Trust Micro Shares",
+    "exchange": "PCX",
+    "currency": "USD",
+    "sector": "贵金属与大宗商品 (ETF)",
+    "industry": "物理实物黄金信托 (Physical Gold Trust)",
+    "quote_type": "ETF",
+    "country": "United States",
+    "city": "San Francisco",
+    "website": "https://www.ishares.com",
+    "employees": 0,
+    "summary": "The Advisor intends to constitute a simple and cost-effective means of making an investment similar to an investment in gold. An investment in physical gold requires expensive and sometimes complicated arrangements in connection with the assay, transportation, warehousing and insurance of the metal. Although the Shares are not the exact equivalent of an investment in gold, they provide investors with an alternative that allows a level of participation in the gold market through the securities market."
+  },
+  "price_overview": {
+    "current_price": 41.81,
+    "prev_close": 41.28,
+    "change": 0.53,
+    "change_pct": 1.28,
+    "day_high": 41.87,
+    "day_low": 41.66,
+    "volume": 1495000,
+    "market_cap": 7949300736,
+    "market_cap_fmt": "$7.95B",
+    "enterprise_value": 7949300736,
+    "enterprise_value_fmt": "$7.95B"
+  },
+  "valuation": {
+    "trailing_pe": null,
+    "forward_pe": null,
+    "price_to_book": null,
+    "price_to_sales": null,
+    "trailing_eps": null,
+    "forward_eps": null,
+    "beta": 0.12,
+    "fifty_two_week_high": 55.27,
+    "fifty_two_week_low": 39.02,
+    "range_52w_position_pct": 17.2
+  },
+  "financials": {
+    "total_revenue": 0,
+    "revenue_fmt": "N/A",
+    "net_income": 0,
+    "net_income_fmt": "N/A",
+    "gross_margins_pct": 0.0,
+    "operating_margins_pct": 0.0,
+    "profit_margins_pct": 0.0,
+    "return_on_equity_pct": 0.0,
+    "debt_to_equity": null,
+    "operating_cashflow_fmt": "N/A",
+    "free_cashflow_fmt": "N/A",
+    "revenue_growth_pct": 0.0,
+    "earnings_growth_pct": 0.0
+  },
+  "analyst": {
+    "target_mean_price": 48.5,
+    "target_high_price": 56.0,
+    "target_low_price": 38.0,
+    "target_median_price": 48.5,
+    "upside_potential_pct": 16.0,
+    "recommendation_key": "buy",
+    "recommendation_display": "买入 (Buy)",
+    "number_of_analysts": 25
+  },
+  "dividends": {
+    "dividend_rate": 0.0,
+    "dividend_yield_pct": 0.0,
+    "ex_dividend_date": "暂无分红记录",
+    "payout_ratio_pct": 0.0
+  }
+}

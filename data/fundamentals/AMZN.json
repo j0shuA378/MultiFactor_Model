@@ -1,0 +1,76 @@
+{
+  "status": "success",
+  "ticker": "AMZN",
+  "currency": "USD",
+  "currency_symbol": "$",
+  "profile": {
+    "symbol": "AMZN",
+    "name": "Amazon.com, Inc. (亚马逊)",
+    "exchange": "NMS",
+    "currency": "USD",
+    "sector": "Consumer Cyclical",
+    "industry": "Internet Retail",
+    "quote_type": "Equity",
+    "country": "United States",
+    "city": "Seattle",
+    "website": "https://www.amazon.com",
+    "employees": 1595000,
+    "summary": "Amazon.com, Inc. engages in the retail sale of consumer products, advertising, and subscriptions service through online and physical stores in North America and internationally. The company operates through three segments: North America, International, and Amazon Web Services (AWS). It also manufactures and sells electronic devices, including Kindle, fire tablets, fire TVs, echo, ring, blink, and eero; and develops and produces media content. In addition, the company offers programs that enable sellers to sell their products in its stores; and programs that allow authors, independent publishers, musicians, filmmakers, Twitch streamers, skill and app developers, and others to publish and sell content. Further, it provides compute, storage, Artificial intelligence, database, analytics, machine learning, and other services, as well as advertising services through programs, such as sponsored ads, display, and video advertising. Additionally, the company offers Amazon Prime, a membership program. The company's products offered through its stores include merchandise and content purchased for resale and products offered by third-party sellers. It serves consumers, sellers, developers, enterprises, content creators, advertisers, and employees. The company was incorporated in 1994 and is headquartered in Seattle, Washington."
+  },
+  "price_overview": {
+    "current_price": 262.43,
+    "prev_close": 254.06,
+    "change": 8.37,
+    "change_pct": 3.29,
+    "day_high": 262.8,
+    "day_low": 256.0,
+    "volume": 34710500,
+    "market_cap": 2830652145664,
+    "market_cap_fmt": "$2.83T",
+    "enterprise_value": 2959299313664,
+    "enterprise_value_fmt": "$2.96T"
+  },
+  "valuation": {
+    "trailing_pe": 21.11,
+    "forward_pe": 25.07,
+    "price_to_book": 5.13,
+    "price_to_sales": 3.65,
+    "trailing_eps": 12.43,
+    "forward_eps": 10.47,
+    "beta": 1.46,
+    "fifty_two_week_high": 287.2,
+    "fifty_two_week_low": 196.0,
+    "range_52w_position_pct": 72.8
+  },
+  "financials": {
+    "total_revenue": 775680032768,
+    "revenue_fmt": "$775.68B",
+    "net_income": 135281000448,
+    "net_income_fmt": "$135.28B",
+    "gross_margins_pct": 50.77,
+    "operating_margins_pct": 13.69,
+    "profit_margins_pct": 17.44,
+    "return_on_equity_pct": 30.56,
+    "debt_to_equity": 45.62,
+    "operating_cashflow_fmt": "$161.40B",
+    "free_cashflow_fmt": "$3.22B",
+    "revenue_growth_pct": 19.6,
+    "earnings_growth_pct": 242.3
+  },
+  "analyst": {
+    "target_mean_price": 331.53,
+    "target_high_price": 405.0,
+    "target_low_price": 230.0,
+    "target_median_price": 330.0,
+    "upside_potential_pct": 26.33,
+    "recommendation_key": "strong_buy",
+    "recommendation_display": "强力买入 (Strong Buy)",
+    "number_of_analysts": 58
+  },
+  "dividends": {
+    "dividend_rate": 0.0,
+    "dividend_yield_pct": 0.0,
+    "ex_dividend_date": "暂无分红记录",
+    "payout_ratio_pct": 0.0
+  }
+}

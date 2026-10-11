@@ -1,0 +1,76 @@
+{
+  "status": "success",
+  "ticker": "600519.SS",
+  "currency": "CNY",
+  "currency_symbol": "¥",
+  "profile": {
+    "symbol": "600519.SS",
+    "name": "贵州茅台 (白酒龙头)",
+    "exchange": "SHH",
+    "currency": "CNY",
+    "sector": "Consumer Defensive",
+    "industry": "Beverages - Wineries & Distilleries",
+    "quote_type": "Equity",
+    "country": "China",
+    "city": "Renhuai",
+    "website": "https://www.moutaichina.com",
+    "employees": 34992,
+    "summary": "Kweichow Moutai Co., Ltd., together with its subsidiaries, produces and sells liquor products in China and internationally. The company offers liquor and soy sauce products under the Kweichow Moutai, Moutai Wangzi liquor, Moutai 1935 liquor, Han Jiang liquor, and Lai Mao liquor brands. It also engages in the production and sale of beverage, food, and packaging materials; development of anti-counterfeiting technology; research and development of information industry related products; operation and management of hotel, accommodation, catering, entertainment, bathing, and parking lot services; and provision of vehicle transportation and maintenance, and value-added telecommunication services. The company was incorporated in 1999 and is headquartered in Renhuai, China. Kweichow Moutai Co., Ltd. operates as a subsidiary of China Kweichow Moutai Distillery(Group)Co,.Ltd."
+  },
+  "price_overview": {
+    "current_price": 1263.0,
+    "prev_close": 1255.0,
+    "change": 8.0,
+    "change_pct": 0.64,
+    "day_high": 1282.0,
+    "day_low": 1255.42,
+    "volume": 3511051,
+    "market_cap": 1578853203968,
+    "market_cap_fmt": "¥1.58T",
+    "enterprise_value": 1534605000704,
+    "enterprise_value_fmt": "¥1.53T"
+  },
+  "valuation": {
+    "trailing_pe": 19.42,
+    "forward_pe": 17.48,
+    "price_to_book": 6.28,
+    "price_to_sales": 9.28,
+    "trailing_eps": 65.05,
+    "forward_eps": 72.23,
+    "beta": 0.34,
+    "fifty_two_week_high": 1568.0,
+    "fifty_two_week_low": 1151.01,
+    "range_52w_position_pct": 26.9
+  },
+  "financials": {
+    "total_revenue": 170152001536,
+    "revenue_fmt": "¥170.15B",
+    "net_income": 81433985024,
+    "net_income_fmt": "¥81.43B",
+    "gross_margins_pct": 90.26,
+    "operating_margins_pct": 62.34,
+    "profit_margins_pct": 47.86,
+    "return_on_equity_pct": 33.0,
+    "debt_to_equity": 0.09,
+    "operating_cashflow_fmt": "¥119.09B",
+    "free_cashflow_fmt": "¥60.01B",
+    "revenue_growth_pct": -5.1,
+    "earnings_growth_pct": -6.7
+  },
+  "analyst": {
+    "target_mean_price": 1668.31,
+    "target_high_price": 2015.0,
+    "target_low_price": 1295.0,
+    "target_median_price": 1630.0,
+    "upside_potential_pct": 32.09,
+    "recommendation_key": "strong_buy",
+    "recommendation_display": "强力买入 (Strong Buy)",
+    "number_of_analysts": 19
+  },
+  "dividends": {
+    "dividend_rate": 51.98,
+    "dividend_yield_pct": 4.12,
+    "ex_dividend_date": "2026-06-26",
+    "payout_ratio_pct": 79.91
+  }
+}

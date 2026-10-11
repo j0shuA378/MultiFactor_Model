@@ -1,0 +1,76 @@
+{
+  "status": "success",
+  "ticker": "1810.HK",
+  "currency": "HKD",
+  "currency_symbol": "HK$",
+  "profile": {
+    "symbol": "1810.HK",
+    "name": "小米集团 (消费电子与智能汽车)",
+    "exchange": "HKG",
+    "currency": "HKD",
+    "sector": "Technology",
+    "industry": "Consumer Electronics",
+    "quote_type": "Equity",
+    "country": "China",
+    "city": "Beijing",
+    "website": "https://www.mi.com",
+    "employees": 52876,
+    "summary": "Xiaomi Corporation, an investment holding company, engages in the development and sales of smartphones in Mainland China and internationally. It operates through Smartphones, IoT and Lifestyle Products, Internet Services, and smart electric vehicles segments. The company also offers internet of things (IoT) and lifestyle products comprising smart large home appliances, smart TVs, tablets, wearables and other IoT and lifestyle products; hardware repairment services for products; installation services for certain IoT products; and sale of materials. In addition, it provides internet services, such as advertising, online game, and fintech services; and development, manufacture, and sales of smart electric vehicles. Further, the company in the wholesale and retail of smartphones and ecosystem partners' products; investment activities; sales of smart hardware; software and hardware development; procurement and sales of smartphones, ecosystem partners' products and spare parts, and raw materials; operation of retail stores; and commercial factoring and e-commerce business. Additionally, it provides intra-group capital supervision, collection, remittance, credit guarantee, and interest rate risk management; customer; software related; promotion; electronic payment technology; and technical services. Xiaomi Corporation was incorporated in 2010 and is headquartered in Beijing, the People's Republic of China."
+  },
+  "price_overview": {
+    "current_price": 25.96,
+    "prev_close": 23.66,
+    "change": 2.3,
+    "change_pct": 9.72,
+    "day_high": 25.96,
+    "day_low": 23.78,
+    "volume": 255608451,
+    "market_cap": 668392095744,
+    "market_cap_fmt": "HK$668.39B",
+    "enterprise_value": 589995638784,
+    "enterprise_value_fmt": "HK$590.00B"
+  },
+  "valuation": {
+    "trailing_pe": 19.09,
+    "forward_pe": 16.87,
+    "price_to_book": 2.11,
+    "price_to_sales": 1.53,
+    "trailing_eps": 1.49,
+    "forward_eps": 1.53,
+    "beta": 0.7,
+    "fifty_two_week_high": 50.9,
+    "fifty_two_week_low": 21.3,
+    "range_52w_position_pct": 15.7
+  },
+  "financials": {
+    "total_revenue": 438100492288,
+    "revenue_fmt": "HK$438.10B",
+    "net_income": 33000187904,
+    "net_income_fmt": "HK$33.00B",
+    "gross_margins_pct": 21.39,
+    "operating_margins_pct": 4.01,
+    "profit_margins_pct": 7.53,
+    "return_on_equity_pct": 12.63,
+    "debt_to_equity": 16.43,
+    "operating_cashflow_fmt": "HK$8.14B",
+    "free_cashflow_fmt": "-HK$8.68B",
+    "revenue_growth_pct": -6.1,
+    "earnings_growth_pct": -19.9
+  },
+  "analyst": {
+    "target_mean_price": 34.62,
+    "target_high_price": 58.15,
+    "target_low_price": 20.53,
+    "target_median_price": 33.75,
+    "upside_potential_pct": 33.38,
+    "recommendation_key": "buy",
+    "recommendation_display": "买入 (Buy)",
+    "number_of_analysts": 28
+  },
+  "dividends": {
+    "dividend_rate": 0.0,
+    "dividend_yield_pct": 0.0,
+    "ex_dividend_date": "暂无分红记录",
+    "payout_ratio_pct": 0.0
+  }
+}

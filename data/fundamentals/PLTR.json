@@ -1,0 +1,76 @@
+{
+  "status": "success",
+  "ticker": "PLTR",
+  "currency": "USD",
+  "currency_symbol": "$",
+  "profile": {
+    "symbol": "PLTR",
+    "name": "Palantir Technologies (大数据与AI)",
+    "exchange": "NMS",
+    "currency": "USD",
+    "sector": "Technology",
+    "industry": "Software - Infrastructure",
+    "quote_type": "Equity",
+    "country": "United States",
+    "city": "Aventura",
+    "website": "https://www.palantir.com",
+    "employees": 4401,
+    "summary": "Palantir Technologies Inc. builds and deploys software platforms for the intelligence community to assist in counterterrorism investigations and operations in the United States, the United Kingdom, and internationally. It provides Palantir Gotham integrates with other platforms for defense offerings which enables users to see, understand, and act in the modern battlespace; operations centers to the tactical edge; integrating data from domains and sensors in near real-time; and situational awareness and accelerating operational decision-making, as well as facilitates the hand-off between analysts and operational users, helping operators plan and execute real-world responses to threats that have been identified within the platform. It also offers Palantir Foundry, a platform that helps organizations operate by creating a central operating system for their data; and allows individual users to integrate and analyze the data they need in one place. In addition, it provides Palantir Apollo, a software that delivers software and updates across the business, as well as enables customers to deploy their software virtually in any environment; and Palantir Artificial Intelligence Platform that provides unified access to open-source, self-hosted, and commercial large language models (LLMs) that can transform structured and unstructured data into LLM-understandable objects and can turn organizations' actions and processes into tools for humans and LLM-driven agents. The company also has a strategic partnership with Ondas Inc. to develop and deploy AI-enabled operational capabilities to scale stratospheric, aerial, and land-based ISR missions. The company has a strategic collaboration with NVIDIA to deliver an intelligent engine for running NVIDIA AI and Nemotron open models in sovereign environments and with PwC to transform critical business operations and deliver measurable enterprise value. The company was incorporated in 2003 and is headquartered in Aventura, Florida."
+  },
+  "price_overview": {
+    "current_price": 209.05,
+    "prev_close": 198.78,
+    "change": 10.27,
+    "change_pct": 5.17,
+    "day_high": 209.58,
+    "day_low": 198.3,
+    "volume": 37479600,
+    "market_cap": 502359359488,
+    "market_cap_fmt": "$502.36B",
+    "enterprise_value": 493272367104,
+    "enterprise_value_fmt": "$493.27B"
+  },
+  "valuation": {
+    "trailing_pe": 180.22,
+    "forward_pe": 89.18,
+    "price_to_book": 51.39,
+    "price_to_sales": 81.61,
+    "trailing_eps": 1.16,
+    "forward_eps": 2.35,
+    "beta": 1.6,
+    "fifty_two_week_high": 209.58,
+    "fifty_two_week_low": 106.37,
+    "range_52w_position_pct": 99.5
+  },
+  "financials": {
+    "total_revenue": 6155940864,
+    "revenue_fmt": "$6.16B",
+    "net_income": 3016691968,
+    "net_income_fmt": "$3.02B",
+    "gross_margins_pct": 84.8,
+    "operating_margins_pct": 47.12,
+    "profit_margins_pct": 49.01,
+    "return_on_equity_pct": 38.1,
+    "debt_to_equity": 2.14,
+    "operating_cashflow_fmt": "$3.40B",
+    "free_cashflow_fmt": "$2.16B",
+    "revenue_growth_pct": 92.8,
+    "earnings_growth_pct": 215.4
+  },
+  "analyst": {
+    "target_mean_price": 203.35,
+    "target_high_price": 265.0,
+    "target_low_price": 80.0,
+    "target_median_price": 215.0,
+    "upside_potential_pct": -2.73,
+    "recommendation_key": "buy",
+    "recommendation_display": "买入 (Buy)",
+    "number_of_analysts": 26
+  },
+  "dividends": {
+    "dividend_rate": 0.0,
+    "dividend_yield_pct": 0.0,
+    "ex_dividend_date": "暂无分红记录",
+    "payout_ratio_pct": 0.0
+  }
+}

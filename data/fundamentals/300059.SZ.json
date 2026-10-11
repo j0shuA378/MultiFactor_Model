@@ -1,0 +1,76 @@
+{
+  "status": "success",
+  "ticker": "300059.SZ",
+  "currency": "CNY",
+  "currency_symbol": "¥",
+  "profile": {
+    "symbol": "300059.SZ",
+    "name": "东方财富 (互联网券商龙头)",
+    "exchange": "SHZ",
+    "currency": "CNY",
+    "sector": "Financial Services",
+    "industry": "Capital Markets",
+    "quote_type": "Equity",
+    "country": "China",
+    "city": "Shanghai",
+    "website": "https://www.eastmoney.com",
+    "employees": 6403,
+    "summary": "East Money Information Co.,Ltd. provides internet-based financial information, data, trading, and other services in China. The company operates in the securities, financial e-commerce service, and financial data service businesses. It also provides online wealth management services across finance, securities, funds, futures, and social networking, as well as internet advertising services. The company was formerly known as Shanghai Dong Cai Information Technology Company Limited and changed its name to East Money Information Co.,Ltd. in January 2008. East Money Information Co.,Ltd. was founded in 2005 and is based in Shanghai, China."
+  },
+  "price_overview": {
+    "current_price": 17.95,
+    "prev_close": 17.27,
+    "change": 0.68,
+    "change_pct": 3.94,
+    "day_high": 18.09,
+    "day_low": 17.18,
+    "volume": 259568282,
+    "market_cap": 284008513536,
+    "market_cap_fmt": "¥284.01B",
+    "enterprise_value": 149462253568,
+    "enterprise_value_fmt": "¥149.46B"
+  },
+  "valuation": {
+    "trailing_pe": 19.51,
+    "forward_pe": 15.08,
+    "price_to_book": 2.89,
+    "price_to_sales": 14.53,
+    "trailing_eps": 0.92,
+    "forward_eps": 1.19,
+    "beta": 0.88,
+    "fifty_two_week_high": 26.79,
+    "fifty_two_week_low": 17.18,
+    "range_52w_position_pct": 8.0
+  },
+  "financials": {
+    "total_revenue": 19544461312,
+    "revenue_fmt": "¥19.54B",
+    "net_income": 14581504000,
+    "net_income_fmt": "¥14.58B",
+    "gross_margins_pct": 96.39,
+    "operating_margins_pct": 73.45,
+    "profit_margins_pct": 74.61,
+    "return_on_equity_pct": 15.85,
+    "debt_to_equity": 171.36,
+    "operating_cashflow_fmt": "¥15.46B",
+    "free_cashflow_fmt": "N/A",
+    "revenue_growth_pct": 61.0,
+    "earnings_growth_pct": 51.6
+  },
+  "analyst": {
+    "target_mean_price": 26.38,
+    "target_high_price": 33.7,
+    "target_low_price": 14.0,
+    "target_median_price": 29.1,
+    "upside_potential_pct": 46.99,
+    "recommendation_key": "buy",
+    "recommendation_display": "买入 (Buy)",
+    "number_of_analysts": 12
+  },
+  "dividends": {
+    "dividend_rate": 0.1,
+    "dividend_yield_pct": 0.56,
+    "ex_dividend_date": "2026-04-21",
+    "payout_ratio_pct": 10.84
+  }
+}

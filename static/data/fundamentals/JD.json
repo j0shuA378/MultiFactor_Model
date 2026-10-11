@@ -1,0 +1,76 @@
+{
+  "status": "success",
+  "ticker": "JD",
+  "currency": "USD",
+  "currency_symbol": "$",
+  "profile": {
+    "symbol": "JD",
+    "name": "JD.com, Inc.",
+    "exchange": "NMS",
+    "currency": "USD",
+    "sector": "Consumer Cyclical",
+    "industry": "Internet Retail",
+    "quote_type": "Equity",
+    "country": "China",
+    "city": "Beijing",
+    "website": "https://www.jd.com",
+    "employees": 900000,
+    "summary": "JD.com, Inc. operates as a supply chain-based technology and service provider in the People's Republic of China and Europe. It operates through three segments: JD Retail, JD Logistics, and New Businesses. The company provides home appliances; mobile handsets and other digital products; computers, including desktop, laptop, and other various products, as well as printers and other office equipment; furniture and household goods; apparel; cosmetics and other personal care items; and pet products. It offers women's shoes, bags, watches, jewelry, and luxury goods; men's shoes, sports gear, and fitness equipment; automobiles and accessories; maternal and childcare products; toys and musical instruments; food, beverages, and fresh produce; gifts, flowers, and plants; and pharmaceutical and healthcare products, such as OCT pharmaceutical products, nutritional supplements, healthcare services, and other healthcare equipment. In addition, the company provides books, e-books, music, movies, and other media products; virtual goods consisting of online travel agency, attraction tickets, and prepaid phone cards and game cards; industrial products; and installation and maintenance services. Further, it offers online marketplace services for third-party merchants; marketing services; and omni-channel solutions to customers and offline retailers, as well as online healthcare services. Additionally, the company develops, owns, and manages its logistics facilities and other real estate properties to support third parties; and offers asset management services and integrated service platform; leasing of storage facilities and related management services, as well as engages in online retail business; technology-driven supply chain solutions; and logistics services. The company was formerly known as 360buy Jingdong Inc. and changed its name to JD.com, Inc. in January 2014. JD.com, Inc. was incorporated in 2006 and is headquartered in Beijing, the People's Republic of China."
+  },
+  "price_overview": {
+    "current_price": 27.09,
+    "prev_close": 26.91,
+    "change": 0.18,
+    "change_pct": 0.67,
+    "day_high": 27.36,
+    "day_low": 26.85,
+    "volume": 8925200,
+    "market_cap": 36585046016,
+    "market_cap_fmt": "$36.59B",
+    "enterprise_value": -16688039936,
+    "enterprise_value_fmt": "-$16.69B"
+  },
+  "valuation": {
+    "trailing_pe": 18.94,
+    "forward_pe": 6.45,
+    "price_to_book": 1.11,
+    "price_to_sales": 0.03,
+    "trailing_eps": 1.43,
+    "forward_eps": 4.2,
+    "beta": 0.32,
+    "fifty_two_week_high": 35.06,
+    "fifty_two_week_low": 24.51,
+    "range_52w_position_pct": 24.5
+  },
+  "financials": {
+    "total_revenue": 1313438040064,
+    "revenue_fmt": "$1.31T",
+    "net_income": 14794000384,
+    "net_income_fmt": "$14.79B",
+    "gross_margins_pct": 9.42,
+    "operating_margins_pct": 1.2,
+    "profit_margins_pct": 1.13,
+    "return_on_equity_pct": 6.79,
+    "debt_to_equity": 37.29,
+    "operating_cashflow_fmt": "$51.12B",
+    "free_cashflow_fmt": "$16.13B",
+    "revenue_growth_pct": -2.9,
+    "earnings_growth_pct": 21.3
+  },
+  "analyst": {
+    "target_mean_price": 39.42,
+    "target_high_price": 53.42,
+    "target_low_price": 25.2,
+    "target_median_price": 38.8,
+    "upside_potential_pct": 45.51,
+    "recommendation_key": "strong_buy",
+    "recommendation_display": "强力买入 (Strong Buy)",
+    "number_of_analysts": 35
+  },
+  "dividends": {
+    "dividend_rate": 1.0,
+    "dividend_yield_pct": 3.69,
+    "ex_dividend_date": "2026-04-09",
+    "payout_ratio_pct": 70.39
+  }
+}

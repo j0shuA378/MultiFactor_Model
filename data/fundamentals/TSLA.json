@@ -1,0 +1,76 @@
+{
+  "status": "success",
+  "ticker": "TSLA",
+  "currency": "USD",
+  "currency_symbol": "$",
+  "profile": {
+    "symbol": "TSLA",
+    "name": "Tesla, Inc. (特斯拉)",
+    "exchange": "NMS",
+    "currency": "USD",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Manufacturers",
+    "quote_type": "Equity",
+    "country": "United States",
+    "city": "Austin",
+    "website": "https://www.tesla.com",
+    "employees": 134785,
+    "summary": "Tesla, Inc. designs, develops, manufactures, leases, and sells electric vehicles, and energy generation and storage systems in the United States, China, and internationally. The company operates in two segments, Automotive; and Energy Generation and Storage. The company offers electric vehicles, as well as sells automotive regulatory credits; and non-warranty maintenance services and collision, automotive insurance services, as well as part sales and retail merchandise sale. It also provides sedans and sport utility vehicles through direct and used vehicle sales, a network of Tesla Superchargers, and in-app upgrades; purchase financing and leasing services; services for electric vehicles through its company-owned service locations and Tesla mobile service technicians; and vehicle limited warranties and extended service plans. In addition, the company engages in the design, manufacture, installation, sale, and leasing of solar energy generation and energy storage products, and related services to residential, commercial, and industrial customers and utilities through its website, stores, and galleries, as well as through a network of channel partners. Further, it provides services and repairs to its energy product customers, including under warranty and extended service plans; and various financing options to its residential customers; lithium-ion battery energy storage products, such as Powerwall and Megapack; energy generation products, including solar panels and solar roof; self-driving development and artificial intelligence software, vehicle control and infotainment software, and battery and powertrain. The company was formerly known as Tesla Motors, Inc. and changed its name to Tesla, Inc. in February 2017. Tesla, Inc. was incorporated in 2003 and is headquartered in Austin, Texas."
+  },
+  "price_overview": {
+    "current_price": 382.7,
+    "prev_close": 375.0,
+    "change": 7.7,
+    "change_pct": 2.05,
+    "day_high": 388.56,
+    "day_low": 379.71,
+    "volume": 38897700,
+    "market_cap": 1511491895296,
+    "market_cap_fmt": "$1.51T",
+    "enterprise_value": 1484708773888,
+    "enterprise_value_fmt": "$1.48T"
+  },
+  "valuation": {
+    "trailing_pe": 354.35,
+    "forward_pe": 175.35,
+    "price_to_book": 17.4,
+    "price_to_sales": 14.59,
+    "trailing_eps": 1.08,
+    "forward_eps": 2.18,
+    "beta": 1.92,
+    "fifty_two_week_high": 498.83,
+    "fifty_two_week_low": 297.38,
+    "range_52w_position_pct": 42.4
+  },
+  "financials": {
+    "total_revenue": 103619002368,
+    "revenue_fmt": "$103.62B",
+    "net_income": 3806000128,
+    "net_income_fmt": "$3.81B",
+    "gross_margins_pct": 18.85,
+    "operating_margins_pct": 1.41,
+    "profit_margins_pct": 3.67,
+    "return_on_equity_pct": 4.67,
+    "debt_to_equity": 18.37,
+    "operating_cashflow_fmt": "$18.68B",
+    "free_cashflow_fmt": "$4.84B",
+    "revenue_growth_pct": 25.5,
+    "earnings_growth_pct": -3.0
+  },
+  "analyst": {
+    "target_mean_price": 396.57,
+    "target_high_price": 600.0,
+    "target_low_price": 128.11,
+    "target_median_price": 412.5,
+    "upside_potential_pct": 3.62,
+    "recommendation_key": "buy",
+    "recommendation_display": "买入 (Buy)",
+    "number_of_analysts": 38
+  },
+  "dividends": {
+    "dividend_rate": 0.0,
+    "dividend_yield_pct": 0.0,
+    "ex_dividend_date": "暂无分红记录",
+    "payout_ratio_pct": 0.0
+  }
+}

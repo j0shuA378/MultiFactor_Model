@@ -1,0 +1,76 @@
+{
+  "status": "success",
+  "ticker": "XOM",
+  "currency": "USD",
+  "currency_symbol": "$",
+  "profile": {
+    "symbol": "XOM",
+    "name": "ExxonMobil Holdings Corporation",
+    "exchange": "NYQ",
+    "currency": "USD",
+    "sector": "Energy",
+    "industry": "Oil & Gas Integrated",
+    "quote_type": "Equity",
+    "country": "United States",
+    "city": "Spring",
+    "website": "https://corporate.exxonmobil.com",
+    "employees": 57900,
+    "summary": "ExxonMobil Holdings Corporation engages in the exploration and production of crude oil and natural gas in the United States, Canada, and internationally. The company operates through Upstream, Energy Products, Chemical Products, and Specialty Products segments. Its Upstream segment explores for and produces crude oil and natural gas. The Energy Products segment offers fuels, aromatics, and catalysts, as well as licensing services. Its Chemical Products segment manufactures and sells olefins, polyolefins, and intermediates. The Specialty Products segment offers finished lubricants, basestocks, waxes, synthetics, elastomers, and resins. It is also involved in the manufacture, trade, transport, and sale of crude oil, natural gas, petroleum products, petrochemicals, and other specialty products; and pursuit of lower-emission and business opportunities, including carbon capture and storage, hydrogen, lower-emission fuels, Proxxima resin systems, carbon materials, low-carbon data center, and lithium. In addition, the company offers aviation fuel. It sells its products under the Exxon, Esso, and Mobil brands. The company was formerly known as Exxon Mobil Corporation and changed its name to ExxonMobil Holdings Corporation in July 2026. ExxonMobil Holdings Corporation was founded in 1870 and is headquartered in Spring, Texas."
+  },
+  "price_overview": {
+    "current_price": 168.94,
+    "prev_close": 168.58,
+    "change": 0.36,
+    "change_pct": 0.21,
+    "day_high": 170.29,
+    "day_low": 167.82,
+    "volume": 8083600,
+    "market_cap": 694666395648,
+    "market_cap_fmt": "$694.67B",
+    "enterprise_value": 733177380864,
+    "enterprise_value_fmt": "$733.18B"
+  },
+  "valuation": {
+    "trailing_pe": 21.74,
+    "forward_pe": 14.74,
+    "price_to_book": 2.68,
+    "price_to_sales": 1.92,
+    "trailing_eps": 7.77,
+    "forward_eps": 11.46,
+    "beta": 0.21,
+    "fifty_two_week_high": 176.41,
+    "fifty_two_week_low": 110.39,
+    "range_52w_position_pct": 88.7
+  },
+  "financials": {
+    "total_revenue": 361060007936,
+    "revenue_fmt": "$361.06B",
+    "net_income": 32757000192,
+    "net_income_fmt": "$32.76B",
+    "gross_margins_pct": 29.77,
+    "operating_margins_pct": 15.86,
+    "profit_margins_pct": 9.07,
+    "return_on_equity_pct": 12.58,
+    "debt_to_equity": 15.92,
+    "operating_cashflow_fmt": "$59.73B",
+    "free_cashflow_fmt": "$20.67B",
+    "revenue_growth_pct": 44.1,
+    "earnings_growth_pct": 112.8
+  },
+  "analyst": {
+    "target_mean_price": 173.64,
+    "target_high_price": 200.0,
+    "target_low_price": 142.0,
+    "target_median_price": 177.0,
+    "upside_potential_pct": 2.78,
+    "recommendation_key": "buy",
+    "recommendation_display": "买入 (Buy)",
+    "number_of_analysts": 22
+  },
+  "dividends": {
+    "dividend_rate": 4.12,
+    "dividend_yield_pct": 2.44,
+    "ex_dividend_date": "2026-08-17",
+    "payout_ratio_pct": 52.51
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "status": "success",
+  "ticker": "JNJ",
+  "currency": "USD",
+  "currency_symbol": "$",
+  "profile": {
+    "symbol": "JNJ",
+    "name": "Johnson & Johnson",
+    "exchange": "NYQ",
+    "currency": "USD",
+    "sector": "Healthcare",
+    "industry": "Drug Manufacturers - General",
+    "quote_type": "Equity",
+    "country": "United States",
+    "city": "New Brunswick",
+    "website": "https://www.jnj.com",
+    "employees": 138200,
+    "summary": "Johnson & Johnson, together with its subsidiaries, engages in the research and development, manufacture, and sale of a range of products in the healthcare field worldwide. It operates in two segments, Innovative Medicine and MedTech. The Innovative Medicine segment offers products for various therapeutic areas, such as oncology, immunology, neuroscience, pulmonary hypertension, infectious diseases, and cardiovascular and metabolism distributed through retailers, wholesalers, distributors, hospitals, and healthcare professionals for prescription use. The MedTech segment provides a portfolio of products used in the surgery, orthopedic, cardiovascular, and vision fields distributed through wholesalers, hospitals and retailers, and used in the professional fields by physicians, nurses, hospitals, eye care professionals and clinics. This segment also offers products and enabling technologies that support joint reconstruction, trauma, spine, sports related injuries, and others, as well as open, laparoscopic, and robotic surgical procedures; instrumentation, energy devices, stapling systems, wound closure, biosurgery products, and digital and robotic technologies; breast aesthetics and reconstruction; contact lenses under the ACUVUE brand; intraocular lenses for cataract surgery, and other products used in cataract and refractive procedures under the TECNIS brand. The company was founded in 1886 and is based in New Brunswick, New Jersey."
+  },
+  "price_overview": {
+    "current_price": 261.44,
+    "prev_close": 256.48,
+    "change": 4.96,
+    "change_pct": 1.93,
+    "day_high": 261.61,
+    "day_low": 254.99,
+    "volume": 5726000,
+    "market_cap": 630043836416,
+    "market_cap_fmt": "$630.04B",
+    "enterprise_value": 658321899520,
+    "enterprise_value_fmt": "$658.32B"
+  },
+  "valuation": {
+    "trailing_pe": 30.29,
+    "forward_pe": 21.54,
+    "price_to_book": 7.41,
+    "price_to_sales": 6.43,
+    "trailing_eps": 8.63,
+    "forward_eps": 12.1,
+    "beta": 0.21,
+    "fifty_two_week_high": 281.07,
+    "fifty_two_week_low": 184.66,
+    "range_52w_position_pct": 79.6
+  },
+  "financials": {
+    "total_revenue": 97929003008,
+    "revenue_fmt": "$97.93B",
+    "net_income": 21037000704,
+    "net_income_fmt": "$21.04B",
+    "gross_margins_pct": 68.14,
+    "operating_margins_pct": 29.19,
+    "profit_margins_pct": 21.48,
+    "return_on_equity_pct": 25.74,
+    "debt_to_equity": 57.71,
+    "operating_cashflow_fmt": "$27.61B",
+    "free_cashflow_fmt": "$16.89B",
+    "revenue_growth_pct": 6.6,
+    "earnings_growth_pct": -0.9
+  },
+  "analyst": {
+    "target_mean_price": 279.82,
+    "target_high_price": 320.0,
+    "target_low_price": 190.0,
+    "target_median_price": 283.5,
+    "upside_potential_pct": 7.03,
+    "recommendation_key": "buy",
+    "recommendation_display": "买入 (Buy)",
+    "number_of_analysts": 22
+  },
+  "dividends": {
+    "dividend_rate": 5.36,
+    "dividend_yield_pct": 2.05,
+    "ex_dividend_date": "2026-08-25",
+    "payout_ratio_pct": 60.72
+  }
+}

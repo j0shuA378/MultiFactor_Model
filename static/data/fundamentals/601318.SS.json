@@ -1,0 +1,76 @@
+{
+  "status": "success",
+  "ticker": "601318.SS",
+  "currency": "CNY",
+  "currency_symbol": "¥",
+  "profile": {
+    "symbol": "601318.SS",
+    "name": "中国平安 (金融保险综合龙头)",
+    "exchange": "SHH",
+    "currency": "CNY",
+    "sector": "Financial Services",
+    "industry": "Insurance - Life",
+    "quote_type": "Equity",
+    "country": "China",
+    "city": "Shenzhen",
+    "website": "https://www.pingan.cn",
+    "employees": 258806,
+    "summary": "Ping An Insurance (Group) Company of China, Ltd. provides financial products and services in the People's Republic of China. It operates through Life and Health Insurance; Property and Casualty Insurance; Banking; Asset Management; and Finance Enablement segments. The company offers life insurance products, including term, whole-life, endowment, annuity, investment-linked, universal life, and health care and medical insurance; property and casualty insurance, such as auto insurance, non-auto insurance, accident, and health insurance. It also undertakes loan and intermediary business with corporate customers and retail customers. In addition, the company provides wealth management and credit card services to individual customers; trust services, brokerage services, trading services, investment banking services, investment management services, finance lease business, and other asset management services; and financial and daily-life services through internet platforms comprising financial transaction information service platform, and health care service platform. Further, it is involved in the real estate investment and management; expressway operation; production and sale of consumer chemicals; logistics and real estate activities; consulting services; warehousing; IT services; infant products; and hospital management. Ping An Insurance (Group) Company of China, Ltd. was incorporated in 1988 and is based in Shenzhen, China."
+  },
+  "price_overview": {
+    "current_price": 52.83,
+    "prev_close": 52.68,
+    "change": 0.15,
+    "change_pct": 0.28,
+    "day_high": 53.15,
+    "day_low": 52.68,
+    "volume": 59593634,
+    "market_cap": 956626763776,
+    "market_cap_fmt": "¥956.63B",
+    "enterprise_value": -197921275904,
+    "enterprise_value_fmt": "-¥197.92B"
+  },
+  "valuation": {
+    "trailing_pe": 6.34,
+    "forward_pe": 6.01,
+    "price_to_book": 0.93,
+    "price_to_sales": 0.97,
+    "trailing_eps": 8.33,
+    "forward_eps": 8.78,
+    "beta": 0.56,
+    "fifty_two_week_high": 74.88,
+    "fifty_two_week_low": 46.9,
+    "range_52w_position_pct": 21.2
+  },
+  "financials": {
+    "total_revenue": 985973981184,
+    "revenue_fmt": "¥985.97B",
+    "net_income": 159316000768,
+    "net_income_fmt": "¥159.32B",
+    "gross_margins_pct": 38.91,
+    "operating_margins_pct": 25.52,
+    "profit_margins_pct": 16.16,
+    "return_on_equity_pct": 13.1,
+    "debt_to_equity": 119.52,
+    "operating_cashflow_fmt": "¥688.48B",
+    "free_cashflow_fmt": "¥2.50T",
+    "revenue_growth_pct": 8.6,
+    "earnings_growth_pct": 52.6
+  },
+  "analyst": {
+    "target_mean_price": 76.53,
+    "target_high_price": 91.0,
+    "target_low_price": 68.0,
+    "target_median_price": 75.0,
+    "upside_potential_pct": 44.86,
+    "recommendation_key": "strong_buy",
+    "recommendation_display": "强力买入 (Strong Buy)",
+    "number_of_analysts": 13
+  },
+  "dividends": {
+    "dividend_rate": 2.73,
+    "dividend_yield_pct": 5.17,
+    "ex_dividend_date": "2026-09-10",
+    "payout_ratio_pct": 32.41
+  }
+}

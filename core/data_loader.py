@@ -996,6 +996,25 @@ def fetch_stock_fundamentals(ticker: str = "AAPL") -> dict:
     except Exception as e:
         logger.warning(f"yfinance info query fallback for {sym_upper}: {e}")
 
+    # Check verified pre-cached disk JSON if yfinance info returned empty/failed
+    if not info or not info.get("marketCap"):
+        disk_candidates = [
+            BASE_DIR / "static" / "data" / "fundamentals" / f"{sym_upper}.json",
+            BASE_DIR / "data" / "fundamentals" / f"{sym_upper}.json"
+        ]
+        for dc in disk_candidates:
+            if dc.exists():
+                try:
+                    with open(dc, "r", encoding="utf-8") as f:
+                        cached_disk = json.load(f)
+                        if cached_disk.get("status") == "success" and cached_disk.get("profile"):
+                            if curr_p > 0 and "price_overview" in cached_disk:
+                                cached_disk["price_overview"]["current_price"] = curr_p
+                            FUNDAMENTALS_CACHE[sym_upper] = (now, cached_disk)
+                            return cached_disk
+                except Exception as ex:
+                    logger.warning(f"Failed loading disk fundamentals for {sym_upper}: {ex}")
+
     # Fallback to local historical data if price still 0
     if curr_p <= 0:
         hist_df = fetch_stock_data(sym_upper, "1y", use_cache=True)

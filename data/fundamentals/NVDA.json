@@ -1,0 +1,76 @@
+{
+  "status": "success",
+  "ticker": "NVDA",
+  "currency": "USD",
+  "currency_symbol": "$",
+  "profile": {
+    "symbol": "NVDA",
+    "name": "NVIDIA Corporation (英伟达)",
+    "exchange": "NMS",
+    "currency": "USD",
+    "sector": "Technology",
+    "industry": "Semiconductors",
+    "quote_type": "Equity",
+    "country": "United States",
+    "city": "Santa Clara",
+    "website": "https://www.nvidia.com",
+    "employees": 42000,
+    "summary": "NVIDIA Corporation operates as a data center scale AI infrastructure company in the United States, Taiwan, China, Hong Kong, Europe, and internationally. It operates through Compute & Networking, and Graphics segments. The Compute & Networking segment provides data center accelerated computing and networking platforms and artificial intelligence solutions and software, and automotive platforms and autonomous and electric vehicle solutions, including software. The Graphics segment offers GeForce GPUs for gaming and PCs; Quadro/NVIDIA RTX GPUs for enterprise workstation graphics. The company's products are used in gaming, professional visualization, data center, and automotive markets. It sells its products to original equipment manufacturers, original device manufacturers, system integrators and distributors, independent software vendors, cloud service providers, add-in board manufacturers, distributors, automotive manufacturers and tier-1 automotive suppliers, and other ecosystem participants. NVIDIA Corporation was incorporated in 1993 and is headquartered in Santa Clara, California."
+  },
+  "price_overview": {
+    "current_price": 229.28,
+    "prev_close": 230.48,
+    "change": -1.2,
+    "change_pct": -0.52,
+    "day_high": 233.92,
+    "day_low": 229.11,
+    "volume": 84470000,
+    "market_cap": 5536424132608,
+    "market_cap_fmt": "$5.54T",
+    "enterprise_value": 5502039228416,
+    "enterprise_value_fmt": "$5.50T"
+  },
+  "valuation": {
+    "trailing_pe": 28.99,
+    "forward_pe": 14.41,
+    "price_to_book": 24.18,
+    "price_to_sales": 18.27,
+    "trailing_eps": 7.91,
+    "forward_eps": 15.91,
+    "beta": 2.22,
+    "fifty_two_week_high": 243.37,
+    "fifty_two_week_low": 164.27,
+    "range_52w_position_pct": 82.2
+  },
+  "financials": {
+    "total_revenue": 302970011648,
+    "revenue_fmt": "$302.97B",
+    "net_income": 192880001024,
+    "net_income_fmt": "$192.88B",
+    "gross_margins_pct": 74.67,
+    "operating_margins_pct": 66.24,
+    "profit_margins_pct": 63.66,
+    "return_on_equity_pct": 117.21,
+    "debt_to_equity": 16.97,
+    "operating_cashflow_fmt": "$134.36B",
+    "free_cashflow_fmt": "$41.81B",
+    "revenue_growth_pct": 105.9,
+    "earnings_growth_pct": 127.8
+  },
+  "analyst": {
+    "target_mean_price": 328.72,
+    "target_high_price": 515.0,
+    "target_low_price": 180.0,
+    "target_median_price": 315.0,
+    "upside_potential_pct": 43.37,
+    "recommendation_key": "strong_buy",
+    "recommendation_display": "强力买入 (Strong Buy)",
+    "number_of_analysts": 59
+  },
+  "dividends": {
+    "dividend_rate": 1.0,
+    "dividend_yield_pct": 0.44,
+    "ex_dividend_date": "2026-09-10",
+    "payout_ratio_pct": 3.54
+  }
+}

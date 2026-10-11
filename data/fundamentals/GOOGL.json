@@ -1,0 +1,76 @@
+{
+  "status": "success",
+  "ticker": "GOOGL",
+  "currency": "USD",
+  "currency_symbol": "$",
+  "profile": {
+    "symbol": "GOOGL",
+    "name": "Alphabet Inc. (谷歌)",
+    "exchange": "NMS",
+    "currency": "USD",
+    "sector": "Communication Services",
+    "industry": "Internet Content & Information",
+    "quote_type": "Equity",
+    "country": "United States",
+    "city": "Mountain View",
+    "website": "https://abc.xyz",
+    "employees": 198933,
+    "summary": "Alphabet Inc. offers various products and platforms in the United States, Europe, the Middle East, Africa, the Asia-Pacific, Canada, and Latin America. It operates through Google Services, Google Cloud, and Other Bets segments. The Google Services segment provides products and services, including ads, Android, Chrome, devices, Gmail, Google Drive, Google Maps, Google Photos, Google Play, Search, and YouTube. It is also involved in the sale of apps and in-app purchases and digital content in Google Play and YouTube; and devices, as well as the provision of YouTube consumer subscription services, such as YouTube TV, YouTube Music and Premium, NFL Sunday Ticket, and Google One. The Google Cloud segment offers consumption-based fees and subscriptions for AI solutions, including AI infrastructure, Vertex AI platform, and Gemini enterprise. It also provides cybersecurity, and data and analytics services; Google Workspace that include cloud-based communication and collaboration tools for enterprises, such as Calendar, Gmail, Docs, Drive, and Meet; and other enterprise services. The Other Bets segment sells transportation and internet services. Alphabet Inc. was incorporated in 1998 and is headquartered in Mountain View, California."
+  },
+  "price_overview": {
+    "current_price": 351.66,
+    "prev_close": 348.29,
+    "change": 3.37,
+    "change_pct": 0.97,
+    "day_high": 354.7,
+    "day_low": 350.31,
+    "volume": 17259800,
+    "market_cap": 4300779028480,
+    "market_cap_fmt": "$4.30T",
+    "enterprise_value": 4197141708800,
+    "enterprise_value_fmt": "$4.20T"
+  },
+  "valuation": {
+    "trailing_pe": 17.64,
+    "forward_pe": 23.12,
+    "price_to_book": 6.91,
+    "price_to_sales": 9.65,
+    "trailing_eps": 19.93,
+    "forward_eps": 15.21,
+    "beta": 1.21,
+    "fifty_two_week_high": 408.61,
+    "fifty_two_week_low": 239.71,
+    "range_52w_position_pct": 66.3
+  },
+  "financials": {
+    "total_revenue": 445865984000,
+    "revenue_fmt": "$445.87B",
+    "net_income": 244118994944,
+    "net_income_fmt": "$244.12B",
+    "gross_margins_pct": 60.9,
+    "operating_margins_pct": 34.03,
+    "profit_margins_pct": 54.77,
+    "return_on_equity_pct": 48.68,
+    "debt_to_equity": 18.86,
+    "operating_cashflow_fmt": "$185.68B",
+    "free_cashflow_fmt": "$22.67B",
+    "revenue_growth_pct": 24.2,
+    "earnings_growth_pct": 294.0
+  },
+  "analyst": {
+    "target_mean_price": 429.47,
+    "target_high_price": 515.0,
+    "target_low_price": 340.0,
+    "target_median_price": 430.0,
+    "upside_potential_pct": 22.13,
+    "recommendation_key": "strong_buy",
+    "recommendation_display": "强力买入 (Strong Buy)",
+    "number_of_analysts": 54
+  },
+  "dividends": {
+    "dividend_rate": 0.88,
+    "dividend_yield_pct": 0.25,
+    "ex_dividend_date": "2026-09-04",
+    "payout_ratio_pct": 4.26
+  }
+}

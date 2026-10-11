@@ -1,0 +1,76 @@
+{
+  "status": "success",
+  "ticker": "0700.HK",
+  "currency": "HKD",
+  "currency_symbol": "HK$",
+  "profile": {
+    "symbol": "0700.HK",
+    "name": "腾讯控股 (社交网络与游戏龙头)",
+    "exchange": "HKG",
+    "currency": "HKD",
+    "sector": "Communication Services",
+    "industry": "Internet Content & Information",
+    "quote_type": "Equity",
+    "country": "China",
+    "city": "Shenzhen",
+    "website": "https://www.tencent.com",
+    "employees": 115927,
+    "summary": "Tencent Holdings Limited, an investment holding company, provides value-added services, marketing services, fintech, and business services in Mainland China and internationally. The company's consumers business includes communications and social services, such as instant messaging and social networks; digital content, including online games, videos, live streaming, news, music, and literature; fintech services, which include mobile payment, wealth management, consumer loans, and securities trading; and various tools comprising network security management, browsing, navigation, application management, email, etc. Its enterprise business comprises marketing solutions, which offer digital tools, including user insight, creative management, placement strategy, and digital assets management; and cloud services, such as cloud computing, big data analytics, artificial intelligence, Internet of Things, and security and other technologies for financial services, education, healthcare, retail, industry, transport, energy, and radio and television industries. The company also invests in, produces, and distributes films and television programs; offers copyrights licensing and merchandise sales and other services; provides internet advertisement services; and offers software development, and information technology and system integration services, as well as develops and operates mobile games. The company was formerly known as Tencent (BVI) Limited and changed its name to Tencent Holdings Limited in February 2004. Tencent Holdings Limited was founded in 1998 and is headquartered in Shenzhen, the People's Republic of China."
+  },
+  "price_overview": {
+    "current_price": 424.8,
+    "prev_close": 411.4,
+    "change": 13.4,
+    "change_pct": 3.26,
+    "day_high": 425.8,
+    "day_low": 414.8,
+    "volume": 20422500,
+    "market_cap": 3825543938048,
+    "market_cap_fmt": "HK$3.83T",
+    "enterprise_value": 3923639795712,
+    "enterprise_value_fmt": "HK$3.92T"
+  },
+  "valuation": {
+    "trailing_pe": 14.95,
+    "forward_pe": 11.79,
+    "price_to_book": 2.88,
+    "price_to_sales": 4.85,
+    "trailing_eps": 28.41,
+    "forward_eps": 36.08,
+    "beta": 0.74,
+    "fifty_two_week_high": 664.0,
+    "fifty_two_week_low": 411.0,
+    "range_52w_position_pct": 5.5
+  },
+  "financials": {
+    "total_revenue": 788483014656,
+    "revenue_fmt": "HK$788.48B",
+    "net_income": 235508006912,
+    "net_income_fmt": "HK$235.51B",
+    "gross_margins_pct": 56.7,
+    "operating_margins_pct": 32.85,
+    "profit_margins_pct": 29.87,
+    "return_on_equity_pct": 19.91,
+    "debt_to_equity": 38.59,
+    "operating_cashflow_fmt": "HK$305.85B",
+    "free_cashflow_fmt": "HK$118.47B",
+    "revenue_growth_pct": 11.0,
+    "earnings_growth_pct": 1.8
+  },
+  "analyst": {
+    "target_mean_price": 663.14,
+    "target_high_price": 887.38,
+    "target_low_price": 429.08,
+    "target_median_price": 670.3,
+    "upside_potential_pct": 56.11,
+    "recommendation_key": "strong_buy",
+    "recommendation_display": "强力买入 (Strong Buy)",
+    "number_of_analysts": 41
+  },
+  "dividends": {
+    "dividend_rate": 5.3,
+    "dividend_yield_pct": 1.25,
+    "ex_dividend_date": "2026-05-15",
+    "payout_ratio_pct": 18.75
+  }
+}

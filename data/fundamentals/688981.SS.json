@@ -1,0 +1,76 @@
+{
+  "status": "success",
+  "ticker": "688981.SS",
+  "currency": "CNY",
+  "currency_symbol": "¥",
+  "profile": {
+    "symbol": "688981.SS",
+    "name": "中芯国际 (晶圆制造龙头)",
+    "exchange": "SHH",
+    "currency": "CNY",
+    "sector": "Technology",
+    "industry": "Semiconductors",
+    "quote_type": "Equity",
+    "country": "China",
+    "city": "Shanghai",
+    "website": "https://www.smics.com",
+    "employees": 20336,
+    "summary": "Semiconductor Manufacturing International Corporation, an investment holding company, engages in the manufacture, testing, and sale of integrated circuits wafer and various compound semiconductors in the United States, China, and Eurasia. The company is also involved in the manufacturing, sale, and trading of semiconductor products; and research and development activities. In addition, it offers semiconductor foundry and technology services; supporting services comprising design and IP support, photomask manufacturing, etc.; development, design, and technical services related to integrated circuits; marketing related services; and private education services. Further, the company tests and sells self-produced products, and other services. Semiconductor Manufacturing International Corporation was incorporated in 2000 and is headquartered in Shanghai, China."
+  },
+  "price_overview": {
+    "current_price": 108.42,
+    "prev_close": 106.96,
+    "change": 1.46,
+    "change_pct": 1.36,
+    "day_high": 109.55,
+    "day_low": 102.8,
+    "volume": 46104484,
+    "market_cap": 928329498624,
+    "market_cap_fmt": "¥928.33B",
+    "enterprise_value": 942098743296,
+    "enterprise_value_fmt": "¥942.10B"
+  },
+  "valuation": {
+    "trailing_pe": 119.14,
+    "forward_pe": 71.84,
+    "price_to_book": 5.51,
+    "price_to_sales": 89.42,
+    "trailing_eps": 0.91,
+    "forward_eps": 1.51,
+    "beta": 0.38,
+    "fifty_two_week_high": 176.34,
+    "fifty_two_week_low": 91.2,
+    "range_52w_position_pct": 20.2
+  },
+  "financials": {
+    "total_revenue": 10381606912,
+    "revenue_fmt": "¥10.38B",
+    "net_income": 1041254016,
+    "net_income_fmt": "¥1.04B",
+    "gross_margins_pct": 21.82,
+    "operating_margins_pct": 17.1,
+    "profit_margins_pct": 10.03,
+    "return_on_equity_pct": 4.2,
+    "debt_to_equity": 37.03,
+    "operating_cashflow_fmt": "¥5.49B",
+    "free_cashflow_fmt": "-¥4.11B",
+    "revenue_growth_pct": 36.1,
+    "earnings_growth_pct": 258.7
+  },
+  "analyst": {
+    "target_mean_price": 176.15,
+    "target_high_price": 257.9,
+    "target_low_price": 125.0,
+    "target_median_price": 179.0,
+    "upside_potential_pct": 62.47,
+    "recommendation_key": "none",
+    "recommendation_display": "中性配置",
+    "number_of_analysts": 11
+  },
+  "dividends": {
+    "dividend_rate": 0.0,
+    "dividend_yield_pct": 0.0,
+    "ex_dividend_date": "暂无分红记录",
+    "payout_ratio_pct": 0.0
+  }
+}

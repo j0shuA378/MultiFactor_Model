@@ -1,0 +1,76 @@
+{
+  "status": "success",
+  "ticker": "BABA",
+  "currency": "USD",
+  "currency_symbol": "$",
+  "profile": {
+    "symbol": "BABA",
+    "name": "Alibaba Group Holding (阿里巴巴ADR)",
+    "exchange": "NYQ",
+    "currency": "USD",
+    "sector": "Consumer Cyclical",
+    "industry": "Internet Retail",
+    "quote_type": "Equity",
+    "country": "China",
+    "city": "Hangzhou",
+    "website": "https://www.alibabagroup.com",
+    "employees": 132165,
+    "summary": "Alibaba Group Holding Limited, through its subsidiaries, provides technology infrastructure and marketing reach to help merchants, brands, retailers, and other businesses in the People's Republic of China and internationally. It operates through the Alibaba China E-Commerce Group, Alibaba International Digital Commerce Group, Cloud Intelligence Group, and All Others segments. The Alibaba China E-commerce Group segment operates Taobao and Tmall, which are digital retail platforms; Taobao Instant Commerce, a local services and on-demand delivery platform; 1688.com, a domestic wholesale marketplace; and Xianyu, a consumer-to-consumer community and marketplace for idle goods. Its Alibaba International Digital Commerce Group segment includes AliExpress, a global e-commerce platform; Trendyol, an e-commerce platform in Turkey; Lazada, an e-commerce platform in Southeast Asia; Daraz, an e-commerce platform in South Asia, primarily in Pakistan and Bangladesh; and Alibaba.com, an integrated international online wholesale marketplace. The Cloud Intelligence Group segment offers a suite of cloud services based on infrastructure-as-a-service, platform-as-a-service, and model-as-a-service. Its All Others segment comprises Amap, a provider of mobile digital maps, navigation, and real-time traffic information in China; Cainiao, which provides logistics solutions; Youku, an online long-form video platform in China; Freshippo, a retail platform for groceries and fresh goods; and Alibaba Health, a pharmaceutical and healthcare services platform. Alibaba Group Holding Limited was incorporated in 1999 and is based in Hangzhou, China."
+  },
+  "price_overview": {
+    "current_price": 111.37,
+    "prev_close": 105.7,
+    "change": 5.67,
+    "change_pct": 5.36,
+    "day_high": 111.47,
+    "day_low": 108.75,
+    "volume": 12326200,
+    "market_cap": 277060157440,
+    "market_cap_fmt": "$277.06B",
+    "enterprise_value": 205612662784,
+    "enterprise_value_fmt": "$205.61B"
+  },
+  "valuation": {
+    "trailing_pe": 26.97,
+    "forward_pe": 11.97,
+    "price_to_book": 1.66,
+    "price_to_sales": 0.27,
+    "trailing_eps": 4.13,
+    "forward_eps": 9.3,
+    "beta": 0.46,
+    "fifty_two_week_high": 182.5,
+    "fifty_two_week_low": 91.99,
+    "range_52w_position_pct": 21.4
+  },
+  "financials": {
+    "total_revenue": 1044970995712,
+    "revenue_fmt": "$1.04T",
+    "net_income": 73325002752,
+    "net_income_fmt": "$73.33B",
+    "gross_margins_pct": 38.2,
+    "operating_margins_pct": 7.29,
+    "profit_margins_pct": 7.04,
+    "return_on_equity_pct": 6.36,
+    "debt_to_equity": 23.93,
+    "operating_cashflow_fmt": "$78.49B",
+    "free_cashflow_fmt": "-$82.64B",
+    "revenue_growth_pct": 8.6,
+    "earnings_growth_pct": -79.4
+  },
+  "analyst": {
+    "target_mean_price": 185.98,
+    "target_high_price": 238.83,
+    "target_low_price": 95.44,
+    "target_median_price": 188.09,
+    "upside_potential_pct": 67.0,
+    "recommendation_key": "strong_buy",
+    "recommendation_display": "强力买入 (Strong Buy)",
+    "number_of_analysts": 39
+  },
+  "dividends": {
+    "dividend_rate": 1.05,
+    "dividend_yield_pct": 0.94,
+    "ex_dividend_date": "2026-06-11",
+    "payout_ratio_pct": 25.44
+  }
+}

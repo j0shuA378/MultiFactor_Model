@@ -1,0 +1,76 @@
+{
+  "status": "success",
+  "ticker": "SPY",
+  "currency": "USD",
+  "currency_symbol": "$",
+  "profile": {
+    "symbol": "SPY",
+    "name": "SPDR S&P 500 ETF Trust (标普500)",
+    "exchange": "PCX",
+    "currency": "USD",
+    "sector": "大盘宽基指数 (ETF)",
+    "industry": "标普500基准指数基金 (Broad Market ETF)",
+    "quote_type": "ETF",
+    "country": "United States",
+    "city": "Boston",
+    "website": "https://www.ssga.com",
+    "employees": 0,
+    "summary": "The trust seeks to achieve its investment objective by holding a portfolio of the common stocks that are included in the index (the “Portfolio”), with the weight of each stock in the Portfolio substantially corresponding to the weight of such stock in the index."
+  },
+  "price_overview": {
+    "current_price": 778.57,
+    "prev_close": 774.46,
+    "change": 4.11,
+    "change_pct": 0.53,
+    "day_high": 779.42,
+    "day_low": 775.14,
+    "volume": 22596500,
+    "market_cap": 612000000000,
+    "market_cap_fmt": "$612.00B",
+    "enterprise_value": 612000000000,
+    "enterprise_value_fmt": "$612.00B"
+  },
+  "valuation": {
+    "trailing_pe": 25.16,
+    "forward_pe": 22.4,
+    "price_to_book": 1.81,
+    "price_to_sales": 2.95,
+    "trailing_eps": 29.05,
+    "forward_eps": 34.75,
+    "beta": 1.0,
+    "fifty_two_week_high": 781.62,
+    "fifty_two_week_low": 629.28,
+    "range_52w_position_pct": 98.0
+  },
+  "financials": {
+    "total_revenue": 0,
+    "revenue_fmt": "N/A",
+    "net_income": 0,
+    "net_income_fmt": "N/A",
+    "gross_margins_pct": 0.0,
+    "operating_margins_pct": 0.0,
+    "profit_margins_pct": 0.0,
+    "return_on_equity_pct": 19.8,
+    "debt_to_equity": null,
+    "operating_cashflow_fmt": "N/A",
+    "free_cashflow_fmt": "N/A",
+    "revenue_growth_pct": 0.0,
+    "earnings_growth_pct": 0.0
+  },
+  "analyst": {
+    "target_mean_price": 820.0,
+    "target_high_price": 880.0,
+    "target_low_price": 720.0,
+    "target_median_price": 820.0,
+    "upside_potential_pct": 5.32,
+    "recommendation_key": "buy",
+    "recommendation_display": "买入 (Buy)",
+    "number_of_analysts": 500
+  },
+  "dividends": {
+    "dividend_rate": 7.12,
+    "dividend_yield_pct": 0.91,
+    "ex_dividend_date": "2026-09-18",
+    "payout_ratio_pct": 98.0
+  }
+}

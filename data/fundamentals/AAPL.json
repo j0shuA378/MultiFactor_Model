@@ -1,0 +1,76 @@
+{
+  "status": "success",
+  "ticker": "AAPL",
+  "currency": "USD",
+  "currency_symbol": "$",
+  "profile": {
+    "symbol": "AAPL",
+    "name": "Apple Inc. (苹果公司)",
+    "exchange": "NMS",
+    "currency": "USD",
+    "sector": "Technology",
+    "industry": "Consumer Electronics",
+    "quote_type": "Equity",
+    "country": "United States",
+    "city": "Cupertino",
+    "website": "https://www.apple.com",
+    "employees": 150000,
+    "summary": "Apple Inc. designs, manufactures, and markets smartphones, personal computers, tablets, wearables, and accessories worldwide. The company offers iPhone, a line of smartphones; Mac, a line of personal computers; iPad, a line of multi-purpose tablets; and wearables, home, and accessories comprising AirPods, Apple Vision Pro, Apple TV, Apple Watch, Beats products, and HomePod, as well as Apple branded and third-party accessories. It also provides AppleCare support and cloud services; and operates various platforms, including the App Store that allows customers to discover and download applications and digital content, such as books, music, video, games, and podcasts, as well as advertising services include third-party licensing arrangements and its own advertising platforms. In addition, the company offers various subscription-based services, such as Apple Arcade, a game subscription service; Apple Fitness+, a personalized fitness service; Apple Music, which offers users a curated listening experience with on-demand radio stations; Apple News+, a subscription news and magazine service; Apple TV, which offers original content and live sports; Apple Card, a co-branded credit card; and Apple Pay, a cashless payment service, as well as licenses its intellectual property. The company serves consumers, and small and mid-sized businesses; and the education, enterprise, and government markets. It distributes third-party applications for its products through the App Store. The company also sells its products through its retail and online stores, and direct sales force; and third-party cellular network carriers and resellers. The company was formerly known as Apple Computer, Inc. and changed its name to Apple Inc. in January 2007. Apple Inc. was founded in 1976 and is headquartered in Cupertino, California."
+  },
+  "price_overview": {
+    "current_price": 336.64,
+    "prev_close": 340.42,
+    "change": -3.78,
+    "change_pct": -1.11,
+    "day_high": 338.61,
+    "day_low": 330.7,
+    "volume": 37855000,
+    "market_cap": 4912984883200,
+    "market_cap_fmt": "$4.91T",
+    "enterprise_value": 4934930006016,
+    "enterprise_value_fmt": "$4.93T"
+  },
+  "valuation": {
+    "trailing_pe": 38.61,
+    "forward_pe": 35.11,
+    "price_to_book": 45.74,
+    "price_to_sales": 10.52,
+    "trailing_eps": 8.72,
+    "forward_eps": 9.59,
+    "beta": 1.07,
+    "fifty_two_week_high": 345.34,
+    "fifty_two_week_low": 243.42,
+    "range_52w_position_pct": 91.5
+  },
+  "financials": {
+    "total_revenue": 466822987776,
+    "revenue_fmt": "$466.82B",
+    "net_income": 128929996800,
+    "net_income_fmt": "$128.93B",
+    "gross_margins_pct": 48.65,
+    "operating_margins_pct": 32.62,
+    "profit_margins_pct": 27.62,
+    "return_on_equity_pct": 148.75,
+    "debt_to_equity": 78.44,
+    "operating_cashflow_fmt": "$146.72B",
+    "free_cashflow_fmt": "$107.72B",
+    "revenue_growth_pct": 16.4,
+    "earnings_growth_pct": 28.7
+  },
+  "analyst": {
+    "target_mean_price": 328.09,
+    "target_high_price": 405.0,
+    "target_low_price": 215.0,
+    "target_median_price": 340.0,
+    "upside_potential_pct": -2.54,
+    "recommendation_key": "buy",
+    "recommendation_display": "买入 (Buy)",
+    "number_of_analysts": 39
+  },
+  "dividends": {
+    "dividend_rate": 1.08,
+    "dividend_yield_pct": 0.32,
+    "ex_dividend_date": "2026-08-10",
+    "payout_ratio_pct": 12.04
+  }
+}
