@@ -10,6 +10,7 @@ import yfinance as yf
 from core.data_loader import fetch_stock_data, COMPANY_NAME_LOOKUP, sanitize_ticker
 from core.metrics import compute_performance_metrics
 from core.config_manager import load_config
+from core.risk_manager import RiskManager
 from strategies.factor_momentum import MultiFactorMomentumStrategy
 from strategies.ml_predictor import MLPredictorStrategy
 from strategies.turtle_grid import TurtleGridStrategy
@@ -20,10 +21,106 @@ DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
 PAPER_ACCOUNT_FILE = os.path.join(DATA_DIR, "paper_trading_account.json")
 _PAPER_PRICE_CACHE: Dict[str, Tuple[datetime, float, float, str]] = {}
 
+def get_easter_date(year: int):
+    """Computus algorithm for Easter Sunday (Meeus/Jones/Butcher)"""
+    a = year % 19
+    b = year // 100
+    c = year % 100
+    d = b // 4
+    e = b % 4
+    f = (b + 8) // 25
+    g = (b - f + 1) // 3
+    h = (19 * a + b - d - g + 15) % 30
+    i = c // 4
+    k = c % 4
+    l = (32 + 2 * e + 2 * i - h - k) % 7
+    m = (a + 11 * h + 22 * l) // 451
+    month = (h + l - 7 * m + 114) // 31
+    day = ((h + l - 7 * m + 114) % 31) + 1
+    return datetime(year, month, day).date()
+
+def is_us_stock_market_holiday(d) -> Tuple[bool, str]:
+    """Checks whether the given date is an official US stock market holiday (NYSE/NASDAQ)"""
+    year = d.year
+    # New Year's Day (Jan 1)
+    ny = datetime(year, 1, 1).date()
+    if ny.weekday() == 6:
+        ny = datetime(year, 1, 2).date()
+    elif ny.weekday() == 5:
+        ny = datetime(year - 1, 12, 31).date()
+    if d == ny:
+        return True, "元旦新年休市 (New Year's Day)"
+
+    # MLK Day: 3rd Monday in Jan
+    jan1 = datetime(year, 1, 1).date()
+    mlk = datetime(year, 1, 1 + (7 - jan1.weekday() if jan1.weekday() != 0 else 0) + 14).date()
+    if d == mlk:
+        return True, "马丁·路德·金纪念日休市 (MLK Jr. Day)"
+
+    # Washington's Birthday (Presidents' Day): 3rd Monday in Feb
+    feb1 = datetime(year, 2, 1).date()
+    gw = datetime(year, 2, 1 + (7 - feb1.weekday() if feb1.weekday() != 0 else 0) + 14).date()
+    if d == gw:
+        return True, "华盛顿诞辰总统日休市 (Presidents' Day)"
+
+    # Good Friday: Easter Sunday - 2 days
+    easter = get_easter_date(year)
+    gf = easter - timedelta(days=2)
+    if d == gf:
+        return True, "耶稣受难日休市 (Good Friday)"
+
+    # Memorial Day: Last Monday in May
+    may31 = datetime(year, 5, 31).date()
+    mem = datetime(year, 5, 31 - may31.weekday()).date()
+    if d == mem:
+        return True, "阵亡将士纪念日休市 (Memorial Day)"
+
+    # Juneteenth: June 19
+    june19 = datetime(year, 6, 19).date()
+    if june19.weekday() == 6:
+        june19 = datetime(year, 6, 20).date()
+    elif june19.weekday() == 5:
+        june19 = datetime(year, 6, 18).date()
+    if d == june19:
+        return True, "六月节国家独立日休市 (Juneteenth)"
+
+    # Independence Day: July 4
+    july4 = datetime(year, 7, 4).date()
+    if july4.weekday() == 6:
+        july4 = datetime(year, 7, 5).date()
+    elif july4.weekday() == 5:
+        july4 = datetime(year, 7, 3).date()
+    if d == july4:
+        return True, "独立日国庆节休市 (Independence Day)"
+
+    # Labor Day: 1st Monday in Sep
+    sep1 = datetime(year, 9, 1).date()
+    labor = datetime(year, 9, 1 + (7 - sep1.weekday() if sep1.weekday() != 0 else 0)).date()
+    if d == labor:
+        return True, "劳动节休市 (Labor Day)"
+
+    # Thanksgiving Day: 4th Thursday in Nov
+    nov1 = datetime(year, 11, 1).date()
+    thurs_offset = (3 - nov1.weekday()) % 7
+    tg = datetime(year, 11, 1 + thurs_offset + 21).date()
+    if d == tg:
+        return True, "感恩节休市 (Thanksgiving Day)"
+
+    # Christmas Day: Dec 25
+    xmas = datetime(year, 12, 25).date()
+    if xmas.weekday() == 6:
+        xmas = datetime(year, 12, 26).date()
+    elif xmas.weekday() == 5:
+        xmas = datetime(year, 12, 24).date()
+    if d == xmas:
+        return True, "圣诞节休市 (Christmas Day)"
+
+    return False, ""
+
 def is_us_market_open() -> Tuple[bool, str, Dict[str, Any]]:
     """
     Checks whether the US Stock Market (NYSE/NASDAQ) is currently in regular trading hours.
-    Regular hours: Mon-Fri, 09:30 to 16:00 US Eastern Time (America/New_York).
+    Regular hours: Mon-Fri (excluding official NYSE holidays), 09:30 to 16:00 US Eastern Time.
     Returns (is_open, status_text, detail_dict).
     """
     try:
@@ -33,17 +130,16 @@ def is_us_market_open() -> Tuple[bool, str, Dict[str, Any]]:
     except Exception:
         now_utc = datetime.now(timezone.utc)
         month = now_utc.month
-        # US Daylight Saving Time typically mid-March to early November (UTC-4), otherwise UTC-5
         offset = 4 if (3 <= month <= 11) else 5
         now_et = now_utc - timedelta(hours=offset)
         tz_abbr = "EDT" if offset == 4 else "EST"
 
     weekday = now_et.weekday()  # 0=Monday, ..., 4=Friday, 5=Saturday, 6=Sunday
-
+    date_obj = now_et.date()
     time_str = now_et.strftime("%H:%M:%S")
     date_str = now_et.strftime("%Y-%m-%d")
 
-    # Weekend check
+    # 1. Weekend check
     if weekday >= 5:
         return False, "🔴 周末休市 (非美股交易日)", {
             "is_open": False,
@@ -52,7 +148,17 @@ def is_us_market_open() -> Tuple[bool, str, Dict[str, Any]]:
             "message": "美股周末休市，系统支持在回放与测试模式下进行全功能对盘模拟"
         }
 
-    # Regular trading hours: 09:30:00 to 16:00:00
+    # 2. Official US Market Holiday check
+    is_holiday, holiday_name = is_us_stock_market_holiday(date_obj)
+    if is_holiday:
+        return False, f"🔴 美股法定节假日休市: {holiday_name}", {
+            "is_open": False,
+            "session": "HOLIDAY",
+            "et_time": f"{date_str} {time_str} {tz_abbr}",
+            "message": f"美股今日因 {holiday_name} 休市"
+        }
+
+    # 3. Regular trading hours: 09:30:00 to 16:00:00 Eastern Time
     market_open = now_et.replace(hour=9, minute=30, second=0, microsecond=0)
     market_close = now_et.replace(hour=16, minute=0, second=0, microsecond=0)
 
@@ -81,6 +187,7 @@ def is_us_market_open() -> Tuple[bool, str, Dict[str, Any]]:
 class PaperTradingEngine:
     def __init__(self, storage_path: str = PAPER_ACCOUNT_FILE):
         self.storage_path = storage_path
+        self.risk_manager = RiskManager()
         self.state = self.load_state()
 
     def get_default_state(self, initial_capital: float = 100000.0) -> Dict[str, Any]:
@@ -240,6 +347,24 @@ class PaperTradingEngine:
         positions = self.state["positions"]
 
         if action == 'BUY':
+            cur_mv = positions.get(sym, {}).get("market_value", 0.0)
+            is_ok, reason_rej, approved_shares = self.risk_manager.validate_order(
+                action='BUY',
+                shares=shares,
+                price=exec_price,
+                current_cash=account["cash"],
+                total_equity=account["total_equity"],
+                current_position_mv=cur_mv,
+                estimated_commission=commission
+            )
+            if not is_ok:
+                return {
+                    "status": "error",
+                    "message": reason_rej
+                }
+            shares = approved_shares
+            total_trade_value = round(shares * exec_price, 2)
+            commission = round(max(1.0, total_trade_value * comm_rate), 2)
             total_cost = total_trade_value + commission
             if total_cost > account["cash"]:
                 return {

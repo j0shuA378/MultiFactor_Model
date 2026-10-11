@@ -154,8 +154,14 @@ def generate_trade_prediction(
                 alpha_score_str = f"ML 上涨概率: {confidence}%"
                 forecast_return_str = f"+{round((prob_val - 0.45) * 8.0, 1)}% (ROC-AUC {meta_dict.get('roc_auc', 0.65)})"
     elif strategy_key == "turtle":
-        alpha_score_str = f"唐奇安上轨: ${bb_upper:.2f}"
-        suggested_size_str = "ATR 波动率平价仓位"
+        entry_ups = meta_dict.get("entry_upper", {})
+        if entry_ups:
+            last_up = list(entry_ups.values())[-1]
+            alpha_score_str = f"唐奇安上轨突破线: ${last_up:.2f}"
+            expected_buy = round(float(last_up), 2)
+        else:
+            alpha_score_str = f"唐奇安上轨突破线: ${last_close:.2f}"
+        suggested_size_str = "ATR(N) 风险单元头寸 (1% 风险预算)"
 
     # 6. Actionable Commentary
     ticker_name = df.attrs.get("ticker", "当前标的")

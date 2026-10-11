@@ -312,10 +312,15 @@ def api_backtest():
         signals, meta = strat_instance.generate_signals(df)
         pos_sizes = meta.get("position_sizes") if isinstance(meta, dict) else None
 
+        exec_mode = str(data.get("execution_mode", "next_open")).lower().strip()
+        if exec_mode not in ["next_open", "same_close"]:
+            exec_mode = "next_open"
+
         engine = BacktestEngine(
             initial_capital=capital,
             commission_rate=commission_rate,
             slippage_rate=slippage_rate,
+            execution_mode=exec_mode,
             stop_loss_pct=stop_loss_pct,
             take_profit_pct=take_profit_pct
         )

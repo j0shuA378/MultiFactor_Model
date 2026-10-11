@@ -35,11 +35,11 @@ def print_banner():
 """
     print(format_color(banner, "1;36"))
 
-def run_single_strategy(strat_class, df, capital, name):
+def run_single_strategy(strat_class, df, capital, name, execution_mode="next_open"):
     strat = strat_class()
     signals, meta = strat.generate_signals(df)
     pos_sizes = meta.get("position_sizes") if isinstance(meta, dict) else None
-    engine = BacktestEngine(initial_capital=capital)
+    engine = BacktestEngine(initial_capital=capital, execution_mode=execution_mode)
     result = engine.run(df, signals, position_sizes=pos_sizes)
     result['strategy_name'] = name
     result['meta'] = meta
@@ -132,13 +132,14 @@ def main():
     parser.add_argument("--ticker", type=str, default="NVDA", help="股票代码 (如 AAPL, NVDA, TSLA, SPY)")
     parser.add_argument("--strategy", type=str, choices=["momentum", "ml", "turtle", "all"], default="all", help="交易模型策略")
     parser.add_argument("--period", type=str, choices=["6mo", "1y", "2y", "3y", "5y"], default="2y", help="回测时间跨度")
+    parser.add_argument("--execution-mode", type=str, choices=["next_open", "same_close"], default="next_open", help="撮合成交模式: next_open (次日开盘实盘时序, 杜绝未来函数) 或 same_close")
     parser.add_argument("--capital", type=float, default=100000.0, help="初始回测资金 (美元)")
     parser.add_argument("--export", type=str, default=None, help="导出回测结果 JSON 文件路径")
 
     args = parser.parse_args()
 
     print_banner()
-    print(f"[*] 标的代码: {format_color(args.ticker.upper(), '1;32')} | 跨度: {args.period} | 初始资金: ${args.capital:,.2f}")
+    print(f"[*] 标的代码: {format_color(args.ticker.upper(), '1;32')} | 跨度: {args.period} | 成交模式: {args.execution_mode} | 初始资金: ${args.capital:,.2f}")
     print("[*] 正在拉取历史行情数据与计算技术指标...")
 
     df = fetch_stock_data(args.ticker, args.period)
@@ -156,7 +157,7 @@ def main():
 
     for strat_cls, name in strategies_to_run:
         print(f"\n[*] 正在运行策略模型: {format_color(name, '1;36')} ...")
-        res = run_single_strategy(strat_cls, df, args.capital, name)
+        res = run_single_strategy(strat_cls, df, args.capital, name, execution_mode=args.execution_mode)
         results.append(res)
         print_metrics_table(res['metrics'], name)
 
