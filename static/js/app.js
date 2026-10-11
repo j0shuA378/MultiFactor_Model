@@ -250,10 +250,17 @@ const FALLBACK_AUTOCOMPLETE_STOCKS = [
   { symbol: "GS", name: "Goldman Sachs Group, Inc. (高盛)", exchange: "NYSE", price: 512.30, change_pct: 1.15, type: "Equity" },
   { symbol: "MS", name: "Morgan Stanley (大摩)", exchange: "NYSE", price: 118.40, change_pct: 0.82, type: "Equity" },
   { symbol: "JPM", name: "JPMorgan Chase & Co. (小摩)", exchange: "NYSE", price: 222.50, change_pct: 0.65, type: "Equity" },
-  { symbol: "PLTR", name: "Palantir Technologies (大数据与AI)", exchange: "NYSE", price: 209.05, change_pct: 3.45, type: "Equity" }
+  { symbol: "PLTR", name: "Palantir Technologies (大数据与AI)", exchange: "NYSE", price: 209.05, change_pct: 3.45, type: "Equity" },
+  { symbol: "IAUM", name: "iShares Gold Trust Micro (黄金ETF)", exchange: "PCX", price: 41.81, change_pct: 1.28, type: "ETF" },
+  { symbol: "BITO", name: "ProShares Bitcoin Strategy ETF", exchange: "NYSEArca", price: 21.45, change_pct: 0.70, type: "ETF" },
+  { symbol: "SOXL", name: "Direxion Daily Semiconductor Bull 3X", exchange: "NYSEArca", price: 34.20, change_pct: 0.74, type: "ETF" }
 ];
 
 const COMPANY_ALIAS_CLIENT_MAP = {
+  // Global ETFs & Special Symbols
+  "iaum": "IAUM",
+  "bito": "BITO",
+  "soxl": "SOXL",
   // A-Share Benchmark & Index ETFs
   "沪深300": "510300.SS",
   "沪深300etf": "510300.SS",
@@ -561,6 +568,10 @@ function setupSearchAutocomplete() {
     if (!item || !item.symbol) return;
     const targetSymbol = sanitizeTickerClient(item.symbol);
     searchInput.value = targetSymbol;
+    state.currentTickerMeta = item;
+    if (item.name) {
+      COMPANY_NAME_MAP[targetSymbol] = item.name;
+    }
     closeDropdown();
     state.ticker = targetSymbol;
     if (typeof addTickerToActiveGroup === 'function') {
@@ -569,7 +580,7 @@ function setupSearchAutocomplete() {
       updateTickerDisplay();
       if (typeof runAnalysis === 'function') runAnalysis();
     }
-    showStatus(`已切换分析标的: ${targetSymbol} (${COMPANY_NAME_MAP[targetSymbol] || item.name || targetSymbol})`);
+    showStatus(`已切换分析标的: ${targetSymbol} (${item.name || COMPANY_NAME_MAP[targetSymbol] || targetSymbol})`);
   };
 
   const executeSearch = () => {
@@ -577,6 +588,13 @@ function setupSearchAutocomplete() {
     if (!rawVal) {
       showCandidatesDropdown();
       return;
+    }
+    if (currentSuggestions.length > 0) {
+      const topMatch = currentSuggestions.find(s => s.symbol.toUpperCase() === rawVal.toUpperCase()) || currentSuggestions[0];
+      if (topMatch && (topMatch.symbol.toUpperCase() === rawVal.toUpperCase() || currentSuggestions.length === 1)) {
+        selectSuggestion(topMatch);
+        return;
+      }
     }
     const targetSymbol = sanitizeTickerClient(rawVal);
     searchInput.value = targetSymbol;
@@ -591,6 +609,21 @@ function setupSearchAutocomplete() {
     showStatus(`已切换分析标的: ${targetSymbol} (${COMPANY_NAME_MAP[targetSymbol] || targetSymbol})`);
   };
 
+  const renderLoadingState = (query) => {
+    if (!dropdown) return;
+    dropdown.innerHTML = `
+      <div class="suggestion-header">
+        <span class="suggestion-header-title">Symbols</span>
+        <span class="suggestion-header-link">Yahoo Finance</span>
+      </div>
+      <div class="suggestion-loading">
+        <div class="suggestion-spinner"></div>
+        <span>正在检索 Yahoo Finance 实时标的: ${query}...</span>
+      </div>
+    `;
+    dropdown.classList.remove('hidden');
+  };
+
   const renderSuggestions = (items, query, isCandidatesPool = false) => {
     if (!dropdown) return;
     dropdown.innerHTML = '';
@@ -598,57 +631,43 @@ function setupSearchAutocomplete() {
     selectedIndex = -1;
 
     if (!items || items.length === 0) {
-      dropdown.innerHTML = `<div class="suggestion-empty">未匹配到 "${query}" 相关的金融标的，直接按回车可尝试自动推断代码</div>`;
+      dropdown.innerHTML = `
+        <div class="suggestion-header">
+          <span class="suggestion-header-title">Symbols</span>
+          <a href="https://finance.yahoo.com/screener" target="_blank" class="suggestion-header-link" onclick="event.stopPropagation()">Screener for stocks & more</a>
+        </div>
+        <div class="suggestion-empty">未匹配到 "${query}" 相关的金融标的，按回车可尝试自动推断代码</div>
+      `;
       dropdown.classList.remove('hidden');
       return;
     }
 
     const header = document.createElement('div');
     header.className = 'suggestion-header';
-    if (isCandidatesPool) {
-      header.innerHTML = `
-        <span>🔥 热门备选标的推荐 (点击直接切换)</span>
-        <span class="suggestion-source-tag">Candidate Pool</span>
-      `;
-    } else {
-      header.innerHTML = `
-        <span>金融标的候选列表 (共 ${items.length} 项)</span>
-        <span class="suggestion-source-tag">Live Quotes</span>
-      `;
-    }
+    header.innerHTML = `
+      <span class="suggestion-header-title">Symbols</span>
+      <a href="https://finance.yahoo.com/screener" target="_blank" class="suggestion-header-link" onclick="event.stopPropagation()">Screener for stocks & more</a>
+    `;
     dropdown.appendChild(header);
 
-    items.slice(0, 6).forEach((item, idx) => {
+    items.slice(0, 8).forEach((item, idx) => {
       const el = document.createElement('div');
       el.className = 'suggestion-item';
       el.dataset.idx = idx;
 
       const symUpper = String(item.symbol || '').toUpperCase();
-      const currSign = (symUpper.endsWith('.SS') || symUpper.endsWith('.SZ') || symUpper.endsWith('.BJ')) ? '¥' : (symUpper.endsWith('.HK') ? 'HK$' : '$');
-      const priceStr = item.price !== null && item.price !== undefined ? `${currSign}${Number(item.price).toFixed(2)}` : '--';
-      let chgHtml = '<span class="suggestion-chg-pill flat">--</span>';
-      if (item.change_pct !== null && item.change_pct !== undefined) {
-        const val = Number(item.change_pct);
-        if (val > 0) {
-          chgHtml = `<span class="suggestion-chg-pill pos">+${val.toFixed(2)}%</span>`;
-        } else if (val < 0) {
-          chgHtml = `<span class="suggestion-chg-pill neg">${val.toFixed(2)}%</span>`;
-        } else {
-          chgHtml = `<span class="suggestion-chg-pill flat">0.00%</span>`;
-        }
-      }
+      const typeStr = item.type || (symUpper.includes('ETF') ? 'ETF' : 'Equity');
+      const exchStr = item.exchange || 'US';
+      const nameStr = item.name || symUpper;
 
       el.innerHTML = `
-        <div class="suggestion-left">
-          <span class="suggestion-symbol-badge">${item.symbol}</span>
-          <div class="suggestion-info">
-            <span class="suggestion-name" title="${item.name}">${item.name}</span>
-            <span class="suggestion-meta">${item.exchange || 'MARKET'} · ${item.type || 'Stock'}</span>
-          </div>
+        <div class="suggestion-row-top">
+          <span class="suggestion-symbol">${item.symbol}</span>
+          <span class="suggestion-type">${typeStr}</span>
         </div>
-        <div class="suggestion-right">
-          <span class="suggestion-price">${priceStr}</span>
-          ${chgHtml}
+        <div class="suggestion-row-bottom">
+          <span class="suggestion-name" title="${nameStr}">${nameStr}</span>
+          <span class="suggestion-exchange">${exchStr}</span>
         </div>
       `;
 
@@ -686,7 +705,7 @@ function setupSearchAutocomplete() {
     showCandidatesDropdown();
   });
 
-  // Input event with instant local response (<1ms) and resilient background remote merge
+  // Input event with instant local response and resilient Yahoo Finance merge
   searchInput.addEventListener('input', () => {
     clearTimeout(searchDebounceTimer);
     if (activeSearchAbort) {
@@ -701,16 +720,20 @@ function setupSearchAutocomplete() {
       return;
     }
 
-    // Step 1: Immediate local response (<1ms)
+    // Step 1: Immediate local response if matches exist, else show loading state
     const localMatches = getLocalMatchingSuggestions(q);
-    renderSuggestions(localMatches, q, false);
+    if (localMatches && localMatches.length > 0) {
+      renderSuggestions(localMatches, q, false);
+    } else {
+      renderLoadingState(q);
+    }
 
-    // Step 2: Background remote search with strict 800ms timeout
+    // Step 2: Background remote search with 3500ms timeout
     searchDebounceTimer = setTimeout(async () => {
       activeSearchAbort = new AbortController();
       const timeoutId = setTimeout(() => {
         if (activeSearchAbort) activeSearchAbort.abort();
-      }, 800);
+      }, 3500);
 
       try {
         const cleanQ = q.replace(/['’]/g, '').trim();
@@ -725,13 +748,17 @@ function setupSearchAutocomplete() {
                 merged.push(enrichCandidateQuote(item));
               }
             });
-            renderSuggestions(merged.slice(0, 6), q, false);
+            renderSuggestions(merged.slice(0, 8), q, false);
+          } else if (!localMatches || localMatches.length === 0) {
+            renderSuggestions([], q, false);
           }
         }
       } catch (err) {
-        // Silently ignore remote errors; local matching is already active and displayed
+        if ((!localMatches || localMatches.length === 0) && (!err || err.name !== 'AbortError')) {
+          renderSuggestions([], q, false);
+        }
       }
-    }, 180);
+    }, 150);
   });
 
   // Keyboard navigation
@@ -1334,11 +1361,18 @@ const COMPANY_NAME_MAP = {
   "XOM": "Exxon Mobil Corp. (埃克森美孚)",
   "JPM": "JPMorgan Chase & Co. (摩根大通)",
   "BAC": "Bank of America (美国银行)",
-  "BRK-B": "Berkshire Hathaway (伯克希尔哈撒韦)"
+  "BRK-B": "Berkshire Hathaway (伯克希尔哈撒韦)",
+  "IAUM": "iShares Gold Trust Micro (黄金微型ETF)",
+  "BITO": "ProShares Bitcoin Strategy ETF",
+  "SOXL": "Direxion Daily Semiconductor Bull 3X"
 };
 
 // Accurate Real Market Baseline Prices (Directly synced from finance.yahoo.com)
 const ACCURATE_LIVE_MARKET_PRICES = {
+  // Global ETFs & Special Symbols
+  "IAUM": { price: 41.81, open: 41.73, high: 41.87, low: 41.66, prev: 41.28, vol: 1495000, name: "iShares Gold Trust Micro Shares (IAUM)", market: "PCX · USD · ETF" },
+  "BITO": { price: 21.45, open: 21.20, high: 21.80, low: 21.15, prev: 21.30, vol: 18500000, name: "ProShares Bitcoin Strategy ETF", market: "NYSEArca · USD · ETF" },
+  "SOXL": { price: 34.20, open: 33.80, high: 34.90, low: 33.50, prev: 33.95, vol: 45000000, name: "Direxion Daily Semiconductor Bull 3X", market: "NYSEArca · USD · ETF" },
   // A-Share Baseline (CNY)
   "510300.SS": { price: 4.39, open: 4.37, high: 4.40, low: 4.31, prev: 4.38, vol: 1276733000, name: "华泰柏瑞沪深300 ETF", market: "SSE · CNY" },
   "510050.SS": { price: 3.12, open: 3.10, high: 3.14, low: 3.09, prev: 3.12, vol: 642100000, name: "华夏上证50 ETF", market: "SSE · CNY" },
@@ -1647,7 +1681,7 @@ function renderBrokerageQuoteBanner(stockData) {
   const prevBar = candles.length > 1 ? candles[candles.length - 2] : lastBar;
 
   const symbol = stockData.ticker || state.ticker;
-  const companyName = COMPANY_NAME_MAP[symbol] || stockData.name || `${symbol} Common Stock`;
+  const companyName = stockData.name || state.currentTickerMeta?.name || COMPANY_NAME_MAP[symbol] || (stockData.type === 'ETF' ? `${symbol} ETF` : `${symbol}`);
   const latestPrice = (typeof stockData.latest_price === 'number' && stockData.latest_price > 0) ? stockData.latest_price : lastBar.close;
   const prevClose = prevBar.close;
   const changeVal = latestPrice - prevClose;
@@ -1660,6 +1694,15 @@ function renderBrokerageQuoteBanner(stockData) {
   if (symEl) symEl.textContent = symbol;
   const nameEl = document.getElementById('bqu-name');
   if (nameEl) nameEl.textContent = companyName;
+
+  // Market & Exchange & Type
+  const marketEl = document.getElementById('bqu-market');
+  if (marketEl) {
+    const exch = stockData.exchange || state.currentTickerMeta?.exchange || (symbol.endsWith('.SS') ? 'SSE' : (symbol.endsWith('.SZ') ? 'SZSE' : (symbol.endsWith('.HK') ? 'HKEX' : 'US')));
+    const curr = stockData.currency || state.currentTickerMeta?.currency || ((symbol.endsWith('.SS') || symbol.endsWith('.SZ')) ? 'CNY' : (symbol.endsWith('.HK') ? 'HKD' : 'USD'));
+    const typeStr = (stockData.type || state.currentTickerMeta?.type) ? ` · ${stockData.type || state.currentTickerMeta.type}` : '';
+    marketEl.textContent = `${exch} · ${curr}${typeStr}`;
+  }
 
   // Price & Change
   const currSign = (symbol.endsWith('.SS') || symbol.endsWith('.SZ') || symbol.endsWith('.BJ')) ? '¥' : (symbol.endsWith('.HK') ? 'HK$' : '$');
@@ -2863,7 +2906,25 @@ function showStatus(msg, isError = false) {
 // Client-Side Simulation Engine for GitHub Pages Live Demo
 function generateClientStockData(ticker, period) {
   const meta = ACCURATE_LIVE_MARKET_PRICES[ticker] || {
-    price: 150.00, open: 148.50, high: 152.00, low: 147.80, prev: 149.20, vol: 25000000
+    price: (state.currentTickerMeta?.price && Number(state.currentTickerMeta.price) > 0)
+      ? Number(state.currentTickerMeta.price)
+      : (ticker === 'IAUM' ? 41.81 : 150.00),
+    open: (state.currentTickerMeta?.price && Number(state.currentTickerMeta.price) > 0)
+      ? Number(state.currentTickerMeta.price) * 0.998
+      : (ticker === 'IAUM' ? 41.73 : 148.50),
+    high: (state.currentTickerMeta?.price && Number(state.currentTickerMeta.price) > 0)
+      ? Number(state.currentTickerMeta.price) * 1.008
+      : (ticker === 'IAUM' ? 41.87 : 152.00),
+    low: (state.currentTickerMeta?.price && Number(state.currentTickerMeta.price) > 0)
+      ? Number(state.currentTickerMeta.price) * 0.992
+      : (ticker === 'IAUM' ? 41.66 : 147.80),
+    prev: (state.currentTickerMeta?.price && Number(state.currentTickerMeta.price) > 0)
+      ? Number(state.currentTickerMeta.price) * 0.995
+      : (ticker === 'IAUM' ? 41.28 : 149.20),
+    vol: ticker === 'IAUM' ? 1495000 : 25000000,
+    name: state.currentTickerMeta?.name || COMPANY_NAME_MAP[ticker],
+    exchange: state.currentTickerMeta?.exchange,
+    type: state.currentTickerMeta?.type
   };
   const targetPrice = meta.price;
   const daysMap = { '6mo': 126, '1y': 252, '2y': 504, '3y': 756, '5y': 1260 };
@@ -2926,6 +2987,9 @@ function generateClientStockData(ticker, period) {
   return {
     status: 'success',
     ticker, period, total_bars: candles.length,
+    name: meta.name || state.currentTickerMeta?.name || COMPANY_NAME_MAP[ticker] || ticker,
+    exchange: meta.exchange || state.currentTickerMeta?.exchange || '',
+    type: meta.type || state.currentTickerMeta?.type || 'Stock',
     latest_price: targetPrice,
     change_pct: Math.round(changePct * 100) / 100,
     candles

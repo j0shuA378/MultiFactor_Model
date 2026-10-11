@@ -9,7 +9,7 @@ from flask_cors import CORS
 # Add workspace directory to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from core.data_loader import fetch_stock_data, fetch_realtime_quote, get_preset_tickers, search_yahoo_tickers, sanitize_ticker
+from core.data_loader import fetch_stock_data, fetch_realtime_quote, get_preset_tickers, search_yahoo_tickers, sanitize_ticker, get_ticker_metadata
 from core.config_manager import load_config, save_config, apply_preset, reset_to_defaults, INSTITUTIONAL_PRESETS
 from core.indicators import add_all_indicators
 from core.backtest_engine import BacktestEngine
@@ -199,10 +199,15 @@ def api_stock_history():
         change_pct = round(((latest_price - prev_price) / prev_price) * 100.0, 2) if prev_price > 0 else 0.0
 
         is_open, status_text, detail = is_us_market_open()
+        meta = get_ticker_metadata(ticker)
 
         return jsonify({
             "status": "success",
             "ticker": ticker,
+            "name": meta.get("name"),
+            "exchange": meta.get("exchange"),
+            "type": meta.get("type"),
+            "currency": meta.get("currency"),
             "period": period,
             "total_bars": len(candles),
             "latest_price": latest_price,

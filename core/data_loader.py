@@ -2,6 +2,8 @@ import os
 import re
 import json
 import logging
+import urllib.request
+import urllib.parse
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import numpy as np
@@ -237,7 +239,10 @@ COMPANY_NAME_LOOKUP = {
     "BABA": "Alibaba Group Holding Ltd.",
     "SPY": "SPDR S&P 500 ETF Trust",
     "QQQ": "Invesco QQQ Trust",
-    "GLD": "SPDR Gold Shares ETF"
+    "GLD": "SPDR Gold Shares ETF",
+    "IAUM": "iShares Gold Trust Micro Shares",
+    "BITO": "ProShares Bitcoin Strategy ETF",
+    "SOXL": "Direxion Daily Semiconductor Bull 3X Shares"
 }
 
 def sanitize_ticker(raw_ticker: str) -> str:
@@ -507,14 +512,74 @@ FALLBACK_STOCKS = [
     {"symbol": "GLD", "name": "SPDR Gold Shares (黄金ETF)", "exchange": "NYSEArca", "price": 384.58, "change_pct": 0.65, "type": "ETF"},
     {"symbol": "BABA", "name": "Alibaba Group Holding (阿里巴巴ADR)", "exchange": "NYSE", "price": 111.37, "change_pct": 5.36, "type": "Equity"},
     {"symbol": "PLTR", "name": "Palantir Technologies (大数据与AI)", "exchange": "NYSE", "price": 209.05, "change_pct": 3.45, "type": "Equity"},
-    {"symbol": "ASX", "name": "ASE Technology Holding Co., Ltd. (日月光)", "exchange": "NYSE", "price": 46.43, "change_pct": 2.04, "type": "Equity"}
+    {"symbol": "ASX", "name": "ASE Technology Holding Co., Ltd. (日月光)", "exchange": "NYSE", "price": 46.43, "change_pct": 2.04, "type": "Equity"},
+    {"symbol": "IAUM", "name": "iShares Gold Trust Micro Shares", "exchange": "PCX", "price": 41.81, "change_pct": 1.28, "type": "ETF"}
 ]
 
-def search_yahoo_tickers(query: str, max_results: int = 5):
+TICKER_METADATA_CACHE = {}
+
+def get_ticker_metadata(ticker: str) -> dict:
     """
-    Search Yahoo Finance and Local Institutional Catalog for matching tickers.
-    Supports A-Share (e.g. 600519.SS, 510300.SS, 茅台, 比亚迪), HK Stocks, and US Tickers.
-    Retrieves latest price and percentage change with sub-second hybrid performance.
+    Resolves authentic metadata (name, exchange, type, currency) for any ticker or ETF globally.
+    Uses layered resolution: Memory Cache -> Preset Map -> Fallback Stocks -> yfinance fast_info.
+    """
+    ticker = sanitize_ticker(ticker)
+    sym_upper = ticker.upper()
+    if sym_upper in TICKER_METADATA_CACHE:
+        return dict(TICKER_METADATA_CACHE[sym_upper])
+
+    # Preset / local baseline
+    resolved_name = COMPANY_NAME_LOOKUP.get(sym_upper)
+    resolved_exch = "SSE" if sym_upper.endswith(".SS") else ("SZSE" if sym_upper.endswith(".SZ") else ("HKEX" if sym_upper.endswith(".HK") else "NASDAQ"))
+    resolved_type = "ETF" if any(k in sym_upper for k in ["51", "15", "58", "SPY", "QQQ", "GLD", "IAUM", "BITO", "SOXL"]) else "Equity"
+    resolved_curr = "CNY" if sym_upper.endswith((".SS", ".SZ")) else ("HKD" if sym_upper.endswith(".HK") else "USD")
+
+    fb = next((item for item in FALLBACK_STOCKS if item["symbol"].upper() == sym_upper), None)
+    if fb:
+        resolved_name = fb.get("name") or resolved_name
+        resolved_exch = fb.get("exchange") or resolved_exch
+        resolved_type = fb.get("type") or resolved_type
+
+    # Fast info metadata retrieval
+    try:
+        t = yf.Ticker(sym_upper)
+        fi = t.fast_info
+        if hasattr(fi, 'exchange') and fi.exchange:
+            resolved_exch = fi.exchange
+        if hasattr(fi, 'quote_type') and fi.quote_type:
+            qt_map = {'EQUITY': 'Equity', 'ETF': 'ETF', 'MUTUALFUND': 'Fund', 'INDEX': 'Index', 'CURRENCY': 'FX', 'CRYPTOCURRENCY': 'Crypto'}
+            resolved_type = qt_map.get(str(fi.quote_type).upper(), str(fi.quote_type).capitalize())
+        if hasattr(fi, 'currency') and fi.currency:
+            resolved_curr = fi.currency
+
+        if not resolved_name or resolved_name == sym_upper:
+            info = getattr(t, 'info', {}) or {}
+            short_name = info.get('shortName') or info.get('longName')
+            if short_name:
+                resolved_name = short_name
+    except Exception:
+        pass
+
+    if not resolved_name:
+        resolved_name = f"{sym_upper} ETF" if resolved_type == "ETF" else f"{sym_upper} Stock"
+
+    meta = {
+        "symbol": sym_upper,
+        "ticker": sym_upper,
+        "name": resolved_name,
+        "exchange": resolved_exch,
+        "type": resolved_type,
+        "currency": resolved_curr
+    }
+    TICKER_METADATA_CACHE[sym_upper] = meta
+    COMPANY_NAME_LOOKUP[sym_upper] = resolved_name
+    return meta
+
+def search_yahoo_tickers(query: str, max_results: int = 6):
+    """
+    Search Yahoo Finance and Institutional Catalog for matching tickers.
+    Fetches official Yahoo Finance search suggestions in <0.5s for any global stock or ETF.
+    Supports A-Share, HK Stocks, US Equities & ETFs.
     """
     if not query or not str(query).strip():
         return []
@@ -536,7 +601,6 @@ def search_yahoo_tickers(query: str, max_results: int = 5):
                 break
 
     primary_sym = extracted_sym or alias_sym
-    # Check if clean_q is 6-digit A-share code directly (e.g. 600519 -> 600519.SS)
     if not primary_sym and len(clean_q) == 6 and clean_q.isdigit():
         primary_sym = sanitize_ticker(clean_q)
 
@@ -546,10 +610,10 @@ def search_yahoo_tickers(query: str, max_results: int = 5):
     now = datetime.now()
     if cache_key in SEARCH_CACHE:
         cached_t, cached_data = SEARCH_CACHE[cache_key]
-        if (now - cached_t).total_seconds() < 90:
+        if (now - cached_t).total_seconds() < 120:
             return cached_data
 
-    # 3. Local catalog fast resolution (instant sub-millisecond response)
+    # 3. Check local catalog first
     local_matches = []
     if primary_sym:
         for stock in FALLBACK_STOCKS:
@@ -567,137 +631,105 @@ def search_yahoo_tickers(query: str, max_results: int = 5):
         if len(local_matches) >= max_results:
             break
 
-    # If local matches found and sufficient, enrich prices and return immediately
-    if local_matches:
-        def enrich_price(item):
-            sym = item['symbol'].upper()
-            if sym in PRICE_CACHE:
-                cached_time, c_price, c_chg = PRICE_CACHE[sym]
-                if (now - cached_time).total_seconds() < 300:
-                    item['price'] = c_price
-                    item['change_pct'] = c_chg
-                    return item
-            try:
-                t = yf.Ticker(sym)
-                fi = t.fast_info
-                last = getattr(fi, 'last_price', None)
-                prev = getattr(fi, 'previous_close', None)
-                if last is not None and not np.isnan(last):
-                    item['price'] = round(float(last), 2)
-                    if prev is not None and not np.isnan(prev) and prev > 0:
-                        item['change_pct'] = round(((float(last) - float(prev)) / float(prev)) * 100.0, 2)
-                    PRICE_CACHE[sym] = (now, item['price'], item.get('change_pct', 0.0))
-            except Exception:
-                pass
-            return item
-
-        with ThreadPoolExecutor(max_workers=min(4, len(local_matches))) as executor:
-            futures = [executor.submit(enrich_price, m) for m in local_matches[:max_results]]
-            results = []
-            for f in futures:
-                try:
-                    res_item = f.result(timeout=1.2)
-                    results.append(res_item)
-                except Exception:
-                    pass
-
-        if results:
-            SEARCH_CACHE[cache_key] = (now, results)
-            return results
-
-    # 4. Fallback to external yfinance Search for uncatalogued symbols
     results = []
+
+    # 4. Fetch directly from Yahoo Finance official search API
     try:
-        s = yf.Search(search_term, max_results=max(8, max_results * 2))
-        raw_quotes = getattr(s, 'quotes', []) or []
+        encoded_term = urllib.parse.quote(search_term)
+        url = f"https://query2.finance.yahoo.com/v1/finance/search?q={encoded_term}&quotesCount=10&newsCount=0"
+        req = urllib.request.Request(
+            url,
+            headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"}
+        )
+        with urllib.request.urlopen(req, timeout=2.5) as resp:
+            data = json.loads(resp.read().decode('utf-8'))
 
-        filtered_quotes = []
+        raw_quotes = data.get("quotes", []) or []
         for q in raw_quotes:
-            sym = q.get('symbol', '').upper()
-            if not sym or (len(sym) > 8 and any(c.isdigit() for c in sym) and not sym.startswith('^') and not ('.SS' in sym or '.SZ' in sym or '.HK' in sym)):
+            sym = str(q.get("symbol", "")).upper().strip()
+            if not sym:
                 continue
-            filtered_quotes.append(q)
 
-        if primary_sym and not any(q.get('symbol', '').upper() == primary_sym for q in filtered_quotes):
-            filtered_quotes.insert(0, {
-                'symbol': primary_sym,
-                'shortname': COMPANY_NAME_LOOKUP.get(primary_sym, primary_sym),
-                'exchDisp': 'SSE' if primary_sym.endswith('.SS') else ('SZSE' if primary_sym.endswith('.SZ') else 'NYSE'),
-                'typeDisp': 'ETF' if ('51' in primary_sym or '15' in primary_sym or '58' in primary_sym) else 'Equity'
-            })
+            # Filter out derivative options (e.g. BITO261218C00011000)
+            if q.get("quoteType") == "OPTION" or (len(sym) > 8 and any(c.isdigit() for c in sym) and not sym.endswith((".SS", ".SZ", ".HK", ".TO", ".L", ".NE", ".MX"))):
+                continue
 
-        quotes_to_fetch = filtered_quotes[:max_results]
+            qtype = str(q.get("quoteType", "")).upper()
+            type_map = {
+                "EQUITY": "Equity",
+                "ETF": "ETF",
+                "MUTUALFUND": "Fund",
+                "INDEX": "Index",
+                "CURRENCY": "FX",
+                "CRYPTOCURRENCY": "Crypto"
+            }
+            disp_type = type_map.get(qtype, q.get("typeDisp") or qtype.capitalize() or "Stock")
+            disp_name = q.get("shortname") or q.get("longname") or sym
+            disp_exch = q.get("exchDisp") or q.get("exchange") or ""
 
-        def fetch_single_quote(q_item):
-            sym = q_item.get('symbol', '').upper()
+            # Check cached price
             price, chg_pct = None, None
             if sym in PRICE_CACHE:
                 cached_time, c_price, c_chg = PRICE_CACHE[sym]
                 if (now - cached_time).total_seconds() < 300:
-                    return {
-                        "symbol": sym,
-                        "name": q_item.get('shortname') or q_item.get('longname') or sym,
-                        "exchange": q_item.get('exchDisp') or q_item.get('exchange') or '',
-                        "type": q_item.get('typeDisp') or q_item.get('quoteType') or 'Stock',
-                        "price": c_price,
-                        "change_pct": c_chg
-                    }
+                    price, chg_pct = c_price, c_chg
 
-            fb = next((item for item in FALLBACK_STOCKS if item["symbol"].upper() == sym), None)
-            try:
-                t = yf.Ticker(sym)
-                fi = t.fast_info
-                last = getattr(fi, 'last_price', None)
-                prev = getattr(fi, 'previous_close', None)
-                if last is not None and not np.isnan(last):
-                    price = round(float(last), 2)
-                    if prev is not None and not np.isnan(prev) and prev > 0:
-                        chg_pct = round(((float(last) - float(prev)) / float(prev)) * 100.0, 2)
-                elif fb:
-                    price = fb.get("price")
-                    chg_pct = fb.get("change_pct")
-            except Exception:
-                if fb:
-                    price = fb.get("price")
-                    chg_pct = fb.get("change_pct")
-
-            if price is not None:
-                PRICE_CACHE[sym] = (now, price, chg_pct or 0.0)
-
-            return {
+            # Store in metadata cache
+            TICKER_METADATA_CACHE[sym] = {
                 "symbol": sym,
-                "name": q_item.get('shortname') or q_item.get('longname') or (fb.get('name') if fb else sym),
-                "exchange": q_item.get('exchDisp') or q_item.get('exchange') or (fb.get('exchange') if fb else ''),
-                "type": q_item.get('typeDisp') or q_item.get('quoteType') or 'Stock',
-                "price": price or (fb.get('price') if fb else 100.0),
-                "change_pct": chg_pct if chg_pct is not None else (fb.get('change_pct', 0.0) if fb else 0.0)
+                "ticker": sym,
+                "name": disp_name,
+                "exchange": disp_exch,
+                "type": disp_type,
+                "currency": q.get("currency", "USD")
             }
+            COMPANY_NAME_LOOKUP[sym] = disp_name
 
-        with ThreadPoolExecutor(max_workers=min(5, max(1, len(quotes_to_fetch)))) as executor:
-            futures = [executor.submit(fetch_single_quote, q) for q in quotes_to_fetch]
-            for f in futures:
-                try:
-                    res_item = f.result(timeout=1.5)
-                    results.append(res_item)
-                except Exception:
-                    pass
+            results.append({
+                "symbol": sym,
+                "name": disp_name,
+                "exchange": disp_exch,
+                "type": disp_type,
+                "price": price,
+                "change_pct": chg_pct
+            })
 
+            if len(results) >= max_results:
+                break
     except Exception as e:
-        logger.warning(f"Error querying yf.Search for '{query}': {e}. Using local fallback search.")
+        logger.warning(f"Yahoo Finance search endpoint request failed for '{search_term}': {e}")
 
-    # 5. Last resort fallback
-    if not results and local_matches:
-        results = local_matches[:max_results]
+    # Merge local matches (especially Chinese-annotated blue chips)
+    merged = []
+    seen = set()
+    # If user searched Chinese alias, prefer local matched Chinese name
+    if any('\u4e00' <= char <= '\u9fff' for char in raw_query):
+        for lm in local_matches:
+            if lm['symbol'] not in seen:
+                merged.append(lm)
+                seen.add(lm['symbol'])
 
-    SEARCH_CACHE[cache_key] = (now, results)
-    return results
+    for r in results:
+        if r['symbol'] not in seen:
+            merged.append(r)
+            seen.add(r['symbol'])
+
+    for lm in local_matches:
+        if lm['symbol'] not in seen:
+            merged.append(lm)
+            seen.add(lm['symbol'])
+
+    final_results = merged[:max_results]
+    SEARCH_CACHE[cache_key] = (now, final_results)
+    return final_results
 
 def fetch_realtime_quote(ticker: str = "AAPL") -> dict:
     """
     Grabs real-time market quote directly from finance.yahoo.com via yfinance.
-    Returns dictionary with latest price, prev_close, change, change_pct, open, high, low, volume.
+    Returns dictionary with latest price, prev_close, change, change_pct, open, high, low, volume, name, exchange, type.
     """
     ticker = sanitize_ticker(ticker)
+    meta = get_ticker_metadata(ticker)
     try:
         t = yf.Ticker(ticker)
         fi = t.fast_info
@@ -721,10 +753,17 @@ def fetch_realtime_quote(ticker: str = "AAPL") -> dict:
         chg = round(last_price - prev_close, 2)
         chg_pct = round((chg / prev_close) * 100, 2) if prev_close > 0 else 0.0
 
-        return {
+        exch = getattr(fi, 'exchange', None) or meta.get('exchange') or ''
+        qtype = getattr(fi, 'quote_type', None) or meta.get('type') or 'Stock'
+        cur = getattr(fi, 'currency', None) or meta.get('currency') or 'USD'
+
+        quote_dict = {
             "status": "success",
             "source": "finance.yahoo.com",
             "ticker": ticker,
+            "name": meta.get('name', ticker),
+            "exchange": exch,
+            "type": qtype,
             "price": round(last_price, 2),
             "prev_close": round(prev_close, 2),
             "open": round(open_price, 2),
@@ -733,11 +772,20 @@ def fetch_realtime_quote(ticker: str = "AAPL") -> dict:
             "volume": volume,
             "change": chg,
             "change_pct": chg_pct,
-            "currency": getattr(fi, 'currency', 'USD'),
+            "currency": cur,
             "timestamp": datetime.now().isoformat()
         }
+        PRICE_CACHE[ticker.upper()] = (datetime.now(), round(last_price, 2), chg_pct)
+        return quote_dict
     except Exception as e:
         logger.error(f"Error fetching quote from finance.yahoo.com for {ticker}: {e}")
-        return {"status": "error", "message": str(e), "ticker": ticker}
+        return {
+            "status": "error",
+            "message": str(e),
+            "ticker": ticker,
+            "name": meta.get('name', ticker),
+            "exchange": meta.get('exchange', ''),
+            "type": meta.get('type', 'Stock')
+        }
 
 

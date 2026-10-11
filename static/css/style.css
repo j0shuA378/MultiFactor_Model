@@ -392,18 +392,18 @@ body {
   color: #ffffff;
 }
 
-/* Institutional Search Suggestions Dropdown */
+/* Institutional Search Suggestions Dropdown (Yahoo Finance Exact Style) */
 .search-suggestions-dropdown {
   position: absolute;
   top: calc(100% + 6px);
   right: 0;
-  width: 390px;
-  max-width: 90vw;
-  background: #ffffff;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-dropdown);
-  padding: 6px;
+  width: 440px;
+  max-width: 95vw;
+  background: #111622;
+  border: 1px solid #232c3d;
+  border-radius: 8px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+  padding: 6px 4px 8px 4px;
   z-index: 1000;
   display: flex;
   flex-direction: column;
@@ -423,142 +423,121 @@ body {
 }
 
 .suggestion-header {
-  padding: 6px 10px 4px 10px;
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--text-muted);
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
+  padding: 8px 12px 6px 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   margin-bottom: 4px;
-  background: #f8fafc;
-  border-radius: var(--radius-xs);
 }
 
-.suggestion-source-tag {
-  font-size: 9.5px;
-  color: var(--accent-blue);
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-  padding: 1px 6px;
-  border-radius: var(--radius-xs);
-  font-weight: 600;
+.suggestion-header-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.2px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.suggestion-header-link {
+  font-size: 12px;
+  font-weight: 500;
+  color: #93c5fd;
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.suggestion-header-link:hover {
+  color: #bfdbfe;
 }
 
 .suggestion-item {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 10px;
-  border-radius: var(--radius-sm);
+  flex-direction: column;
+  padding: 8px 12px;
+  border-radius: 4px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background 0.12s ease;
   text-decoration: none;
 }
 
 .suggestion-item:hover,
 .suggestion-item.highlighted {
-  background: #f1f5f9;
+  background: #23488c !important;
 }
 
-.suggestion-left {
+.suggestion-row-top {
   display: flex;
   align-items: center;
-  gap: 10px;
-  overflow: hidden;
-  max-width: 65%;
+  justify-content: space-between;
+  width: 100%;
 }
 
-.suggestion-symbol-badge {
+.suggestion-symbol {
   font-family: var(--font-mono);
-  font-size: 11.5px;
+  font-size: 14px;
   font-weight: 700;
-  color: var(--accent-blue);
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-  padding: 2px 7px;
-  border-radius: var(--radius-xs);
-  min-width: 50px;
-  text-align: center;
-  flex-shrink: 0;
+  color: #ffffff;
+  letter-spacing: 0.3px;
 }
 
-.suggestion-info {
+.suggestion-type {
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+}
+
+.suggestion-row-bottom {
   display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 3px;
 }
 
 .suggestion-name {
   font-size: 12px;
-  font-weight: 600;
-  color: var(--text-primary);
+  font-weight: 400;
+  color: #94a3b8;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 80%;
 }
 
-.suggestion-meta {
-  font-size: 10.5px;
-  color: var(--text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.suggestion-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  text-align: right;
-  flex-shrink: 0;
-}
-
-.suggestion-price {
-  font-family: var(--font-mono);
+.suggestion-exchange {
   font-size: 12px;
-  font-weight: 600;
-  color: var(--text-primary);
+  font-weight: 500;
+  color: #94a3b8;
+  text-transform: uppercase;
+  flex-shrink: 0;
+  margin-left: 8px;
 }
 
-.suggestion-chg-pill {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: var(--radius-full);
-  min-width: 58px;
-  text-align: center;
-  display: inline-block;
+.suggestion-item:hover .suggestion-type,
+.suggestion-item.highlighted .suggestion-type {
+  color: #cbd5e1;
 }
 
-.suggestion-chg-pill.pos {
-  background: var(--color-bull-bg);
-  color: var(--color-bull-text);
-  border: 1px solid #bbf7d0;
+.suggestion-item:hover .suggestion-name,
+.suggestion-item.highlighted .suggestion-name {
+  color: #f1f5f9;
 }
 
-.suggestion-chg-pill.neg {
-  background: var(--color-bear-bg);
-  color: var(--color-bear-text);
-  border: 1px solid #fecaca;
-}
-
-.suggestion-chg-pill.flat {
-  background: #f1f5f9;
-  color: var(--text-muted);
-  border: 1px solid var(--border-subtle);
+.suggestion-item:hover .suggestion-exchange,
+.suggestion-item.highlighted .suggestion-exchange {
+  color: #cbd5e1;
 }
 
 .suggestion-loading,
 .suggestion-empty {
-  padding: 16px 12px;
+  padding: 18px 14px;
   text-align: center;
-  font-size: 11.5px;
-  color: var(--text-muted);
+  font-size: 12px;
+  color: #94a3b8;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -568,8 +547,8 @@ body {
 .suggestion-spinner {
   width: 14px;
   height: 14px;
-  border: 2px solid #cbd5e1;
-  border-top-color: var(--accent-blue);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #38bdf8;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
