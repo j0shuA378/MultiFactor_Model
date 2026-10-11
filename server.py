@@ -72,6 +72,29 @@ STRATEGY_MAP = {
 def index():
     return send_from_directory("static", "index.html")
 
+@app.route("/details")
+@app.route("/details.html")
+@app.route("/static/details.html")
+def page_details():
+    return send_from_directory("static", "details.html")
+
+@app.route("/screener")
+@app.route("/screener.html")
+@app.route("/static/screener.html")
+def page_screener():
+    return send_from_directory("static", "screener.html")
+
+@app.route("/compare")
+@app.route("/compare.html")
+@app.route("/static/compare.html")
+def page_compare():
+    return send_from_directory("static", "compare.html")
+
+@app.route("/terminal")
+@app.route("/terminal.html")
+def page_terminal():
+    return send_from_directory("static", "index.html")
+
 @app.route("/factor")
 @app.route("/static/factor_model.html")
 def page_factor():
@@ -261,6 +284,7 @@ def api_stock_quote():
         logger.error(f"Error fetching quote for {ticker}: {e}")
         return jsonify({"status": "error", "message": str(e), "ticker": ticker}), 500
 
+@app.route("/api/fundamentals", methods=["GET"])
 @app.route("/api/stock/fundamentals", methods=["GET"])
 def api_stock_fundamentals():
     """

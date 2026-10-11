@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>个股深度财务基本面与机构预测研报 | AlphaQuant 投研终端</title>
+  <meta name="description" content="包含核心估值倍数、华尔街机构预测价、目标空间、分红派息、盈利能力与企业业务画像的专业深度投研系统">
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=20261011_v5">
+  <style>
+    .details-page-shell {
+      min-height: 100vh;
+      background: #f8fafc;
+      color: #0f172a;
+      display: flex;
+      flex-direction: column;
+    }
+    .details-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px 24px 60px 24px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .details-hero {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 24px 28px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .dh-left {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .dh-title-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .dh-symbol {
+      font-family: var(--font-mono, monospace);
+      font-size: 28px;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.5px;
+    }
+    .dh-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: #475569;
+    }
+    .dh-meta-pills {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .dh-pill {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #e2e8f0;
+    }
+    .dh-price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-top: 4px;
+    }
+    .dh-price {
+      font-family: var(--font-mono, monospace);
+      font-size: 32px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .dh-change {
+      font-family: var(--font-mono, monospace);
+      font-size: 16px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+    .dh-cta-box {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 10px;
+    }
+    .btn-to-terminal {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #0052cc 0%, #0747a6 100%);
+      color: #ffffff;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 4px 14px rgba(0, 82, 204, 0.35);
+      transition: all 0.2s ease;
+    }
+    .btn-to-terminal:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 82, 204, 0.45);
+      background: linear-gradient(135deg, #0747a6 0%, #003882 100%);
+    }
+    .dh-cta-sub {
+      font-size: 11.5px;
+      color: #64748b;
+    }
+    .details-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 20px;
+    }
+    .dg-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 20px 24px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+    }
+    .dg-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .dg-card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+    }
+    .dg-card-badge {
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: #eff6ff;
+      color: #0052cc;
+      border: 1px solid #bfdbfe;
+    }
+    .metrics-grid-3x2 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .metric-item {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+    .mi-label {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #64748b;
+      margin-bottom: 4px;
+      display: block;
+    }
+    .mi-val {
+      font-family: var(--font-mono, monospace);
+      font-size: 18px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .mi-sub {
+      font-size: 11px;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+    .ratings-bar-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .rb-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+    }
+    .rb-label {
+      width: 70px;
+      font-weight: 600;
+      color: #475569;
+    }
+    .rb-track {
+      flex: 1;
+      height: 8px;
+      background: #f1f5f9;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .rb-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.6s ease;
+    }
+    .rb-count {
+      width: 30px;
+      text-align: right;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .range-52w-hero {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin-bottom: 16px;
+    }
+    .r52-labels-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #475569;
+      margin-bottom: 8px;
+    }
+    .r52-track-bar {
+      position: relative;
+      height: 10px;
+      background: #e2e8f0;
+      border-radius: 5px;
+    }
+    .r52-thumb-indicator {
+      position: absolute;
+      top: -4px;
+      width: 18px;
+      height: 18px;
+      background: #0052cc;
+      border: 3px solid #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 2px 6px rgba(0, 82, 204, 0.4);
+      transform: translateX(-50%);
+      transition: left 0.6s ease;
+    }
+    .strategy-cards-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-top: 20px;
+    }
+    .strat-entry-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 16px;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02);
+    }
+    .strat-entry-card:hover {
+      border-color: #0052cc;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 82, 204, 0.12);
+    }
+    .sec-badge {
+      display: inline-block;
+      align-self: flex-start;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body data-page="details">
+  <div class="details-page-shell">
+    <!-- 1. Universal Top Navigation Header -->
+    <header class="app-header" style="height: 52px; background: #ffffff; border-bottom: 1px solid #e2e8f0; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100;">
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <a href="index.html" class="brand-logo" style="text-decoration: none; display: flex; align-items: center; gap: 8px;">
+          <div class="logo-icon" style="width: 28px; height: 28px; border-radius: 7px; background: #0052cc; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 13px;">AQ</div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="font-weight: 800; font-size: 16px; color: #0f172a; letter-spacing: -0.02em;">AlphaQuant</span>
+            <span class="badge-pro" style="font-size: 9px; padding: 1px 5px; border-radius: 4px; background: #eff6ff; color: #0052cc; border: 1px solid #bfdbfe;">PRO</span>
+          </div>
+        </a>
+
+        <!-- Universal Multi-Page Segmented Control -->
+        <nav class="app-workspace-nav" style="display: flex; align-items: center; gap: 3px; background: #f1f5f9; padding: 3px; border-radius: 8px; border: 1px solid #e2e8f0;">
+          <a href="screener.html" class="nav-workspace-btn" style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600; color: #64748b;">
+            <span class="nwb-step" style="width: 16px; height: 16px; border-radius: 50%; background: #e2e8f0; color: #475569; display: flex; align-items: center; justify-content: center; font-size: 10px;">1</span>
+            <span>选股大厅</span>
+          </a>
+          <a href="details.html" class="nav-workspace-btn active" style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 700; background: #ffffff; color: #0052cc; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+            <span class="nwb-step" style="width: 16px; height: 16px; border-radius: 50%; background: #0052cc; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 10px;">2</span>
+            <span>股票基本面</span>
+          </a>
+          <a href="index.html" id="top-nav-to-terminal" class="nav-workspace-btn" style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600; color: #64748b;">
+            <span class="nwb-step" style="width: 16px; height: 16px; border-radius: 50%; background: #e2e8f0; color: #475569; display: flex; align-items: center; justify-content: center; font-size: 10px;">3</span>
+            <span>量化交易终端</span>
+          </a>
+          <a href="compare.html" id="top-nav-to-compare" class="nav-workspace-btn" style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600; color: #64748b;">
+            <span>⚔️</span>
+            <span>策略对决</span>
+          </a>
+          <a href="paper_trading.html" class="nav-workspace-btn" style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600; color: #64748b;">
+            <span>💼</span>
+            <span>实盘模拟</span>
+          </a>
+          <a href="settings.html" class="nav-workspace-btn" style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600; color: #64748b;">
+            <span>⚙️</span>
+            <span>配置中心</span>
+          </a>
+        </nav>
+      </div>
+
+      <!-- Quick Ticker Switcher in Header -->
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div class="tv-search-box" id="search-box-wrap" style="width: 250px;">
+          <svg class="art-icon tv-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="custom-ticker-input" class="tv-search-input" placeholder="输入代码 (如 NVDA, 茅台)..." autocomplete="off" spellcheck="false">
+          <button id="search-ticker-btn" class="tv-search-btn" type="button" title="切换分析标的">切换</button>
+          <div class="search-suggestions-dropdown hidden" id="search-suggestions-dropdown"></div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="details-container">
+      <!-- 1. Stock Hero Banner -->
+      <section class="details-hero">
+        <div class="dh-left">
+          <div class="dh-title-row">
+            <span class="dh-symbol" id="d-symbol">AAPL</span>
+            <span class="dh-name" id="d-name">Apple Inc. (苹果公司)</span>
+            <div class="dh-meta-pills">
+              <span class="dh-pill" id="d-exchange">NASDAQ</span>
+              <span class="dh-pill" id="d-sector">科技板块</span>
+              <span class="dh-pill" id="d-industry">消费电子</span>
+              <span class="dh-pill" id="d-quote-type">EQUITY</span>
+            </div>
+          </div>
+          <div class="dh-price-row">
+            <span class="dh-price" id="d-price">$336.64</span>
+            <span class="dh-change negative" id="d-change">-1.11% (-$3.78)</span>
+            <span style="font-size: 12px; color: #64748b; margin-left: 8px;">总市值: <strong id="d-mktcap" style="color:#0f172a; font-family:var(--font-mono);">$4.91T</strong></span>
+            <span style="font-size: 12px; color: #64748b;">日成交量: <strong id="d-volume" style="color:#0f172a; font-family:var(--font-mono);">3,785万股</strong></span>
+          </div>
+        </div>
+
+        <div class="dh-cta-box">
+          <a href="index.html?ticker=AAPL" id="btn-enter-terminal" class="btn-to-terminal" title="带入该股票进入量化交易工作台">
+            <span>🚀 启动量化交易策略推演与前瞻买点 &rarr;</span>
+          </a>
+          <span class="dh-cta-sub">进入 TradingView 级 K 线图 · 实时标定买卖点与回测净值</span>
+        </div>
+      </section>
+
+      <!-- 2. Grid Sections -->
+      <div class="details-grid">
+        <!-- Card 1: 核心估值倍数与52周位置 (8 Cols) -->
+        <div class="dg-card" style="grid-column: span 8;">
+          <div class="dg-card-header">
+            <h3 class="dg-card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/></svg>
+              <span>核心估值指标与价格区间 (Valuation Multiples)</span>
+            </h3>
+            <span class="dg-card-badge">Yahoo Finance 实时源</span>
+          </div>
+
+          <!-- 52-Week Range Bar -->
+          <div class="range-52w-hero">
+            <div class="r52-labels-row">
+              <span>52周低位: <strong id="d-52l" style="font-family:var(--font-mono); font-weight:700;">$243.42</strong></span>
+              <span>52周相对位置: <strong id="d-52pos" style="color:#0052cc; font-family:var(--font-mono); font-weight:800;">91.5%</strong></span>
+              <span>52周高位: <strong id="d-52h" style="font-family:var(--font-mono); font-weight:700;">$345.34</strong></span>
+            </div>
+            <div class="r52-track-bar">
+              <div class="r52-thumb-indicator" id="d-52thumb" style="left: 91.5%;"></div>
+            </div>
+          </div>
+
+          <!-- 6-Metric Box Grid -->
+          <div class="metrics-grid-3x2">
+            <div class="metric-item">
+              <span class="mi-label">总市值 (Market Cap)</span>
+              <span class="mi-val" id="vm-mktcap">$4.91T</span>
+              <span class="mi-sub">流通权益总规模</span>
+            </div>
+            <div class="metric-item">
+              <span class="mi-label">企业价值 (EV)</span>
+              <span class="mi-val" id="vm-entval">$4.93T</span>
+              <span class="mi-sub">市值 + 净负债</span>
+            </div>
+            <div class="metric-item">
+              <span class="mi-label">静态市盈率 (P/E TTM)</span>
+              <span class="mi-val" id="vm-pe">38.6x</span>
+              <span class="mi-sub">历史滚动 12 个月</span>
+            </div>
+            <div class="metric-item">
+              <span class="mi-label">预期市盈率 (Forward P/E)</span>
+              <span class="mi-val" id="vm-fwd-pe">35.1x</span>
+              <span class="mi-sub">未来 12 个月预测</span>
+            </div>
+            <div class="metric-item">
+              <span class="mi-label">市净率 (P/B)</span>
+              <span class="mi-val" id="vm-pb">45.7x</span>
+              <span class="mi-sub">每股净资产溢价倍数</span>
+            </div>
+            <div class="metric-item">
+              <span class="mi-label">Beta 系数 (5Y 贝塔)</span>
+              <span class="mi-val" id="vm-beta">1.07</span>
+              <span class="mi-sub">相对大盘波动敏感度</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2: 华尔街机构预测价与共识评级 (4 Cols) -->
+        <div class="dg-card" style="grid-column: span 4;">
+          <div class="dg-card-header">
+            <h3 class="dg-card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/></svg>
+              <span>机构预测与目标价</span>
+            </h3>
+            <span class="dg-card-badge" style="background:#ecfdf5; color:#059669; border-color:#a7f3d0;" id="d-consensus-badge">买入 (Buy)</span>
+          </div>
+
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px; margin-bottom:14px; text-align:center;">
+            <span style="font-size:11.5px; color:#64748b; font-weight:600;">华尔街投行 12 个月目标均价</span>
+            <div style="font-family:var(--font-mono); font-size:28px; font-weight:800; color:#0f172a; margin:4px 0;" id="d-target-mean">$365.20</div>
+            <div style="font-size:12.5px; font-weight:700;" id="d-target-upside-wrap">
+              机构看多空间: <span id="d-target-upside" style="color:#059669; font-family:var(--font-mono);">+8.48%</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:#64748b; margin-top:8px; border-top:1px solid #e2e8f0; padding-top:6px;">
+              <span>机构最高看多: <strong id="d-target-high" style="color:#0f172a; font-family:var(--font-mono);">$400.00</strong></span>
+              <span>机构最低预测: <strong id="d-target-low" style="color:#0f172a; font-family:var(--font-mono);">$275.00</strong></span>
+            </div>
+          </div>
+
+          <span style="font-size:12px; font-weight:700; color:#334155;">分析师推荐分布 (<span id="d-num-analysts">42</span> 位投行分析师)</span>
+          <div class="ratings-bar-wrap">
+            <div class="rb-item">
+              <span class="rb-label">强力买入</span>
+              <div class="rb-track"><div class="rb-fill" id="rb-strong-buy" style="width: 45%; background: #059669;"></div></div>
+              <span class="rb-count" id="rb-cnt-strong-buy">18</span>
+            </div>
+            <div class="rb-item">
+              <span class="rb-label">买入</span>
+              <div class="rb-track"><div class="rb-fill" id="rb-buy" style="width: 38%; background: #10b981;"></div></div>
+              <span class="rb-count" id="rb-cnt-buy">15</span>
+            </div>
+            <div class="rb-item">
+              <span class="rb-label">持有</span>
+              <div class="rb-track"><div class="rb-fill" id="rb-hold" style="width: 18%; background: #f59e0b;"></div></div>
+              <span class="rb-count" id="rb-cnt-hold">7</span>
+            </div>
+            <div class="rb-item">
+              <span class="rb-label">跑输大盘</span>
+              <div class="rb-track"><div class="rb-fill" id="rb-underperform" style="width: 5%; background: #f97316;"></div></div>
+              <span class="rb-count" id="rb-cnt-underperform">2</span>
+            </div>
+            <div class="rb-item">
+              <span class="rb-label">卖出</span>
+              <div class="rb-track"><div class="rb-fill" id="rb-sell" style="width: 0%; background: #ef4444;"></div></div>
+              <span class="rb-count" id="rb-cnt-sell">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3: 股东回报与分红派息 (6 Cols) -->
+        <div class="dg-card" style="grid-column: span 6;">
+          <div class="dg-card-header">
+            <h3 class="dg-card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+              <span>股东回报与分红派息 (Dividends)</span>
+            </h3>
+            <span class="dg-card-badge">现金流回报</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="metric-item">
+              <span class="mi-label">股息收益率 (Yield)</span>
+              <span class="mi-val" id="div-yield" style="color: #059669;">0.30%</span>
+              <span class="mi-sub">当前股价年化股息</span>
+            </div>
+            <div class="metric-item">
+              <span class="mi-label">年度每股分红 (Annual Payout)</span>
+              <span class="mi-val" id="div-payout">$1.04</span>
+              <span class="mi-sub">近 12 个月累计派息</span>
+            </div>
+            <div class="metric-item">
+              <span class="mi-label">最新除息日 (Ex-Dividend Date)</span>
+              <span class="mi-val" style="font-size: 15px;" id="div-ex-date">2026-08-08</span>
+              <span class="mi-sub">权益登记基准日</span>
+            </div>
+            <div class="metric-item">
+              <span class="mi-label">分红派息率 (Payout Ratio)</span>
+              <span class="mi-val" id="div-payout-ratio">11.9%</span>
+              <span class="mi-sub">净利润现金分红比例</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 4: 企业财务健康与盈利质量 (6 Cols) -->
+        <div class="dg-card" style="grid-column: span 6;">
+          <div class="dg-card-header">
+            <h3 class="dg-card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              <span>深度盈利能力与现金流 (Financial Health)</span>
+            </h3>
+            <span class="dg-card-badge">财报数据</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="metric-item">
+              <span class="mi-label">全年营收规模 (Revenue)</span>
+              <span class="mi-val" id="fin-revenue">$466.82B</span>
+              <span class="mi-sub">同比增长: <strong id="fin-rev-growth" style="color:#059669;">+16.4%</strong></span>
+            </div>
+            <div class="metric-item">
+              <span class="mi-label">全年净利润 (Net Income)</span>
+              <span class="mi-val" id="fin-net-income">$128.93B</span>
+              <span class="mi-sub">净利率: <strong id="fin-net-margin">27.6%</strong></span>
+            </div>
+            <div class="metric-item">
+              <span class="mi-label">毛利率 (Gross Margin)</span>
+              <span class="mi-val" id="fin-gross-margin">48.6%</span>
+              <span class="mi-sub">高技术/品牌壁垒</span>
+            </div>
+            <div class="metric-item">
+              <span class="mi-label">净资产收益率 (ROE)</span>
+              <span class="mi-val" id="fin-roe" style="color:#0052cc;">148.8%</span>
+              <span class="mi-sub">极高资本周转效率</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 5: 公司主营业务与护城河画像 (12 Cols) -->
+        <div class="dg-card" style="grid-column: span 12;">
+          <div class="dg-card-header">
+            <h3 class="dg-card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <span>公司概况与主营业务画像 (Business Profile)</span>
+            </h3>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:12px; color:#64748b;">全球雇员: <strong id="d-employees" style="color:#0f172a; font-family:var(--font-mono);">150,000人</strong></span>
+              <span style="font-size:12px; color:#64748b;">·</span>
+              <a href="#" id="d-website" target="_blank" style="font-size:12px; color:#0052cc; text-decoration:none; font-weight:600;">访问公司官网 &rarr;</a>
+            </div>
+          </div>
+          <p id="d-summary" style="font-size: 13px; line-height: 1.7; color: #334155; margin: 0; text-align: justify;">
+            加载中...
+          </p>
+        </div>
+      </div>
+
+      <!-- 3. Bottom Strategy Launchpad -->
+      <section style="margin-top: 30px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+          <h3 style="font-size:16px; font-weight:800; color:#0f172a; margin:0;">
+            ⚡ 该标的量化策略推演中心 (一键启动策略研报)
+          </h3>
+          <span style="font-size:12px; color:#64748b;">点击任意模型即可跳转至对应工作台</span>
+        </div>
+        <div class="strategy-cards-row">
+          <a href="index.html?ticker=AAPL&strat=momentum" id="link-strat-mom" class="strat-entry-card">
+            <span class="sec-badge" style="background:#eff6ff; color:#0052cc; border:1px solid #bfdbfe;">经典量化</span>
+            <strong style="font-size:14px; color:#0f172a;">多因子动量 (Barra/AQR)</strong>
+            <span style="font-size:11.5px; color:#64748b; line-height:1.4;">截面动量 · 特质波调整 · 残差动量 · 路径平滑度</span>
+            <span style="font-size:11.5px; color:#0052cc; font-weight:700; margin-top:auto;">启动动量回测 &rarr;</span>
+          </a>
+          <a href="index.html?ticker=AAPL&strat=ml" id="link-strat-ml" class="strat-entry-card">
+            <span class="sec-badge" style="background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0;">AI驱动</span>
+            <strong style="font-size:14px; color:#0f172a;">机器学习预测 (Random Forest)</strong>
+            <span style="font-size:11.5px; color:#64748b; line-height:1.4;">时序特征工程 · 概率自适应阈值 · 动态调仓</span>
+            <span style="font-size:11.5px; color:#16a34a; font-weight:700; margin-top:auto;">启动机器学习 &rarr;</span>
+          </a>
+          <a href="index.html?ticker=AAPL&strat=turtle" id="link-strat-turtle" class="strat-entry-card">
+            <span class="sec-badge" style="background:#fff7ed; color:#ea580c; border:1px solid #fed7aa;">趋势跟踪</span>
+            <strong style="font-size:14px; color:#0f172a;">海龟法则与通道突破</strong>
+            <span style="font-size:11.5px; color:#64748b; line-height:1.4;">唐奇安双通道 · ATR真实波幅 · 动态加仓止损</span>
+            <span style="font-size:11.5px; color:#ea580c; font-weight:700; margin-top:auto;">启动海龟突破 &rarr;</span>
+          </a>
+          <a href="index.html?ticker=AAPL&strat=chan" id="link-strat-chan" class="strat-entry-card">
+            <span class="sec-badge" style="background:#fdf2f8; color:#db2777; border:1px solid #fbcfe8;">形态几何</span>
+            <strong style="font-size:14px; color:#0f172a;">缠论中枢与动力形态</strong>
+            <span style="font-size:11.5px; color:#64748b; line-height:1.4;">K线包含 · 笔/线段 · 中枢震荡 · 一/二/三类买卖点</span>
+            <span style="font-size:11.5px; color:#db2777; font-weight:700; margin-top:auto;">启动缠论研判 &rarr;</span>
+          </a>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/fundamentals_data.js?v=20261011_v5"></script>
+  <script src="js/details.js?v=20261011_v5"></script>
+</body>
+</html>

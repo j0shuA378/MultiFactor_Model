@@ -2002,6 +2002,19 @@ function updateTickerDisplay() {
   updateActivePresetChip();
   updateFavoriteStarButton();
 
+  // Synchronize Universal Multi-Page Navigation URLs
+  const symParam = encodeURIComponent(state.ticker || 'AAPL');
+  const scLink = document.getElementById('tv-nav-to-screener');
+  if (scLink) scLink.href = `screener.html?ticker=${symParam}`;
+  const dtLink = document.getElementById('tv-nav-to-details');
+  if (dtLink) dtLink.href = `details.html?ticker=${symParam}`;
+  const cpLink = document.getElementById('tv-nav-to-compare');
+  if (cpLink) cpLink.href = `compare.html?ticker=${symParam}`;
+  const dockSc = document.getElementById('dock-btn-open-screener');
+  if (dockSc) dockSc.href = `screener.html?ticker=${symParam}`;
+  const dockDt = document.getElementById('dock-btn-open-details');
+  if (dockDt) dockDt.href = `details.html?ticker=${symParam}`;
+
   if (!state.fundamentalsData || state.fundamentalsData?.profile?.symbol !== state.ticker) {
     if (typeof loadStockFundamentals === 'function') {
       loadStockFundamentals(state.ticker);
@@ -2613,9 +2626,9 @@ function selectStockAndNavigate(ticker) {
   const searchInput = document.getElementById('custom-ticker-input');
   if (searchInput) searchInput.value = state.ticker;
 
-  // Switch to Fundamentals View (Step 2)
-  switchWorkspaceView('fundamentals');
-  loadStockFundamentals(state.ticker);
+  updateTickerDisplay();
+  const dockBtn = document.getElementById('tv-dock-btn-signals');
+  if (dockBtn) dockBtn.click();
   runAnalysis();
 }
 window.selectStockAndNavigate = selectStockAndNavigate;

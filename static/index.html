@@ -22,6 +22,26 @@
           <span class="tv-brand-tag">PRO</span>
         </a>
 
+        <!-- Universal Multi-Page Segmented Control -->
+        <nav class="app-workspace-nav" id="top-workspace-nav" style="display: flex; align-items: center; gap: 3px; background: #f1f5f9; padding: 2px 3px; border-radius: 8px; border: 1px solid #e2e8f0; margin: 0 4px;">
+          <a href="screener.html" id="tv-nav-to-screener" class="nav-workspace-btn" style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 6px; text-decoration: none; font-size: 11.5px; font-weight: 600; color: #64748b;">
+            <span class="nwb-step" style="width: 15px; height: 15px; border-radius: 50%; background: #e2e8f0; color: #475569; display: flex; align-items: center; justify-content: center; font-size: 9.5px;">1</span>
+            <span>选股大厅</span>
+          </a>
+          <a href="details.html" id="tv-nav-to-details" class="nav-workspace-btn" style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 6px; text-decoration: none; font-size: 11.5px; font-weight: 600; color: #64748b;">
+            <span class="nwb-step" style="width: 15px; height: 15px; border-radius: 50%; background: #e2e8f0; color: #475569; display: flex; align-items: center; justify-content: center; font-size: 9.5px;">2</span>
+            <span>股票基本面</span>
+          </a>
+          <a href="index.html" class="nav-workspace-btn active" style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 6px; text-decoration: none; font-size: 11.5px; font-weight: 700; background: #ffffff; color: #0052cc; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+            <span class="nwb-step" style="width: 15px; height: 15px; border-radius: 50%; background: #0052cc; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 9.5px;">3</span>
+            <span>量化交易终端</span>
+          </a>
+          <a href="compare.html" id="tv-nav-to-compare" class="nav-workspace-btn" style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 6px; text-decoration: none; font-size: 11.5px; font-weight: 600; color: #64748b;">
+            <span>⚔️</span>
+            <span>策略对决</span>
+          </a>
+        </nav>
+
         <!-- Stock Search Box -->
         <div class="tv-search-box" id="search-box-wrap">
           <svg class="art-icon tv-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -438,7 +458,7 @@
       <aside class="tv-right-dock" id="tv-right-dock">
         <!-- Dock Tab Switcher Header -->
         <div class="tv-dock-tab-bar">
-          <button class="tv-dock-tab-btn active" data-dock="screener" id="tv-dock-btn-screener" title="全市场智能选股池">
+          <button class="tv-dock-tab-btn" data-dock="screener" id="tv-dock-btn-screener" title="全市场智能选股池">
             <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>
             <span>选股池</span>
           </button>
@@ -446,7 +466,7 @@
             <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 10h1M14 10h1M9 14h1M14 14h1M9 18h1M14 18h1"/></svg>
             <span>基本面</span>
           </button>
-          <button class="tv-dock-tab-btn" data-dock="signals" id="tv-dock-btn-signals" title="预期买点与前瞻决策看板">
+          <button class="tv-dock-tab-btn active" data-dock="signals" id="tv-dock-btn-signals" title="预期买点与前瞻决策看板">
             <svg class="art-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
             <span>买点决策</span>
           </button>
@@ -460,8 +480,15 @@
         </div>
 
         <!-- Pane 1: 选股大厅 (Screener) -->
-        <div class="tv-dock-content-pane active" id="tv-dock-pane-screener">
+        <div class="tv-dock-content-pane" id="tv-dock-pane-screener">
           <div id="workspace-screener-view" style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+              <div>
+                <div style="font-size: 12px; font-weight: 700; color: #0052cc;">🎯 独立全屏选股大厅</div>
+                <div style="font-size: 11px; color: #475569;">支持多市场分类、宽屏横比与一键穿透</div>
+              </div>
+              <a href="screener.html" id="dock-btn-open-screener" style="background: #0052cc; color: #ffffff; padding: 5px 12px; border-radius: 6px; font-size: 11.5px; font-weight: 600; text-decoration: none; white-space: nowrap;">打开专页 &rarr;</a>
+            </div>
             <div style="display: flex; align-items: center; justify-content: space-between;">
               <span style="font-size: 13px; font-weight: 700; color: #0f172a;">全市场标的池 (33+ 核心资产)</span>
               <span class="badge-pro" style="font-size: 10px;">Yahoo 实时源</span>
@@ -516,6 +543,13 @@
         <!-- Pane 2: 深度基本面 (Fundamentals) -->
         <div class="tv-dock-content-pane" id="tv-dock-pane-fundamentals">
           <div id="workspace-fundamentals-view" style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #bbf7d0; border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+              <div>
+                <div style="font-size: 12px; font-weight: 700; color: #15803d;">📊 独立股票基本面档案</div>
+                <div style="font-size: 11px; color: #475569;">华尔街评级、52周位阶与深度财务比率</div>
+              </div>
+              <a href="details.html" id="dock-btn-open-details" style="background: #15803d; color: #ffffff; padding: 5px 12px; border-radius: 6px; font-size: 11.5px; font-weight: 600; text-decoration: none; white-space: nowrap;">打开专页 &rarr;</a>
+            </div>
             <div class="fund-hero-card" style="padding: 10px; margin-bottom: 0;">
               <div class="fhc-left">
                 <h3 style="margin: 0; font-size: 15px; display: flex; align-items: center; gap: 6px;">
@@ -672,7 +706,7 @@
         </div>
 
         <!-- Pane 3: 买点决策 (Signals & Prediction Dock) -->
-        <div class="tv-dock-content-pane" id="tv-dock-pane-signals">
+        <div class="tv-dock-content-pane active" id="tv-dock-pane-signals">
           <div class="kline-prediction-dock" id="kline-prediction-dock" style="width: 100%; border: none; padding: 0;">
             <div class="dock-header" style="margin-bottom: 8px;">
               <div class="dock-title-group">

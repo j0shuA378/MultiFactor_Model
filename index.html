@@ -8,7 +8,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <script>
-    window.location.replace("static/index.html");
+    const query = window.location.search || '';
+    const hash = window.location.hash || '';
+    window.location.replace("static/index.html" + query + hash);
   </script>
 </head>
 <body style="background:#FAF9F5; color:#4D4C48; font-family:'Inter', sans-serif; display:flex; align-items:center; justify-content:center; height:100vh; margin:0;">

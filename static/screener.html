@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>全市场智能选股大厅 | AlphaQuant 投研终端</title>
+  <meta name="description" content="全市场核心标的筛选大厅，支持美股科技、ETF黄金、港股互联网、A股核心资产与高股息标的多维透视">
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=20261011_v5">
+  <style>
+    .screener-page-shell {
+      min-height: 100vh;
+      background: #f8fafc;
+      color: #0f172a;
+      display: flex;
+      flex-direction: column;
+    }
+    .screener-container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 24px 28px 60px 28px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .sc-hero {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 22px 28px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .sc-hero-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 0 0 6px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .sc-hero-desc {
+      font-size: 13px;
+      color: #64748b;
+      margin: 0;
+    }
+    .sc-controls-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 18px 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .sc-pills-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .sc-pill-btn {
+      padding: 6px 14px;
+      font-size: 12.5px;
+      font-weight: 600;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+      color: #475569;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .sc-pill-btn:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+    .sc-pill-btn.active {
+      background: #eff6ff;
+      border-color: #0052cc;
+      color: #0052cc;
+      font-weight: 700;
+    }
+    .sc-filter-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .sc-search-input-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 0 12px;
+      height: 36px;
+      width: 320px;
+      transition: all 0.2s ease;
+    }
+    .sc-search-input-box:focus-within {
+      background: #ffffff;
+      border-color: #0052cc;
+      box-shadow: 0 0 0 2px rgba(0, 82, 204, 0.12);
+    }
+    .sc-search-input-box input {
+      border: none;
+      background: transparent;
+      outline: none;
+      font-size: 13px;
+      width: 100%;
+      color: #0f172a;
+    }
+    .sc-sort-select {
+      height: 36px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      background: #ffffff;
+      padding: 0 12px;
+      font-size: 12.5px;
+      color: #334155;
+      outline: none;
+      cursor: pointer;
+    }
+    .sc-table-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+    }
+    .wide-screener-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+      text-align: left;
+    }
+    .wide-screener-table thead th {
+      background: #f8fafc;
+      color: #64748b;
+      font-weight: 700;
+      font-size: 11.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 12px 16px;
+      border-bottom: 1px solid #e2e8f0;
+      white-space: nowrap;
+    }
+    .wide-screener-table tbody tr {
+      border-bottom: 1px solid #f1f5f9;
+      transition: background 0.15s ease;
+    }
+    .wide-screener-table tbody tr:hover {
+      background: #f8fafc;
+    }
+    .wide-screener-table tbody td {
+      padding: 12px 16px;
+      vertical-align: middle;
+      color: #334155;
+    }
+    .btn-action-details {
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 11.5px;
+      font-weight: 600;
+      background: #eff6ff;
+      color: #0052cc;
+      border: 1px solid #bfdbfe;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+    .btn-action-details:hover {
+      background: #0052cc;
+      color: #ffffff;
+    }
+    .btn-action-terminal {
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 11.5px;
+      font-weight: 600;
+      background: #f8fafc;
+      color: #475569;
+      border: 1px solid #cbd5e1;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+    .btn-action-terminal:hover {
+      background: #0f172a;
+      color: #ffffff;
+      border-color: #0f172a;
+    }
+  </style>
+</head>
+<body data-page="screener">
+  <div class="screener-page-shell">
+    <!-- 1. Universal Top Navigation Header -->
+    <header class="app-header" style="height: 52px; background: #ffffff; border-bottom: 1px solid #e2e8f0; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100;">
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <a href="index.html" class="brand-logo" style="text-decoration: none; display: flex; align-items: center; gap: 8px;">
+          <div class="logo-icon" style="width: 28px; height: 28px; border-radius: 7px; background: #0052cc; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 13px;">AQ</div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="font-weight: 800; font-size: 16px; color: #0f172a; letter-spacing: -0.02em;">AlphaQuant</span>
+            <span class="badge-pro" style="font-size: 9px; padding: 1px 5px; border-radius: 4px; background: #eff6ff; color: #0052cc; border: 1px solid #bfdbfe;">PRO</span>
+          </div>
+        </a>
+
+        <!-- Universal Multi-Page Segmented Control -->
+        <nav class="app-workspace-nav" style="display: flex; align-items: center; gap: 3px; background: #f1f5f9; padding: 3px; border-radius: 8px; border: 1px solid #e2e8f0;">
+          <a href="screener.html" class="nav-workspace-btn active" style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 700; background: #ffffff; color: #0052cc; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+            <span class="nwb-step" style="width: 16px; height: 16px; border-radius: 50%; background: #0052cc; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 10px;">1</span>
+            <span>选股大厅</span>
+          </a>
+          <a href="details.html" class="nav-workspace-btn" style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600; color: #64748b;">
+            <span class="nwb-step" style="width: 16px; height: 16px; border-radius: 50%; background: #e2e8f0; color: #475569; display: flex; align-items: center; justify-content: center; font-size: 10px;">2</span>
+            <span>股票基本面</span>
+          </a>
+          <a href="index.html" class="nav-workspace-btn" style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600; color: #64748b;">
+            <span class="nwb-step" style="width: 16px; height: 16px; border-radius: 50%; background: #e2e8f0; color: #475569; display: flex; align-items: center; justify-content: center; font-size: 10px;">3</span>
+            <span>量化交易终端</span>
+          </a>
+          <a href="compare.html" class="nav-workspace-btn" style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600; color: #64748b;">
+            <span>⚔️</span>
+            <span>策略对决</span>
+          </a>
+          <a href="paper_trading.html" class="nav-workspace-btn" style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600; color: #64748b;">
+            <span>💼</span>
+            <span>实盘模拟</span>
+          </a>
+          <a href="settings.html" class="nav-workspace-btn" style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600; color: #64748b;">
+            <span>⚙️</span>
+            <span>配置中心</span>
+          </a>
+        </nav>
+      </div>
+
+      <div>
+        <span class="badge-pro" style="font-size: 11px; padding: 3px 8px; border-radius: 4px; background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0;">Yahoo Finance 官方实时源</span>
+      </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="screener-container">
+      <div class="sc-hero">
+        <div>
+          <h2 class="sc-hero-title">
+            <span>全市场核心资产选股池 (33+ 标的)</span>
+          </h2>
+          <p class="sc-hero-desc">
+            覆盖美股硬科技巨头、全球指数与黄金ETF、港股核心互联、A股行业龙头与高股息稳健资产，支持一键查看深度财务基本面与启动量化模型。
+          </p>
+        </div>
+      </div>
+
+      <!-- Controls: Category Pills & Sorter & Filter -->
+      <div class="sc-controls-card">
+        <div class="sc-pills-row" id="sc-categories-row">
+          <button class="sc-pill-btn active" data-category="all">全部标的 (33+)</button>
+          <button class="sc-pill-btn" data-category="us_tech">美股AI科技巨头</button>
+          <button class="sc-pill-btn" data-category="etf_gold">大盘ETF与避险黄金</button>
+          <button class="sc-pill-btn" data-category="china_hk">港股互联核心</button>
+          <button class="sc-pill-btn" data-category="a_shares">A股核心资产白马</button>
+          <button class="sc-pill-btn" data-category="high_dividend">高股息现金流</button>
+        </div>
+
+        <div class="sc-filter-row">
+          <div class="sc-search-input-box">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="sc-keyword-input" placeholder="输入代码 / 名称 / 板块关键词快速过滤...">
+          </div>
+
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:12px; color:#64748b; font-weight:600;">排序方式:</span>
+            <select id="sc-sort-select" class="sc-sort-select">
+              <option value="market_cap_desc">总市值从大到小</option>
+              <option value="change_desc">24h 涨幅优先</option>
+              <option value="change_asc">24h 跌幅优先</option>
+              <option value="target_upside_desc">机构看多空间最大</option>
+              <option value="pe_asc">市盈率 PE 从低到高</option>
+              <option value="div_desc">股息率从高到低</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Wide Screener Table -->
+      <div class="sc-table-card">
+        <table class="wide-screener-table">
+          <thead>
+            <tr>
+              <th>标的代码与名称</th>
+              <th>分类</th>
+              <th>板块 / 行业</th>
+              <th>实时现价</th>
+              <th>24h 涨跌幅</th>
+              <th>总市值</th>
+              <th>静态市盈率 PE</th>
+              <th>机构目标空间</th>
+              <th>机构评级</th>
+              <th>股息率</th>
+              <th style="text-align: right;">投资决策通道</th>
+            </tr>
+          </thead>
+          <tbody id="sc-table-body">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/fundamentals_data.js?v=20261011_v5"></script>
+  <script src="js/screener.js?v=20261011_v5"></script>
+</body>
+</html>
