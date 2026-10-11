@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body data-page="compare">
   <div class="app-layout">
     <!-- Tier 1: Main Institutional Navigation Header -->
     <header class="app-header">
@@ -139,7 +139,7 @@
     <!-- Strategy Selection Navigation Tabs -->
     <nav class="strategy-navbar">
       <div class="strategy-tabs" id="strategy-tabs">
-        <button class="strat-tab active" data-strat="momentum">
+        <button class="strat-tab" data-strat="momentum">
           <span class="tab-icon">📊</span>
           <div class="tab-content">
             <span class="tab-title">机构多因子动量策略 (Barra/AQR)</span>
@@ -160,7 +160,7 @@
             <span class="tab-desc">唐奇安20日突破 · ATR(N)风险头寸 · 2N动态移动止损</span>
           </div>
         </button>
-        <button class="strat-tab" data-strat="compare">
+        <button class="strat-tab active" data-strat="compare">
           <span class="tab-icon">⚔️</span>
           <div class="tab-content">
             <span class="tab-title">三大策略横向对决</span>
@@ -376,7 +376,7 @@
         </div>
 
         <!-- Single Strategy View (Candlestick + Equity Curve) -->
-        <div id="single-strategy-view" class="view-panel active">
+        <div id="single-strategy-view" class="view-panel hidden">
           <!-- Chart 1: Candlestick & Technical Indicators with Prediction Dock -->
           <div class="chart-container-card">
             <div class="chart-header">
@@ -584,7 +584,7 @@
         </div>
 
         <!-- Strategy Comparison Matrix View -->
-        <div id="comparison-view" class="view-panel hidden">
+        <div id="comparison-view" class="view-panel">
           <div class="comparison-cards-grid" id="comparison-cards-grid">
             <!-- Dynamically populated side-by-side cards -->
           </div>

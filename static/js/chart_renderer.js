@@ -526,6 +526,7 @@ class EquityChart {
     this.ctx = this.canvas.getContext('2d');
     this.tooltipEl = document.getElementById(tooltipId);
     this.records = [];
+    this.padding = { top: 20, right: 75, bottom: 25, left: 20 };
     this.hoverIdx = -1;
 
     this.setupListeners();
@@ -546,12 +547,12 @@ class EquityChart {
       const total = this.records.length;
       if (total === 0) return;
 
-      const paddingLeft = 60;
-      const paddingRight = 75;
+      const paddingLeft = this.padding.left;
+      const paddingRight = this.padding.right;
       const chartWidth = this.canvas.clientWidth - paddingLeft - paddingRight;
-      const barWidth = chartWidth / total;
+      const stepX = chartWidth / (total - 1 || 1);
 
-      const idx = Math.floor((mouseX - paddingLeft) / barWidth);
+      const idx = Math.max(0, Math.min(total - 1, Math.round((mouseX - paddingLeft) / stepX)));
       if (idx >= 0 && idx < total) {
         this.hoverIdx = idx;
         this.render();
@@ -729,6 +730,7 @@ class MultiEquityChart {
     if (!this.canvas) return;
     this.ctx = this.canvas.getContext('2d');
     this.seriesList = [];
+    this.padding = { top: 20, right: 75, bottom: 25, left: 20 };
     window.addEventListener('resize', () => this.render());
   }
 
@@ -754,15 +756,18 @@ class MultiEquityChart {
 
     if (!this.seriesList || this.seriesList.length === 0) return;
 
-    const padding = { top: 20, right: 75, bottom: 25, left: 20 };
+    const padding = this.padding;
     const chartHeight = height - padding.top - padding.bottom;
     const chartWidth = width - padding.left - padding.right;
 
     let minVal = Infinity;
     let maxVal = -Infinity;
 
+    // Collect and sort all unique dates across series to build a unified chronological timeline
+    const dateSet = new Set();
     for (const s of this.seriesList) {
       for (const pt of (s.data || [])) {
+        if (pt.date) dateSet.add(pt.date);
         const v = Number(pt.val);
         if (!isNaN(v)) {
           if (v < minVal) minVal = v;
@@ -770,6 +775,12 @@ class MultiEquityChart {
         }
       }
     }
+
+    const allDates = Array.from(dateSet).sort();
+    const dateMap = {};
+    allDates.forEach((d, idx) => { dateMap[d] = idx; });
+    const totalDates = allDates.length;
+    const stepX = chartWidth / (totalDates - 1 || 1);
 
     if (!isFinite(minVal) || !isFinite(maxVal) || minVal >= maxVal) {
       minVal = 95000;
@@ -801,12 +812,10 @@ class MultiEquityChart {
       ctx.fillText(`$${(v / 1000).toFixed(1)}k`, width - padding.right + 8, y + 4);
     }
 
-    // Draw each series
+    // Draw each series accurately aligned by date
     for (const s of this.seriesList) {
-      const pts = s.data;
-      const n = pts.length;
-      if (n < 2) continue;
-      const stepX = chartWidth / (n - 1);
+      const pts = s.data || [];
+      if (pts.length < 2) continue;
 
       ctx.strokeStyle = s.color || INSTITUTIONAL_PALETTE.blue;
       ctx.lineWidth = s.lineWidth || 2;
@@ -814,11 +823,18 @@ class MultiEquityChart {
       else ctx.setLineDash([]);
 
       ctx.beginPath();
-      for (let i = 0; i < n; i++) {
-        const x = padding.left + i * stepX;
-        const y = valToY(pts[i].val);
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
+      let first = true;
+      for (let i = 0; i < pts.length; i++) {
+        const pt = pts[i];
+        const dateIdx = (pt.date && dateMap[pt.date] !== undefined) ? dateMap[pt.date] : i;
+        const x = padding.left + dateIdx * stepX;
+        const y = valToY(pt.val);
+        if (first) {
+          ctx.moveTo(x, y);
+          first = false;
+        } else {
+          ctx.lineTo(x, y);
+        }
       }
       ctx.stroke();
       ctx.setLineDash([]);

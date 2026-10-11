@@ -18,16 +18,26 @@ logger = logging.getLogger("PaperTradingEngine")
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
 PAPER_ACCOUNT_FILE = os.path.join(DATA_DIR, "paper_trading_account.json")
+_PAPER_PRICE_CACHE: Dict[str, Tuple[datetime, float, float, str]] = {}
 
 def is_us_market_open() -> Tuple[bool, str, Dict[str, Any]]:
     """
     Checks whether the US Stock Market (NYSE/NASDAQ) is currently in regular trading hours.
-    Regular hours: Mon-Fri, 09:30 to 16:00 US Eastern Time (UTC-4 / EDT or UTC-5 / EST).
+    Regular hours: Mon-Fri, 09:30 to 16:00 US Eastern Time (America/New_York).
     Returns (is_open, status_text, detail_dict).
     """
-    now_utc = datetime.now(timezone.utc)
-    # Approximate US Eastern Time (EDT is UTC-4 in October)
-    now_et = now_utc - timedelta(hours=4)
+    try:
+        from zoneinfo import ZoneInfo
+        now_et = datetime.now(ZoneInfo("America/New_York"))
+        tz_abbr = now_et.tzname() or "ET"
+    except Exception:
+        now_utc = datetime.now(timezone.utc)
+        month = now_utc.month
+        # US Daylight Saving Time typically mid-March to early November (UTC-4), otherwise UTC-5
+        offset = 4 if (3 <= month <= 11) else 5
+        now_et = now_utc - timedelta(hours=offset)
+        tz_abbr = "EDT" if offset == 4 else "EST"
+
     weekday = now_et.weekday()  # 0=Monday, ..., 4=Friday, 5=Saturday, 6=Sunday
 
     time_str = now_et.strftime("%H:%M:%S")
@@ -38,7 +48,7 @@ def is_us_market_open() -> Tuple[bool, str, Dict[str, Any]]:
         return False, "🔴 周末休市 (非美股交易日)", {
             "is_open": False,
             "session": "WEEKEND",
-            "et_time": f"{date_str} {time_str} EDT",
+            "et_time": f"{date_str} {time_str} {tz_abbr}",
             "message": "美股周末休市，系统支持在回放与测试模式下进行全功能对盘模拟"
         }
 
@@ -47,24 +57,24 @@ def is_us_market_open() -> Tuple[bool, str, Dict[str, Any]]:
     market_close = now_et.replace(hour=16, minute=0, second=0, microsecond=0)
 
     if market_open <= now_et <= market_close:
-        return True, "🟢 美股连续竞价交易中 (09:30 - 16:00 EDT)", {
+        return True, f"🟢 美股连续竞价交易中 (09:30 - 16:00 {tz_abbr})", {
             "is_open": True,
             "session": "REGULAR_MARKET",
-            "et_time": f"{date_str} {time_str} EDT",
+            "et_time": f"{date_str} {time_str} {tz_abbr}",
             "message": "实时开盘对盘中，策略模型根据真实市价进行动态撮合"
         }
     elif now_et < market_open:
         return False, "🟡 盘前等待开盘 (Pre-Market)", {
             "is_open": False,
             "session": "PRE_MARKET",
-            "et_time": f"{date_str} {time_str} EDT",
+            "et_time": f"{date_str} {time_str} {tz_abbr}",
             "message": "当前处于盘前时段，开盘前支持挂单与模拟撮合验证"
         }
     else:
         return False, "🔴 已收盘休市 (After-Hours / Closed)", {
             "is_open": False,
             "session": "CLOSED",
-            "et_time": f"{date_str} {time_str} EDT",
+            "et_time": f"{date_str} {time_str} {tz_abbr}",
             "message": "美股今日常规时段已收盘，系统支持使用最新收盘价进行模拟对盘演算"
         }
 
@@ -154,11 +164,19 @@ class PaperTradingEngine:
 
     def get_latest_price(self, ticker: str) -> Tuple[float, float, str]:
         """
-        Gets latest live price, previous close, and company name.
+        Gets latest live price, previous close, and company name with 60s in-memory caching.
         Uses fast_info or latest bar from fetch_stock_data.
         """
         sym = sanitize_ticker(ticker)
         company_name = COMPANY_NAME_LOOKUP.get(sym, sym)
+        now = datetime.now()
+
+        # Check 60-second in-memory cache first to avoid request spamming
+        if sym in _PAPER_PRICE_CACHE:
+            cached_time, cached_price, cached_prev, cached_name = _PAPER_PRICE_CACHE[sym]
+            if (now - cached_time).total_seconds() < 60:
+                return cached_price, cached_prev, cached_name
+
         try:
             t = yf.Ticker(sym)
             fi = t.fast_info
@@ -166,7 +184,9 @@ class PaperTradingEngine:
             prev = getattr(fi, 'previous_close', None)
             if last is not None and not np.isnan(last) and last > 0:
                 p_close = float(prev) if (prev is not None and not np.isnan(prev) and prev > 0) else float(last)
-                return float(last), p_close, company_name
+                res = (float(last), p_close, company_name)
+                _PAPER_PRICE_CACHE[sym] = (now, float(last), p_close, company_name)
+                return res
         except Exception:
             pass
 
@@ -175,8 +195,12 @@ class PaperTradingEngine:
         if not df.empty:
             last = float(df['Close'].iloc[-1])
             prev = float(df['Close'].iloc[-2]) if len(df) > 1 else last
+            _PAPER_PRICE_CACHE[sym] = (now, last, prev, company_name)
             return last, prev, company_name
-        return 100.0, 100.0, company_name
+
+        res = (100.0, 100.0, company_name)
+        _PAPER_PRICE_CACHE[sym] = (now, 100.0, 100.0, company_name)
+        return res
 
     def execute_order(
         self,
@@ -242,6 +266,7 @@ class PaperTradingEngine:
                 pos["unrealized_pnl"] = round((exec_price - new_avg) * new_shares, 2)
                 pos["unrealized_pnl_pct"] = round(((exec_price - new_avg) / new_avg) * 100.0, 2)
                 pos["pnl_pct"] = pos["unrealized_pnl_pct"]
+                pos["entry_comm"] = round(pos.get("entry_comm", 0.0) + commission, 2)
             else:
                 sl_pct = float(cfg.get("stop_loss_pct", 0.04))
                 tp_pct = float(cfg.get("take_profit_pct", 0.08))
@@ -257,6 +282,7 @@ class PaperTradingEngine:
                     "unrealized_pnl": 0.0,
                     "unrealized_pnl_pct": 0.0,
                     "pnl_pct": 0.0,
+                    "entry_comm": commission,
                     "entry_time": now_str,
                     "strategy": strategy,
                     "stop_loss_price": round(exec_price * (1.0 - sl_pct), 2),
@@ -293,7 +319,10 @@ class PaperTradingEngine:
             account["commission_paid"] = round(account.get("commission_paid", 0.0) + commission, 2)
 
             entry_p = pos["avg_entry_price"]
-            trade_pnl = round((exec_price - entry_p) * shares - commission, 2)
+            cur_entry_comm = pos.get("entry_comm", 0.0)
+            entry_comm_prop = round(cur_entry_comm * (shares / max(1, pos["shares"])), 2)
+            pos["entry_comm"] = round(max(0.0, cur_entry_comm - entry_comm_prop), 2)
+            trade_pnl = round((exec_price - entry_p) * shares - (entry_comm_prop + commission), 2)
             trade_pnl_pct = round(((exec_price - entry_p) / entry_p) * 100.0, 2)
 
             account["realized_pnl"] = round(account.get("realized_pnl", 0.0) + trade_pnl, 2)
@@ -441,8 +470,12 @@ class PaperTradingEngine:
         # Benchmark SPY value
         spy_price, _, _ = self.get_latest_price("SPY")
         init_cap = account.get("initial_capital", 100000.0)
-        first_spy = eq_hist[0].get("spy_ref_price", spy_price) if eq_hist else spy_price
-        bench_val = round(init_cap * (spy_price / max(first_spy, 1.0)), 2)
+        first_spy = eq_hist[0].get("spy_ref_price") if eq_hist else None
+        if not first_spy or first_spy <= 0:
+            first_spy = spy_price
+            if eq_hist:
+                eq_hist[0]["spy_ref_price"] = first_spy
+        bench_val = round(init_cap * (spy_price / max(first_spy, 1e-4)), 2)
 
         eq_hist.append({
             "timestamp": now_str,

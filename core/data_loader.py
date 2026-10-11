@@ -202,7 +202,9 @@ def generate_synthetic_data(ticker: str, days: int = 500) -> pd.DataFrame:
     sigma = 0.28 # annual volatility
     
     returns = np.random.normal((mu - 0.5 * sigma**2) * dt, sigma * np.sqrt(dt), size=len(dates))
-    price_series = base_price * np.exp(np.cumsum(returns))
+    cum_ret = np.cumsum(returns)
+    # Anchor to base_price on the latest date
+    price_series = base_price * np.exp(cum_ret - cum_ret[-1])
     
     records = []
     for i, date in enumerate(dates):
@@ -424,10 +426,10 @@ def search_yahoo_tickers(query: str, max_results: int = 5):
                 fi = t.fast_info
                 last = getattr(fi, 'last_price', None)
                 prev = getattr(fi, 'previous_close', None)
-                if last is not None and prev is not None and prev > 0:
-                    chg_pct = round(((last - prev) / prev) * 100.0, 2)
+                if last is not None and not np.isnan(last) and prev is not None and not np.isnan(prev) and prev > 0:
+                    chg_pct = round(((float(last) - float(prev)) / float(prev)) * 100.0, 2)
                     price = round(float(last), 2)
-                elif last is not None:
+                elif last is not None and not np.isnan(last):
                     price = round(float(last), 2)
                     chg_pct = 0.0
                 elif fallback_match:

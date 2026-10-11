@@ -104,7 +104,8 @@ class TurtleGridStrategy(BaseStrategy):
                 f"机构离场：跌破前 {exit_window} 日低点严格触发平仓止盈",
                 f"波动率目标化：组合年化目标波动率锚定 {target_vol*100:.1f}%",
                 f"动态棘轮防线：{stop_n_mult} × ATR(N) 移动保护锁定利润"
-            ]
+            ],
+            "position_sizes": target_weights
         }
 
         return signals, meta

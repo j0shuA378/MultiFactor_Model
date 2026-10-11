@@ -56,13 +56,17 @@ class BacktestEngine:
         trade_signals = []
 
         current_entry_price = 0.0
+        current_entry_comm = 0.0
         current_entry_date = ""
         current_entry_idx = 0
 
         # Benchmark: Buy and Hold using Initial Capital from day 0 Close (guarded against <= 0)
         day0_close = max(1e-4, float(closes[0]))
-        bench_shares = (self.initial_capital * 0.99) / (day0_close * (1.0 + self.slippage_rate))
-        bench_cash = self.initial_capital - bench_shares * day0_close
+        day0_exec_price = day0_close * (1.0 + self.slippage_rate)
+        bench_alloc = self.initial_capital * 0.99
+        bench_shares = int(bench_alloc / day0_exec_price)
+        bench_comm = self.calculate_commission(bench_shares * day0_exec_price)
+        bench_cash = self.initial_capital - (bench_shares * day0_exec_price + bench_comm)
 
         for i in range(len(dates)):
             date = str(dates[i])
@@ -86,7 +90,7 @@ class BacktestEngine:
                 net_proceeds = gross_proceeds - comm
                 cash += net_proceeds
 
-                pnl = (exit_price - current_entry_price) * shares - comm
+                pnl = (exit_price - current_entry_price) * shares - (current_entry_comm + comm)
                 pnl_pct = ((exit_price - current_entry_price) / current_entry_price) * 100.0
                 holding_days = max(1, i - current_entry_idx)
 
@@ -113,6 +117,7 @@ class BacktestEngine:
 
                 shares = 0
                 current_entry_price = 0.0
+                current_entry_comm = 0.0
                 current_entry_date = ""
 
             # Execute Entry if signal is BUY (1) and currently flat
@@ -128,22 +133,25 @@ class BacktestEngine:
                     target_alloc = min(cash * self.position_size_pct, cash * custom_size)
 
                 order_shares = int(target_alloc / exec_price) if not np.isnan(target_alloc) else 0
+                while order_shares > 0 and (order_shares * exec_price + self.calculate_commission(order_shares * exec_price)) > cash:
+                    order_shares -= 1
+
                 if order_shares > 0:
                     comm = self.calculate_commission(order_shares * exec_price)
                     total_cost = order_shares * exec_price + comm
-                    if total_cost <= cash:
-                        cash -= total_cost
-                        shares = order_shares
-                        current_entry_price = exec_price
-                        current_entry_date = date
-                        current_entry_idx = i
+                    cash -= total_cost
+                    shares = order_shares
+                    current_entry_price = exec_price
+                    current_entry_comm = comm
+                    current_entry_date = date
+                    current_entry_idx = i
 
-                        trade_signals.append({
-                            "date": date,
-                            "price": round(exec_price, 2),
-                            "type": "BUY",
-                            "reason": "SIGNAL_BUY"
-                        })
+                    trade_signals.append({
+                        "date": date,
+                        "price": round(exec_price, 2),
+                        "type": "BUY",
+                        "reason": "SIGNAL_BUY"
+                    })
 
             # Mark portfolio to market at end of day
             holdings_value = shares * close_price
@@ -164,7 +172,7 @@ class BacktestEngine:
             final_price = closes[-1] * (1.0 - self.slippage_rate)
             gross_proceeds = shares * final_price
             comm = self.calculate_commission(gross_proceeds)
-            pnl = (final_price - current_entry_price) * shares - comm
+            pnl = (final_price - current_entry_price) * shares - (current_entry_comm + comm)
             pnl_pct = ((final_price - current_entry_price) / current_entry_price) * 100.0
             trades.append({
                 "trade_id": len(trades) + 1,
@@ -186,6 +194,13 @@ class BacktestEngine:
                 "type": "SELL",
                 "reason": "END_OF_PERIOD"
             })
+
+            net_proceeds = gross_proceeds - comm
+            cash += net_proceeds
+            equity_records[-1]["equity"] = round(cash, 2)
+            equity_records[-1]["cash"] = round(cash, 2)
+            equity_records[-1]["holdings"] = 0.0
+            shares = 0
 
         # Calculate metrics and drawdowns with fast vectorized numpy operations
         eq_arr = np.array([r["equity"] for r in equity_records], dtype=np.float64)

@@ -60,10 +60,11 @@ def compute_performance_metrics(
     else:
         sharpe = 0.0
 
-    # Sortino Ratio (Downside volatility)
-    downside_returns = strat_daily_ret[strat_daily_ret < 0]
-    if len(downside_returns) > 1 and downside_returns.std() > 1e-8:
-        sortino = float(np.sqrt(252) * (excess_ret.mean() / downside_returns.std()))
+    # Sortino Ratio (Target Downside Deviation)
+    downside_diff = np.minimum(0.0, excess_ret.values)
+    downside_dev = float(np.sqrt(np.mean(downside_diff ** 2)))
+    if len(strat_daily_ret) > 1 and downside_dev > 1e-8:
+        sortino = float(np.sqrt(252) * (excess_ret.mean() / downside_dev))
     else:
         sortino = sharpe
 

@@ -98,14 +98,22 @@ def generate_trade_prediction(
     diff_str = f"{'+' if diff_val > 0 else ''}{diff_val:.1f}%"
 
     # 2. Target Profit (TP)
-    tp_pct = float(take_profit_pct) if (take_profit_pct and take_profit_pct > 0) else 5.2
-    target_profit = round(max(last_close * (1.0 + tp_pct / 100.0), expected_buy * 1.055, bb_upper), 2)
-    tp_diff_pct = round(((target_profit - last_close) / last_close) * 100.0, 1)
+    if take_profit_pct is not None and float(take_profit_pct) > 0:
+        tp_pct = float(take_profit_pct)
+        target_profit = round(expected_buy * (1.0 + tp_pct / 100.0), 2)
+    else:
+        tp_pct = 5.2
+        target_profit = round(max(expected_buy * (1.0 + tp_pct / 100.0), bb_upper), 2)
+    tp_diff_pct = round(((target_profit - last_close) / max(1e-4, last_close)) * 100.0, 1)
 
     # 3. Stop Loss (SL)
-    sl_pct = float(stop_loss_pct) if (stop_loss_pct and stop_loss_pct > 0) else 3.5
-    stop_loss = round(min(last_close * (1.0 - sl_pct / 100.0), expected_buy * 0.965, bb_lower), 2)
-    sl_diff_pct = round(((stop_loss - last_close) / last_close) * 100.0, 1)
+    if stop_loss_pct is not None and float(stop_loss_pct) > 0:
+        sl_pct = float(stop_loss_pct)
+        stop_loss = round(max(0.01, expected_buy * (1.0 - sl_pct / 100.0)), 2)
+    else:
+        sl_pct = 3.5
+        stop_loss = round(max(0.01, min(expected_buy * (1.0 - sl_pct / 100.0), bb_lower)), 2)
+    sl_diff_pct = round(((stop_loss - last_close) / max(1e-4, last_close)) * 100.0, 1)
 
     # 4. Risk / Reward Ratio
     reward = max(0.1, target_profit - expected_buy)

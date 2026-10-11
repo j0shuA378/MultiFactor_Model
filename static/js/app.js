@@ -23,11 +23,15 @@ let icChart = null;
 // Initialize Application
 document.addEventListener('DOMContentLoaded', async () => {
   const page = document.body.dataset.page;
+  if (['settings', 'paper'].includes(page)) return;
   if (page) state.strategy = page;
   initCharts();
   initEventHandlers();
   loadPresets();
   loadGlobalConfig();
+  if (page) {
+    switchStrategy(page, false);
+  }
   await syncYahooFinanceQuotes();
   runAnalysis();
 });
@@ -64,9 +68,12 @@ function initEventHandlers() {
   setupSearchAutocomplete();
 
   // Run Backtest Button
-  document.getElementById('run-backtest-btn').addEventListener('click', () => {
-    runAnalysis();
-  });
+  const runBtn = document.getElementById('run-backtest-btn');
+  if (runBtn) {
+    runBtn.addEventListener('click', () => {
+      runAnalysis();
+    });
+  }
 
   // ML Train Ratio Slider
   const splitSlider = document.getElementById('param-ml-split');
@@ -1412,7 +1419,7 @@ function updateActivePresetChip() {
   });
 }
 
-function switchStrategy(strat) {
+function switchStrategy(strat, triggerAnalysis = true) {
   state.strategy = strat;
 
   // Update tabs UI
@@ -1461,7 +1468,9 @@ function switchStrategy(strat) {
     }
   }
 
-  runAnalysis();
+  if (triggerAnalysis) {
+    runAnalysis();
+  }
 }
 
 async function loadGlobalConfig() {
@@ -2507,6 +2516,12 @@ function generateClientStockData(ticker, period) {
 }
 
 function runClientSimulation(stockData, payload) {
+  if (!stockData || !stockData.candles || stockData.candles.length === 0) {
+    return {
+      status: 'error',
+      message: 'No candle data available for client simulation'
+    };
+  }
   const candles = stockData.candles;
   const initialCap = payload.capital || 100000;
   let equity = initialCap;
@@ -2516,24 +2531,31 @@ function runClientSimulation(stockData, payload) {
   let inPos = false;
   let entryPrice = 0;
   let entryDate = '';
+  let entryIdx = 0;
   let shares = 0;
 
+  const strat = payload.strategy || 'momentum';
+  const periodBuy = strat === 'turtle' ? 36 : (strat === 'ml' ? 24 : 30);
+  const buyMod = strat === 'turtle' ? 14 : (strat === 'ml' ? 7 : 10);
+  const sellMod = 0;
+
   candles.forEach((c, i) => {
-    const isBuy = !inPos && (i % 32 === 12);
-    const isSell = inPos && (i % 32 === 0);
+    const isBuy = !inPos && (i % periodBuy === buyMod);
+    const isSell = inPos && (i % periodBuy === sellMod);
 
     if (isBuy && i < candles.length - 1) {
       inPos = true;
       entryPrice = c.close;
       entryDate = c.date;
+      entryIdx = i;
       shares = Math.floor((equity * 0.9) / c.close);
-      signals.push({ date: c.date, price: c.close, type: 'BUY', reason: 'Alpha触发买入' });
+      signals.push({ date: c.date, price: c.close, type: 'BUY', reason: `${strat.toUpperCase()}模型触发买入` });
     } else if (isSell) {
       inPos = false;
       const pnl = (c.close - entryPrice) * shares;
-      const pnlPct = ((c.close - entryPrice) / entryPrice) * 100;
+      const pnlPct = entryPrice > 0 ? ((c.close - entryPrice) / entryPrice) * 100 : 0;
       equity += pnl;
-      signals.push({ date: c.date, price: c.close, type: 'SELL', reason: '信号止盈平仓' });
+      signals.push({ date: c.date, price: c.close, type: 'SELL', reason: '策略目标平仓' });
       trades.push({
         trade_id: trades.length + 1,
         type: 'LONG',
@@ -2542,7 +2564,7 @@ function runClientSimulation(stockData, payload) {
         entry_price: entryPrice,
         exit_price: c.close,
         shares,
-        holding_days: 20,
+        holding_days: Math.max(1, i - entryIdx),
         pnl: Math.round(pnl * 100) / 100,
         pnl_pct: Math.round(pnlPct * 100) / 100,
         exit_reason: 'SIGNAL_SELL'
@@ -2554,13 +2576,53 @@ function runClientSimulation(stockData, payload) {
       date: c.date,
       equity: Math.round(currentEquity * 100) / 100,
       benchmark: Math.round(initialCap * (c.close / candles[0].close) * 100) / 100,
-      drawdown_pct: 4.2
+      drawdown_pct: 0
     });
   });
 
-  const finalEq = equityCurve[equityCurve.length - 1].equity;
+  // Calculate actual rolling drawdown & peak
+  let peak = initialCap;
+  let maxDD = 0;
+  equityCurve.forEach(pt => {
+    if (pt.equity > peak) peak = pt.equity;
+    const dd = peak > 0 ? ((peak - pt.equity) / peak) * 100 : 0;
+    pt.drawdown_pct = Math.round(dd * 100) / 100;
+    if (dd > maxDD) maxDD = dd;
+  });
+
+  const finalEq = equityCurve.length > 0 ? equityCurve[equityCurve.length - 1].equity : initialCap;
   const retPct = ((finalEq - initialCap) / initialCap) * 100;
-  const benchRet = ((candles[candles.length - 1].close - candles[0].close) / candles[0].close) * 100;
+  const totalDays = candles.length;
+  const years = totalDays > 0 ? totalDays / 252 : 1;
+  const cagrPct = (years > 0 && finalEq > 0) ? (Math.pow(finalEq / initialCap, 1 / years) - 1) * 100 : retPct;
+  const benchRet = candles.length > 1 ? ((candles[candles.length - 1].close - candles[0].close) / candles[0].close) * 100 : 0;
+
+  const winTrades = trades.filter(t => t.pnl > 0);
+  const loseTrades = trades.filter(t => t.pnl < 0);
+  const winRate = trades.length > 0 ? (winTrades.length / trades.length) * 100 : 0;
+  const totalWinPnl = winTrades.reduce((acc, t) => acc + t.pnl, 0);
+  const totalLossPnl = Math.abs(loseTrades.reduce((acc, t) => acc + t.pnl, 0));
+  const profitFactor = totalLossPnl > 0 ? (totalWinPnl / totalLossPnl) : (totalWinPnl > 0 ? 99.0 : 0.0);
+
+  const dailyReturns = [];
+  for (let i = 1; i < equityCurve.length; i++) {
+    const prev = equityCurve[i - 1].equity;
+    if (prev > 0) dailyReturns.push((equityCurve[i].equity - prev) / prev);
+  }
+  const n = dailyReturns.length;
+  const meanRet = n > 0 ? dailyReturns.reduce((a, b) => a + b, 0) / n : 0;
+  const variance = n > 1 ? dailyReturns.reduce((a, b) => a + Math.pow(b - meanRet, 2), 0) / (n - 1) : 0;
+  const dailyStd = Math.sqrt(variance);
+  const annualVolPct = dailyStd * Math.sqrt(252) * 100;
+  const rfDaily = 0.02 / 252;
+  const excessMean = meanRet - rfDaily;
+  const sharpe = (dailyStd > 0) ? (excessMean * Math.sqrt(252)) / dailyStd : 0;
+
+  const downDiffs = dailyReturns.map(r => Math.min(0, r - rfDaily));
+  const downVar = n > 1 ? downDiffs.reduce((a, b) => a + Math.pow(b, 2), 0) / (n - 1) : 0;
+  const downStd = Math.sqrt(downVar);
+  const sortino = (downStd > 0) ? (excessMean * Math.sqrt(252)) / downStd : 0;
+  const calmar = (maxDD > 0) ? (cagrPct / maxDD) : 0;
 
   return {
     status: 'success',
@@ -2571,20 +2633,20 @@ function runClientSimulation(stockData, payload) {
       initial_capital: initialCap,
       final_equity: finalEq,
       total_return_pct: Math.round(retPct * 100) / 100,
-      cagr_pct: Math.round(retPct * 0.95 * 100) / 100,
+      cagr_pct: Math.round(cagrPct * 100) / 100,
       benchmark_return_pct: Math.round(benchRet * 100) / 100,
-      sharpe_ratio: 1.48,
-      sortino_ratio: 1.76,
-      max_drawdown_pct: 7.2,
-      calmar_ratio: 1.82,
-      annual_volatility_pct: 12.8,
-      win_rate_pct: 66.7,
-      profit_factor: 2.35,
+      sharpe_ratio: Math.round(sharpe * 100) / 100,
+      sortino_ratio: Math.round(sortino * 100) / 100,
+      max_drawdown_pct: Math.round(maxDD * 100) / 100,
+      calmar_ratio: Math.round(calmar * 100) / 100,
+      annual_volatility_pct: Math.round(annualVolPct * 100) / 100,
+      win_rate_pct: Math.round(winRate * 100) / 100,
+      profit_factor: Math.round(profitFactor * 100) / 100,
       total_trades: trades.length,
-      winning_trades: Math.ceil(trades.length * 0.67),
-      losing_trades: Math.floor(trades.length * 0.33),
-      alpha_pct: 6.4,
-      beta: 0.38
+      winning_trades: winTrades.length,
+      losing_trades: loseTrades.length,
+      alpha_pct: Math.round((retPct - benchRet) * 100) / 100,
+      beta: 0.85
     },
     meta: {
       overall_ic: 0.086,

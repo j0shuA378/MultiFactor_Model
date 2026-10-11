@@ -694,7 +694,14 @@
         strategy: strategy
       });
 
-      delete posMap[sym];
+      if (shares >= curPos.shares) {
+        delete posMap[sym];
+      } else {
+        curPos.shares -= shares;
+        curPos.market_value = Math.round(curPos.shares * execPrice * 100) / 100;
+        curPos.unrealized_pnl = Math.round((execPrice - curPos.entry_price) * curPos.shares * 100) / 100;
+        curPos.unrealized_pnl_pct = Math.round(((execPrice - curPos.entry_price) / curPos.entry_price) * 10000) / 100;
+      }
       return true;
     }
     return false;

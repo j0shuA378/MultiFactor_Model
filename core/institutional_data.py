@@ -15,7 +15,7 @@ def calculate_garman_klass_volatility(
     log_co = np.log(close / open_p)
     gk_var = 0.5 * (log_hl ** 2) - (2.0 * np.log(2.0) - 1.0) * (log_co ** 2)
     rolling_gk = gk_var.rolling(window=window).mean()
-    ann_gk_vol = np.sqrt(rolling_gk * 252.0) * 100.0
+    ann_gk_vol = np.sqrt(np.maximum(0.0, rolling_gk) * 252.0) * 100.0
     return ann_gk_vol.bfill()
 
 def calculate_parkinson_volatility(high: pd.Series, low: pd.Series, window: int = 20) -> pd.Series:
@@ -26,7 +26,7 @@ def calculate_parkinson_volatility(high: pd.Series, low: pd.Series, window: int 
     """
     log_hl = np.log(high / low)
     rolling_var = (log_hl ** 2).rolling(window=window).mean() / (4.0 * np.log(2.0))
-    ann_park_vol = np.sqrt(rolling_var * 252.0) * 100.0
+    ann_park_vol = np.sqrt(np.maximum(0.0, rolling_var) * 252.0) * 100.0
     return ann_park_vol.bfill()
 
 def winsorize_series(series: pd.Series, method: str = 'mad', n_sigmas: float = 3.0) -> pd.Series:
@@ -147,26 +147,27 @@ def calculate_trend_quality_momentum(close: pd.Series, window: int = 40) -> pd.S
     eff_w = min(window, max(15, len(close) // 4))
     log_p = np.log(close.values)
     n = len(log_p)
-    out_vals = np.zeros(n, dtype=np.float64)
+    out_vals = np.full(n, np.nan, dtype=np.float64)
 
     x = np.arange(eff_w, dtype=np.float64)
     x_mean = x.mean()
     x_dev = x - x_mean
     ss_x = np.dot(x_dev, x_dev)
 
-    for i in range(eff_w, n):
-        sub_y = log_p[i - eff_w : i]
+    for i in range(eff_w - 1, n):
+        sub_y = log_p[i - eff_w + 1 : i + 1]
         y_mean = sub_y.mean()
         y_dev = sub_y - y_mean
         ss_y = np.dot(y_dev, y_dev)
         if ss_y <= 1e-8:
+            out_vals[i] = 0.0
             continue
         ss_xy = np.dot(x_dev, y_dev)
         slope = ss_xy / ss_x
         r2 = (ss_xy * ss_xy) / (ss_x * ss_y)
         out_vals[i] = slope * r2
 
-    return pd.Series(out_vals, index=close.index).bfill()
+    return pd.Series(out_vals, index=close.index).bfill().fillna(0.0)
 
 def calculate_volume_confirmed_momentum(close: pd.Series, volume: pd.Series, window: int = 20) -> pd.Series:
     """
@@ -193,10 +194,13 @@ def calculate_information_coefficient(factor_scores: pd.Series, forward_returns:
     return float(round(rank_ic, 4)) if not np.isnan(rank_ic) else 0.0
 
 def calculate_rolling_ic(factor_scores: pd.Series, forward_returns: pd.Series, window: int = 40) -> pd.Series:
-    """Rolling Information Coefficient over time"""
+    """Rolling Rank Information Coefficient over time"""
     valid = pd.concat([factor_scores, forward_returns], axis=1).dropna()
     eff_w = min(window, max(15, len(valid) // 3))
-    rolling_ic = valid.iloc[:, 0].rolling(window=eff_w).corr(valid.iloc[:, 1])
+    # Rolling rank transformation to maintain Spearman rank consistency
+    r1 = valid.iloc[:, 0].rolling(window=eff_w).rank()
+    r2 = valid.iloc[:, 1].rolling(window=eff_w).rank()
+    rolling_ic = r1.rolling(window=eff_w).corr(r2)
     return rolling_ic.fillna(0.0)
 
 def calculate_factor_ir(rolling_ic: pd.Series) -> Dict[str, float]:

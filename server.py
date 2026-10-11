@@ -252,11 +252,22 @@ def api_backtest():
     account_cfg = cfg.get("account", {})
     saved_strat_cfg = cfg.get(strategy_key, {})
 
+    def _normalize_fee(val, fallback=0.05):
+        if val is not None and str(val).strip() != "":
+            try:
+                v = float(val)
+                return v / 100.0 if v >= 0.01 else v
+            except (ValueError, TypeError):
+                pass
+        try:
+            fb = float(fallback)
+            return fb / 100.0 if fb >= 0.01 else fb
+        except (ValueError, TypeError):
+            return 0.0005
+
     capital = float(data.get("capital", account_cfg.get("initial_capital", 100000.0)))
-    raw_comm = data.get("commission_rate")
-    commission_rate = float(raw_comm) if raw_comm is not None else (float(account_cfg.get("commission_rate", 0.05)) / 100.0)
-    raw_slip = data.get("slippage_rate")
-    slippage_rate = float(raw_slip) if raw_slip is not None else (float(account_cfg.get("slippage_rate", 0.05)) / 100.0)
+    commission_rate = _normalize_fee(data.get("commission_rate"), account_cfg.get("commission_rate", 0.05))
+    slippage_rate = _normalize_fee(data.get("slippage_rate"), account_cfg.get("slippage_rate", 0.05))
     
     def _parse_pct(val, fallback=None):
         if val is not None and str(val).strip() != "":

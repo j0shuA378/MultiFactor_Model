@@ -161,15 +161,34 @@ class MLPredictorStrategy(BaseStrategy):
         prob_series = pd.Series(all_probs, index=valid_indices)
 
         prob_cutoff = float(self.params.get("prob_threshold", 0.54))
-        signals = pd.Series(0, index=df.index, dtype=int)
         raw_sigs = np.select([all_probs >= prob_cutoff, all_probs < 0.47], [1, -1], default=0)
-        signals.loc[valid_indices] = raw_sigs
+
+        # Out-Of-Sample (OOS) evaluation prevents in-sample overfitting leakage
+        eval_mode = str(self.params.get("eval_mode", "oos")).lower()
+        signals = pd.Series(0, index=df.index, dtype=int)
+        if eval_mode == "oos":
+            # Warmup in training phase, strictly trade out-of-sample test period
+            signals.loc[valid_indices[split_idx:]] = raw_sigs[split_idx:]
+        else:
+            signals.loc[valid_indices] = raw_sigs
+
+        # Meta-Labeling Probability Bet Sizing
+        use_dynamic_bet = bool(self.params.get("dynamic_bet_sizing", True))
+        if use_dynamic_bet:
+            # Scale capital fraction according to prediction conviction
+            conviction = np.where(all_probs >= prob_cutoff, (all_probs - 0.5) / 0.35, 0.5)
+            conviction_clipped = np.clip(conviction, 0.25, 1.0)
+            pos_sizes = pd.Series(conviction_clipped, index=valid_indices).reindex(df.index).fillna(1.0)
+        else:
+            pos_sizes = pd.Series(1.0, index=df.index)
 
         meta = {
             "model_type": "Random Forest" if model_type == "rf" else "Gradient Boosting",
             "train_samples": len(X_train),
             "test_samples": len(X_test),
             "embargo_days": embargo,
+            "eval_mode": eval_mode,
+            "oos_start_date": str(valid_indices[split_idx]) if split_idx < len(valid_indices) else "",
             "accuracy": round(accuracy * 100.0, 1),
             "precision": round(precision * 100.0, 1),
             "recall": round(recall * 100.0, 1),
@@ -177,7 +196,8 @@ class MLPredictorStrategy(BaseStrategy):
             "brier_score": round(brier, 3),
             "confusion_matrix": cm,
             "feature_importances": feature_importance_list[:10],
-            "prediction_probs": {str(d): round(float(p), 3) for d, p in zip(valid_indices[-60:], all_probs[-60:])}
+            "prediction_probs": {str(d): round(float(p), 3) for d, p in zip(valid_indices[-60:], all_probs[-60:])},
+            "position_sizes": pos_sizes
         }
 
         return signals, meta

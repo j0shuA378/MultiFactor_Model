@@ -33,7 +33,9 @@ def calculate_rsi(series: pd.Series, period: int = 14) -> pd.Series:
     
     rs = avg_gain / avg_loss.replace(0, np.nan)
     rsi = 100 - (100 / (1 + rs))
-    return rsi.fillna(50)
+    # If avg_loss == 0 and avg_gain > 0, RSI is 100 (pure gains)
+    rsi = rsi.where(~((avg_loss == 0) & (avg_gain > 0)), 100.0)
+    return rsi.fillna(50.0)
 
 def calculate_bollinger_bands(series: pd.Series, period: int = 20, std_mult: float = 2.0):
     """
@@ -45,17 +47,17 @@ def calculate_bollinger_bands(series: pd.Series, period: int = 20, std_mult: flo
     upper = middle + (std * std_mult)
     lower = middle - (std * std_mult)
     pct_b = (series - lower) / (upper - lower).replace(0, np.nan)
-    return upper, middle, lower, pct_b
+    return upper, middle, lower, pct_b.fillna(0.5)
 
 def calculate_atr(high: pd.Series, low: pd.Series, close: pd.Series, period: int = 14) -> pd.Series:
     """Average True Range (ATR)"""
-    prev_close = close.shift(1)
+    prev_close = close.shift(1).bfill()
     tr1 = (high - low).values
     tr2 = np.abs(high.values - prev_close.values)
     tr3 = np.abs(low.values - prev_close.values)
     true_range = pd.Series(np.maximum(tr1, np.maximum(tr2, tr3)), index=close.index)
     atr = true_range.ewm(alpha=1.0 / period, min_periods=period, adjust=False).mean()
-    return atr
+    return atr.bfill()
 
 def calculate_donchian_channel(high: pd.Series, low: pd.Series, period: int = 20):
     """
